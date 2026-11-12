@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIFE RPG — The Chronicle Awakens</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:#e8d1a2;font-family:Georgia,serif}
+button{cursor:pointer;font:inherit}
+.scene{min-height:100dvh;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 75%,#402615,#090605 75%);text-align:center}
+.darkness{position:absolute;inset:0;background:#000;animation:light 4s forwards;pointer-events:none;z-index:5}
+@keyframes light{0%,15%{opacity:1}100%{opacity:0}}
+.candle{position:absolute;bottom:18%;width:18px;height:80px;background:linear-gradient(90deg,#765438,#f5deb0,#765438);opacity:0;animation:appear .5s forwards}
+.left{left:7%;animation-delay:1s}
+.right{right:7%;animation-delay:2s}
+.flame{position:absolute;top:-26px;left:3px;width:12px;height:28px;border-radius:70% 30% 60% 40%;background:#ffd27a;box-shadow:0 0 25px 12px #ffae4988,0 0 80px 35px #ffae4933;animation:flicker 1s infinite alternate}
+@keyframes flicker{to{transform:rotate(8deg) scale(1.12)}}
+@keyframes appear{to{opacity:1}}
+.intro{z-index:2;opacity:0;animation:appear 1s 3.5s forwards;width:100%;max-width:480px}
+h1{font-size:clamp(40px,12vw,65px);margin:8px 0;color:#f2d59a;text-shadow:0 0 25px #a76e39}
+.sub{font-size:12px;letter-spacing:3px;color:#c5a372}
+.book{width:min(65vw,270px);height:320px;margin:30px auto;background:linear-gradient(110deg,#211008,#603b20 25%,#2c170e 80%);border:9px ridge #81562c;border-radius:10px 20px 20px 10px;box-shadow:12px 15px 30px #000,inset 0 0 0 7px #29170d;display:grid;place-items:center;transition:transform 1s}
+.book.opening{transform:perspective(600px) rotateY(-65deg) scale(.9)}
+.symbol{font-size:90px;color:#d9ad62;text-shadow:0 0 20px #e6ac57;animation:glow 2s infinite alternate}
+@keyframes glow{to{text-shadow:0 0 40px #ffcf7b}}
+.quote{font-style:italic;line-height:1.6}
+.gold{background:linear-gradient(#e1b875,#96672f);border:1px solid #eac78b;color:#211307;padding:15px 25px;border-radius:6px;font-weight:bold;margin:20px auto;min-width:210px}
+.small{background:transparent;color:#e8d1a2;border:1px solid #94754e;padding:10px;border-radius:5px;margin:5px}
+.page{position:fixed;inset:0;z-index:8;background:#100a07;display:none;align-items:center;justify-content:center;padding:15px}
+.parchment{width:min(100%,650px);min-height:420px;padding:28px 22px;background:linear-gradient(90deg,#c4a371,#f0dcaf 48%,#c6a676 50%,#ecd3a1 54%,#d2b27d);border:10px ridge #59351d;border-radius:8px;color:#392518;box-shadow:0 15px 50px #000}
+.ink{white-space:pre-line;line-height:1.7;font-size:clamp(15px,4vw,20px);min-height:300px}
+.end{display:none;position:fixed;inset:0;z-index:9;background:radial-gradient(#382418,#090605);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}
+.fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:20;transition:opacity .8s}
+.fade.on{opacity:1}
+.preview{position:fixed;bottom:10px;left:10px;z-index:12;font:12px Arial;background:#20140d;padding:9px;border:1px solid #765632;border-radius:5px}
+.preview button{background:none;color:#f1c782;border:0;text-decoration:underline}
+@media(prefers-reduced-motion:reduce){
+*,*:before,*:after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+.darkness{opacity:0}
+.intro,.candle{opacity:1}
+}
+</style>
+</head>
+<body>
+<main class="scene" id="scene">
+<div class="darkness"></div>
+<div class="candle left"><div class="flame"></div></div>
+<div class="candle right"><div class="flame"></div></div>
+<section class="intro">
+<div class="sub">THE CHRONICLE OF LEGENDS</div>
+<h1>LIFE RPG</h1>
+<div class="sub">365 DAYS TO LEGENDARY</div>
+<div class="book" id="book"><div class="symbol">✧</div></div>
+<p class="quote">Every legend begins with an unwritten page.</p>
+<button class="gold" id="start">Start Your Journey</button>
+</section>
+</main>
+<section class="page" id="page">
+<div class="parchment">
+<div class="ink" id="ink"></div>
+<button class="small" id="reveal">Reveal Text</button>
+<button class="small" id="skip">Skip</button>
+<button class="gold" id="next" style="display:none">Begin My Story</button>
+</div>
+</section>
+<section class="end" id="end">
+<div class="sub">LIFE RPG — PREVIEW 0.2</div>
+<h1 id="heading">Character Creation</h1>
+<p>This is a preview. The actual game will be connected later.</p>
+<button class="gold" onclick="location.reload()">Replay Opening</button>
+</section>
+<div class="fade" id="fade"></div>
+<div class="preview">Preview: <button id="mode">Switch to returning player</button></div>
+<script>
+const $=id=>document.getElementById(id);
+const lines=[
+"Every legend begins somewhere.",
+"Not with extraordinary power, but with a choice to grow.",
+"Through your actions, your strengths will develop. Through your challenges, your story will unfold.",
+"This Chronicle belongs to you.",
+"What will you become?"
+];
+let returning=false,stopped=false;
+const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const full=lines.join("\n\n");
+$("mode").onclick=()=>{
+returning=!returning;
+$("start").textContent=returning?"Continue Journey":"Start Your Journey";
+$("mode").textContent=returning?"Switch to new player":"Switch to returning player";
+};
+function destination(title){
+$("fade").classList.add("on");
+setTimeout(()=>{
+$("scene").style.display="none";
+$("page").style.display="none";
+$("heading").textContent=title;
+$("end").style.display="flex";
+$("fade").classList.remove("on");
+},reduced?10:800);
+}
+function complete(){
+stopped=true;
+$("ink").textContent=full;
+$("next").style.display="block";
+$("reveal").style.display="none";
+$("skip").style.display="none";
+}
+async function write(){
+if(reduced){complete();return}
+for(const line of lines){
+for(const char of line){
+if(stopped)return;
+$("ink").textContent+=char;
+await new Promise(r=>setTimeout(r,25));
+}
+if(stopped)return;
+$("ink").textContent+="\n\n";
+await new Promise(r=>setTimeout(r,450));
+}
+complete();
+}
+$("start").onclick=()=>{
+if(returning){destination("Adventurer's Guild");return}
+$("book").classList.add("opening");
+setTimeout(()=>{
+$("page").style.display="flex";
+write();
+},reduced?10:1000);
+};
+$("reveal").onclick=complete;
+$("skip").onclick=()=>{stopped=true;destination("Character Creation")};
+$("next").onclick=()=>destination("Character Creation");
+</script>
+</body>
+</html>
