@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>LIFE RPG | The Hero's Appearance</title>
+<style>
+*{box-sizing:border-box}html{background:#100e0b}body{margin:0;color:#f7e4bb;font-family:Georgia,serif;background:linear-gradient(#17130f,#292018 45%,#110e0b);min-height:100vh}
+header{text-align:center;position:relative;padding:15px 8px 12px;background:linear-gradient(180deg,#211910,#302214 70%,#17110d);border-bottom:3px ridge #b98b43;box-shadow:0 5px 22px #000a;z-index:2}header:before,header:after{content:'✦';color:#d6a858;position:absolute;top:28px;font-size:23px}header:before{left:6%}header:after{right:6%}h1{font-size:clamp(31px,8vw,51px);letter-spacing:2px;line-height:1.05;margin:0;color:#e9bc68;text-shadow:0 2px 1px #37210e,0 0 16px #bd833a77}header .subtitle{display:inline-block;background:#1b120c;border:1px solid #b48b4b;padding:5px 20px;margin-top:8px;box-shadow:0 2px 8px #0008;font-weight:bold}header small{display:block;font-size:10px;margin-top:7px;color:#f4e0bb}
+#stage{position:relative;height:52vh;min-height:340px;max-height:630px;overflow:hidden;touch-action:none;background:radial-gradient(ellipse at 50% 32%,#c9d5c4 0%,#7f9ca1 24%,#50666b 49%,#253339 75%,#101b22 100%)}
+#stage:before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#18100d 0%,#6b5944 4%,#8f7859 7%,#332b22 11%,transparent 18%,transparent 82%,#332b22 89%,#8f7859 93%,#18100d 100%),linear-gradient(180deg,#3a2c20 0%,#81664c 3%,transparent 13%,transparent 84%,#514636 96%,#201a15 100%);z-index:1}
+#stage:after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 15%,#fff2b54d,transparent 44%),linear-gradient(180deg,transparent 60%,#2b211933);z-index:1}
+#stage canvas{display:block;position:relative;z-index:2}#stage .arch{position:absolute;inset:0;z-index:0;pointer-events:none}#stage .arch svg{width:100%;height:100%;display:block}#status{position:absolute;top:10px;left:16%;z-index:3;color:#f8db9c;font-size:10px;text-shadow:0 1px 5px #000}#hint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font:12px system-ui;color:#f9e9c7;text-shadow:0 2px 5px #000;z-index:3;pointer-events:none}
+.torch{position:absolute;top:43%;z-index:3;font-size:29px;text-shadow:0 0 14px #ff8a00,0 0 25px #ffb300;pointer-events:none}.torch.left{left:10%}.torch.right{right:10%}
+main{padding:14px 12px 20px;max-width:740px;margin:auto;background:linear-gradient(130deg,#261d16,#120f0c 70%)}.panel{position:relative;border:2px ridge #b28a4b;background:linear-gradient(140deg,#2d231b,#15130f 75%);padding:13px;margin-bottom:12px;box-shadow:inset 0 0 15px #0009,0 4px 12px #0007}.panel:before,.panel:after{content:'✥';position:absolute;color:#e3b568;font-size:13px;top:-9px}.panel:before{left:-7px}.panel:after{right:-7px}.panel-title{font-size:17px;color:#eac47d;text-align:center;margin:0 0 12px;text-shadow:0 1px 3px #000}.choices{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}button{font:13px Georgia,serif;border:1px solid #9b753c;border-radius:3px;background:linear-gradient(#443222,#211913);color:#f4e1b9;padding:10px 12px;min-height:42px;box-shadow:inset 0 1px #e6c58b44,0 2px 4px #0008}button.active{background:linear-gradient(#ac7837,#64411d);border-color:#ffdc8d;box-shadow:0 0 0 2px #5d3b17,0 0 11px #dba04a80}button:active{transform:scale(.97)}.swatch{width:39px;height:39px;border-radius:4px;border:2px solid #8b693b;padding:0}.swatch.active{outline:2px solid #f7dca0;outline-offset:2px}.actions{display:flex;gap:9px;align-items:center;margin-top:12px}.actions input{min-width:0;flex:1;background:#130e0b;color:#f6e5c4;border:1px solid #ab8348;padding:12px;font:15px Georgia,serif}.actions button{background:linear-gradient(#f2c77c,#b57b2e);color:#261508;font-weight:bold;white-space:nowrap}#reset{display:block;margin:10px auto 14px}.note,#notice{font:11px/1.5 system-ui;text-align:center;color:#d4bc8d;margin:10px 0}#error{display:none;color:#ffd0ba}footer{text-align:center;color:#b9a485;padding:10px 15px 25px;font:11px/1.6 system-ui}
+@media(min-width:760px){#stage{height:610px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px}.panel{margin-bottom:0}}@media(max-width:370px){.actions{flex-direction:column}.actions input,.actions button{width:100%}}
+</style></head><body>
+<header><h1>LIFE RPG</h1><div class="subtitle">The Hero’s Appearance</div><small>Build 0.5.3 — The Visual Evolution</small></header>
+<div id="stage"><div class="arch"><svg viewBox="0 0 400 580" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#b8d6d5"/><stop offset="1" stop-color="#567c8e"/></linearGradient></defs><path d="M62 0Q200 160 338 0L338 400 62 400Z" fill="url(#sky)" opacity=".22"/><path d="M175 340L195 205 210 340Z" fill="#586d70" opacity=".5"/><path d="M210 335L235 160 255 335Z" fill="#526b72" opacity=".55"/><path d="M233 215L244 95 253 215Z" fill="#526b72" opacity=".5"/><path d="M0 500Q200 420 400 500V580H0Z" fill="#51493d" opacity=".65"/><g fill="none" stroke="#d6bb8b" stroke-width="3" opacity=".3"><path d="M22 0V580M44 0V580M356 0V580M378 0V580"/><path d="M0 70H58M342 70H400M0 240H58M342 240H400"/></g></svg></div><div class="torch left">🔥</div><div class="torch right">🔥</div><div id="status">LIVE 3D CHARACTER</div><div id="hint">Drag to rotate · Pinch to zoom</div><div id="error"></div></div>
+<main><div class="controls"><section class="panel"><h2 class="panel-title">✦ Character Presentation ✦</h2><div class="choices" id="presentation"></div></section><section class="panel"><h2 class="panel-title">✦ Hairstyle ✦</h2><div class="choices" id="hair"></div></section><section class="panel"><h2 class="panel-title">✦ Hair Colour ✦</h2><div class="choices" id="hairColor"></div></section><section class="panel"><h2 class="panel-title">✦ Skin Tone ✦</h2><div class="choices" id="skin"></div></section><section class="panel"><h2 class="panel-title">✦ Starting Outfit ✦</h2><div class="choices" id="outfit"></div></section><section class="panel"><h2 class="panel-title">✦ Cosmetic Cloak ✦</h2><div class="choices" id="cloak"></div></section></div><button id="reset">↻ Reset Character View</button><section class="panel"><h2 class="panel-title">✦ Adventurer’s Name ✦</h2><div class="actions"><input id="heroName" maxlength="28" placeholder="Enter your legendary name…" aria-label="Adventurer's name"><button id="seal">✦ Seal My Appearance</button></div><p id="notice" aria-live="polite"></p></section><p class="note">Your appearance is purely cosmetic. Attributes, XP, classes and mastery are unaffected.</p></main><footer>Build 0.5.3 environment & UI prototype. Character remains a temporary low-poly 3D model. Seal is a local preview, not a saved account. Requires internet for Three.js.</footer>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+const stage=document.getElementById('stage');
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,2.25,8.6);camera.lookAt(0,1.75,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.outputColorSpace=THREE.SRGBColorSpace;
+stage.insertBefore(renderer.domElement,stage.firstChild);
+scene.add(new THREE.HemisphereLight(0xd6e8ff,0x34304a,2.1));
+const key=new THREE.DirectionalLight(0xffd6a0,3.0);key.position.set(3,7,6);scene.add(key);
+const rim=new THREE.DirectionalLight(0x87b9ff,1.8);rim.position.set(-4,3,-4);scene.add(rim);
+const root=new THREE.Group();scene.add(root);
+const floor=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.5,.18,48),new THREE.MeshStandardMaterial({color:0x82735d,metalness:.18,roughness:.8}));floor.position.y=-.08;root.add(floor);
+const state={presentation:'Masculine',skin:2,hair:'Short Adventurer',hairColor:1,outfit:'Guardian',cloak:true};
+const skins=['#f2c6a5','#d9a17b','#b87d59','#98613f','#70452e','#462c22'];
+const hairColors=['#171419','#36251c','#69432b','#a87846','#e1c078','#a53c28','#873e29','#c5c2bc'];
+const outfits=['Guardian','Traveler','Mystic'];
+const mat=(c,metalness=0)=>new THREE.MeshStandardMaterial({color:c,roughness:metalness?.38:.85,metalness});
+function mesh(geo,color,parent,x=0,y=0,z=0,metal=0){const m=new THREE.Mesh(geo,mat(color,metal));m.position.set(x,y,z);parent.add(m);return m}
+function ball(parent,color,x,y,z,sx,sy,sz){let m=mesh(new THREE.SphereGeometry(1,16,12),color,parent,x,y,z);m.scale.set(sx,sy,sz);return m}
+function limb(parent,color,a,b,r1,r2){const v1=new THREE.Vector3(...a),v2=new THREE.Vector3(...b);const delta=v2.clone().sub(v1);let m=mesh(new THREE.CylinderGeometry(r1,r2,delta.length(),12),color,parent,...v1.clone().add(v2).multiplyScalar(.5).toArray());m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return m}
+let hero;
+function build(){
+if(hero)root.remove(hero);hero=new THREE.Group();root.add(hero);
+const skin=skins[state.skin],hair=hairColors[state.hairColor],female=state.presentation==='Feminine';
+const shoulder=female?.42:.51,waist=female?.29:.34;
+const cloth=state.outfit==='Guardian'?'#535e6a':state.outfit==='Traveler'?'#6e503b':'#244a83';
+const trim=state.outfit==='Guardian'?'#d7aa53':state.outfit==='Traveler'?'#a78a56':'#e0bb70';
+const legs=state.outfit==='Mystic'?'#233d6b':'#303641';
+for(let s of [-1,1]){
+limb(hero,legs,[s*.19,1.06,0],[s*.21,.38,0],.17,.13);
+ball(hero,'#28252b',s*.21,.19,.12,.19,.19,.30);
+limb(hero,skin,[s*(shoulder+.05),2.51,0],[s*.59,1.65,0],.14,.12);
+ball(hero,skin,s*.59,1.59,0,.13,.18,.13);
+}
+ball(hero,cloth,0,2.13,0,shoulder+.04,.61,.28);
+ball(hero,cloth,0,1.66,0,waist+.06,.29,.25);
+limb(hero,skin,[0,2.78,0],[0,2.93,0],.14,.14);
+ball(hero,skin,0,3.2,0,.34,female?.42:.40,.31);
+for(let s of [-1,1]){
+ball(hero,'#faf5e8',s*.135,3.23,.286,.075,.044,.026);
+ball(hero,'#4d6e77',s*.135,3.23,.31,.032,.034,.016);
+ball(hero,'#302a2b',s*.135,3.34,.31,.09,.024,.018);
+}
+ball(hero,'#9d5b50',0,3.035,.299,.105,.021,.012);
+ball(hero,skin,0,3.16,.323,.07,.11,.085);
+const hairGroup=new THREE.Group();hero.add(hairGroup);
+ball(hairGroup,hair,0,3.51,-.045,.35,.19,.32);
+const hairstyle=state.hair;
+if(hairstyle.includes('Buzz')){ball(hairGroup,hair,0,3.52,0,.335,.09,.30)}
+else if(hairstyle.includes('Long')||hairstyle.includes('Shoulder')||hairstyle.includes('Waves')){
+for(let s of [-1,1]){ball(hairGroup,hair,s*.31,3.05,-.055,.13,.56,.24)}
+ball(hairGroup,hair,0,3.54,.12,.32,.14,.22);
+}else if(hairstyle.includes('Braid')||hairstyle.includes('Ponytail')){
+ball(hairGroup,hair,0,3.55,.06,.34,.14,.27);
+for(let i=0;i<5;i++)ball(hairGroup,hair,.28,3.35-i*.14,-.2,.11,.105,.11);
+}else{
+for(let i=0;i<7;i++){const x=(i-3)*.095;const m=ball(hairGroup,hair,x,3.56+Math.sin(i*2)*.04,.10,.13,.11,.17);m.rotation.z=x*.6}
+}
+if(state.outfit==='Guardian'){
+for(let s of [-1,1]){
+ball(hero,'#84929b',s*(shoulder+.06),2.55,0,.24,.18,.33);
+ball(hero,'#89939b',s*.59,1.94,.01,.16,.20,.18);
+}
+ball(hero,'#9ba6ad',0,2.23,.27,.35,.39,.085);
+ball(hero,trim,0,2.13,.36,.11,.14,.025);
+}else if(state.outfit==='Traveler'){
+for(let s of [-1,1]){ball(hero,'#5b3b2c',s*.45,2.43,.05,.16,.18,.25)}
+limb(hero,'#9e7846',[-.39,2.56,.30],[.32,1.71,.32],.055,.055);
+ball(hero,'#614a2e',.35,1.63,.26,.17,.20,.13);
+}else{
+ball(hero,'#294f91',0,1.48,0,.45,.62,.30);
+for(let s of [-1,1])ball(hero,'#234782',s*.53,2.12,0,.19,.45,.24);
+ball(hero,trim,0,2.4,.31,.10,.13,.035);
+}
+limb(hero,'#513c2b',[-waist,1.67,.25],[waist,1.67,.25],.065,.065);
+if(state.cloak){
+const capeColor=state.outfit==='Guardian'?'#8e2637':state.outfit==='Traveler'?'#38664d':'#243e88';
+const cape=mesh(new THREE.ConeGeometry(.68,2.12,24,1,true),capeColor,hero,0,1.57,-.30);cape.rotation.x=Math.PI;cape.scale.z=.48;
+for(let s of [-1,1])ball(hero,trim,s*.29,2.65,.13,.07,.07,.07);
+}
+}
+const hairstyles=['Short Adventurer','Shoulder-Length','Warrior’s Braid','Swept Back','Long Waves','Braided Crown','High Ponytail','Buzz Cut','Short Tousled','Undercut Braid','Long Hair'];
+function controls(id,items,get,set,swatches=false){
+const el=document.getElementById(id);el.innerHTML='';
+items.forEach((item,i)=>{const b=document.createElement('button');b.type='button';b.textContent=swatches?'':item;b.setAttribute('aria-label',swatches?`Color ${i+1}`:item);
+if(swatches){b.className='swatch';b.style.background=item}
+if(get()===i||get()===item)b.classList.add('active');
+b.onclick=()=>{set(swatches?i:item);refresh();};el.appendChild(b)});
+}
+function refresh(){
+controls('presentation',['Masculine','Feminine','Custom'],()=>state.presentation,v=>state.presentation=v);
+controls('skin',skins,()=>state.skin,v=>state.skin=v,true);
+controls('hair',hairstyles,()=>state.hair,v=>state.hair=v);
+controls('hairColor',hairColors,()=>state.hairColor,v=>state.hairColor=v,true);
+controls('outfit',outfits,()=>state.outfit,v=>state.outfit=v);
+controls('cloak',['On','Off'],()=>state.cloak?'On':'Off',v=>state.cloak=v==='On');
+build();
+}
+refresh();
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}
+window.addEventListener('resize',resize);resize();
+let drag=false,lastX=0,lastY=0,zoom=8.6,initialPinch=null;
+const pointers=new Map();
+renderer.domElement.addEventListener('pointerdown',e=>{renderer.domElement.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});lastX=e.clientX;lastY=e.clientY;drag=true});
+renderer.domElement.addEventListener('pointermove',e=>{
+if(!pointers.has(e.pointerId))return;
+const prev=pointers.get(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+if(pointers.size===1){root.rotation.y+=(e.clientX-prev.x)*.012}
+else if(pointers.size===2){const pts=[...pointers.values()];const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);if(initialPinch!==null)zoom=THREE.MathUtils.clamp(zoom*initialPinch/d,5.7,12);initialPinch=d;camera.position.z=zoom}
+});
+const end=e=>{pointers.delete(e.pointerId);if(pointers.size<2)initialPinch=null};
+renderer.domElement.addEventListener('pointerup',end);renderer.domElement.addEventListener('pointercancel',end);
+document.getElementById('seal').onclick=()=>{const name=document.getElementById('heroName').value.trim();document.getElementById('notice').textContent=name?'Appearance preview saved for '+name+' (this browser session only).':'Enter an adventurer name to preview your seal.';};
+document.getElementById('reset').onclick=()=>{root.rotation.y=0;zoom=8.6;camera.position.z=zoom};
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}animate();
+</script></body></html>
