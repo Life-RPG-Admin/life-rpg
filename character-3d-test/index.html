@@ -1,1 +1,303 @@
 LIFE RPG 3D TEST
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LIFE RPG - 3D Hero</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0c1420;color:#f5e7c9;font-family:Arial,sans-serif}
+header{text-align:center;padding:15px;background:#111c2b}
+h1{font-family:Georgia,serif;color:#f4cf82;margin:5px}
+small{color:#d3b57c;letter-spacing:2px}
+#stage{height:50vh;min-height:300px;position:relative;touch-action:none;background:radial-gradient(#34455b,#0a111c)}
+#stage canvas{display:block}
+#hint{position:absolute;bottom:10px;width:100%;text-align:center;font-size:12px;pointer-events:none}
+main{padding:15px}
+section{margin-bottom:18px}
+label{display:block;color:#e2c28c;margin-bottom:8px}
+button{background:#17273b;color:white;border:1px solid #80683e;border-radius:8px;padding:11px;margin:3px}
+button.active{background:#8b6735}
+.swatch{width:38px;height:38px;border-radius:50%;padding:0}
+.swatch.active{outline:2px solid #f7dca0;outline-offset:2px}
+#status{position:absolute;top:10px;left:10px;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+<small>365 DAYS TO LEGENDARY</small>
+<h1>THE HERO REBORN</h1>
+</header>
+
+<div id="stage">
+<div id="status">BUILD 0.5.2 - 3D TEST</div>
+<div id="hint">Drag to rotate - Pinch to zoom</div>
+</div>
+
+<main>
+<section><label>Presentation</label><div id="presentation"></div></section>
+<section><label>Skin Tone</label><div id="skin"></div></section>
+<section><label>Hairstyle</label><div id="hair"></div></section>
+<section><label>Hair Colour</label><div id="hairColor"></div></section>
+<section><label>Outfit</label><div id="outfit"></div></section>
+<section><label>Cloak</label><div id="cloak"></div></section>
+<button id="reset">Reset View</button>
+</main>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
+
+const stage=document.getElementById("stage");
+const scene=new THREE.Scene();
+
+const camera=new THREE.PerspectiveCamera(35,1,0.1,100);
+camera.position.set(0,2,8.6);
+camera.lookAt(0,1.8,0);
+
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+stage.insertBefore(renderer.domElement,stage.firstChild);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x444466,2));
+
+const light=new THREE.DirectionalLight(0xffddaa,3);
+light.position.set(3,7,6);
+scene.add(light);
+
+const root=new THREE.Group();
+scene.add(root);
+
+const state={
+presentation:"Masculine",
+skin:2,
+hair:"Short Adventurer",
+hairColor:1,
+outfit:"Guardian",
+cloak:true
+};
+
+const skins=["#f2c6a5","#d9a17b","#b87d59","#98613f","#70452e","#462c22"];
+const hairColors=["#171419","#36251c","#69432b","#a87846","#e1c078","#a53c28","#873e29","#c5c2bc"];
+
+const hairstyles=[
+"Short Adventurer",
+"Shoulder-Length",
+"Warrior's Braid",
+"Swept Back",
+"Long Waves",
+"Braided Crown",
+"High Ponytail",
+"Buzz Cut",
+"Short Tousled",
+"Undercut Braid",
+"Long Hair"
+];
+
+function material(color){
+return new THREE.MeshStandardMaterial({color,roughness:0.8});
+}
+
+function sphere(parent,color,x,y,z,sx,sy,sz){
+const obj=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),material(color));
+obj.position.set(x,y,z);
+obj.scale.set(sx,sy,sz);
+parent.add(obj);
+return obj;
+}
+
+function limb(parent,color,a,b,r){
+const start=new THREE.Vector3(...a);
+const end=new THREE.Vector3(...b);
+const diff=end.clone().sub(start);
+const obj=new THREE.Mesh(
+new THREE.CylinderGeometry(r,r,diff.length(),12),
+material(color)
+);
+obj.position.copy(start.clone().add(end).multiplyScalar(0.5));
+obj.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),diff.normalize());
+parent.add(obj);
+}
+
+let hero;
+
+function buildHero(){
+if(hero)root.remove(hero);
+hero=new THREE.Group();
+root.add(hero);
+
+const skin=skins[state.skin];
+const hair=hairColors[state.hairColor];
+const female=state.presentation==="Feminine";
+const shoulder=female?0.42:0.51;
+
+let cloth="#535e6a";
+if(state.outfit==="Traveler")cloth="#6e503b";
+if(state.outfit==="Mystic")cloth="#244a83";
+
+sphere(hero,cloth,0,2.15,0,shoulder,0.6,0.3);
+sphere(hero,cloth,0,1.65,0,0.35,0.3,0.25);
+
+for(const s of [-1,1]){
+limb(hero,skin,[s*0.55,2.5,0],[s*0.6,1.65,0],0.13);
+sphere(hero,skin,s*0.6,1.58,0,0.13,0.18,0.13);
+limb(hero,"#303641",[s*0.2,1.1,0],[s*0.2,0.4,0],0.15);
+sphere(hero,"#28252b",s*0.2,0.2,0.1,0.2,0.2,0.3);
+}
+
+limb(hero,skin,[0,2.75,0],[0,2.95,0],0.14);
+sphere(hero,skin,0,3.2,0,0.34,0.4,0.31);
+
+for(const s of [-1,1]){
+sphere(hero,"#ffffff",s*0.13,3.23,0.29,0.07,0.04,0.025);
+sphere(hero,"#4d6e77",s*0.13,3.23,0.31,0.03,0.03,0.015);
+}
+
+sphere(hero,skin,0,3.16,0.32,0.07,0.1,0.08);
+sphere(hero,"#9d5b50",0,3.03,0.3,0.1,0.02,0.01);
+
+sphere(hero,hair,0,3.52,-0.05,0.35,0.19,0.32);
+
+if(state.hair.includes("Long")||state.hair.includes("Shoulder")){
+for(const s of [-1,1]){
+sphere(hero,hair,s*0.31,3.05,-0.05,0.13,0.55,0.24);
+}
+}else if(state.hair.includes("Braid")||state.hair.includes("Ponytail")){
+for(let i=0;i<5;i++){
+sphere(hero,hair,0.28,3.35-i*0.14,-0.2,0.11,0.1,0.11);
+}
+}else{
+for(let i=0;i<7;i++){
+sphere(hero,hair,(i-3)*0.095,3.58,0.1,0.13,0.1,0.16);
+}
+}
+
+if(state.outfit==="Guardian"){
+sphere(hero,"#9ba6ad",0,2.25,0.27,0.35,0.38,0.09);
+for(const s of [-1,1]){
+sphere(hero,"#84929b",s*0.55,2.55,0,0.24,0.18,0.33);
+}
+}
+
+if(state.cloak){
+const cape=new THREE.Mesh(
+new THREE.ConeGeometry(0.68,2.1,24,1,true),
+material("#8e2637")
+);
+cape.position.set(0,1.57,-0.3);
+cape.rotation.x=Math.PI;
+cape.scale.z=0.48;
+hero.add(cape);
+}
+}
+
+function createButtons(id,items,key,colors=false){
+const container=document.getElementById(id);
+container.innerHTML="";
+
+items.forEach((item,index)=>{
+const button=document.createElement("button");
+button.textContent=colors?"":item;
+
+if(colors){
+button.className="swatch";
+button.style.background=item;
+button.setAttribute("aria-label","Colour "+(index+1));
+}
+
+if(state[key]===(colors?index:item))button.classList.add("active");
+
+button.onclick=()=>{
+state[key]=colors?index:item;
+refresh();
+};
+
+container.appendChild(button);
+});
+}
+
+function refresh(){
+createButtons("presentation",["Masculine","Feminine","Custom"],"presentation");
+createButtons("skin",skins,"skin",true);
+createButtons("hair",hairstyles,"hair");
+createButtons("hairColor",hairColors,"hairColor",true);
+createButtons("outfit",["Guardian","Traveler","Mystic"],"outfit");
+
+const cloak=document.getElementById("cloak");
+cloak.innerHTML="";
+["On","Off"].forEach(value=>{
+const b=document.createElement("button");
+b.textContent=value;
+if(state.cloak===(value==="On"))b.classList.add("active");
+b.onclick=()=>{state.cloak=value==="On";refresh()};
+cloak.appendChild(b);
+});
+
+buildHero();
+}
+
+refresh();
+
+function resize(){
+const width=stage.clientWidth;
+const height=stage.clientHeight;
+camera.aspect=width/height;
+camera.updateProjectionMatrix();
+renderer.setSize(width,height);
+}
+
+window.addEventListener("resize",resize);
+resize();
+
+let pointers=new Map();
+let zoom=8.6;
+let pinchDistance=null;
+
+renderer.domElement.addEventListener("pointerdown",e=>{
+renderer.domElement.setPointerCapture(e.pointerId);
+pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+});
+
+renderer.domElement.addEventListener("pointermove",e=>{
+if(!pointers.has(e.pointerId))return;
+const previous=pointers.get(e.pointerId);
+pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+if(pointers.size===1){
+root.rotation.y+=(e.clientX-previous.x)*0.012;
+}else if(pointers.size===2){
+const points=[...pointers.values()];
+const distance=Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+if(pinchDistance!==null){
+zoom=THREE.MathUtils.clamp(zoom*pinchDistance/distance,5.7,12);
+camera.position.z=zoom;
+}
+pinchDistance=distance;
+}
+});
+
+function endPointer(e){
+pointers.delete(e.pointerId);
+if(pointers.size<2)pinchDistance=null;
+}
+
+renderer.domElement.addEventListener("pointerup",endPointer);
+renderer.domElement.addEventListener("pointercancel",endPointer);
+
+document.getElementById("reset").onclick=()=>{
+root.rotation.y=0;
+zoom=8.6;
+camera.position.z=zoom;
+};
+
+function animate(){
+requestAnimationFrame(animate);
+renderer.render(scene,camera);
+}
+
+animate();
+</script>
+</body>
+  </html>
+  
