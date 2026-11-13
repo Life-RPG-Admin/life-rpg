@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101722">
+<title>LIFE RPG | The Birth of a Legend</title>
+<style>
+:root {
+  color-scheme: dark;
+  font-family: Georgia, serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(
+    ellipse at 50% 10%,
+    #34445b, #141d2c 46%, #0b111a
+  );
+  color: #f5e8ca;
+  min-height: 100vh;
+}
+main {
+  max-width: 470px;
+  margin: auto;
+  padding: 20px 18px 36px;
+}
+.eyebrow {
+  text-align: center;
+  letter-spacing: .19em;
+  color: #c9ad75;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.heading {
+  text-align: center;
+  font-size: 31px;
+  line-height: 1.12;
+  margin: 10px 0;
+}
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #c9c5bb;
+  margin: 0 0 19px;
+}
+.frame {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #9e7a43;
+  border-radius: 140px 140px 18px 18px;
+  min-height: 320px;
+  background: radial-gradient(
+    circle at 50% 35%,
+    #56617b, #263347 52%, #121b29 90%
+  );
+  box-shadow: inset 0 0 0 5px #151d29,
+              0 15px 40px #0007;
+}
+.frame:before {
+  content: '✦';
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #dfc27b;
+  font-size: 26px;
+}
+.hero {
+  display: block;
+  width: 100%;
+  height: 310px;
+  filter: drop-shadow(0 8px 8px #0008);
+}
+.panel {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #81683d;
+  border-radius: 13px;
+  background: #182231e8;
+  box-shadow: 0 10px 24px #0004;
+}
+.step {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #d4b978;
+  margin: 0 0 8px;
+}
+label {
+  display: block;
+  font-size: 14px;
+  margin: 14px 0 8px;
+}
+input {
+  width: 100%;
+  border: 1px solid #a18a60;
+  border-radius: 8px;
+  background: #101722;
+  color: #fff4da;
+  padding: 13px 12px;
+  font-size: 16px;
+  font-family: inherit;
+}
+input:focus, button:focus-visible {
+  outline: 2px solid #edcf83;
+  outline-offset: 2px;
+}
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 9px;
+}
+.choice {
+  border: 1px solid #7b6b52;
+  border-radius: 9px;
+  padding: 11px 5px;
+  background: #202e40;
+  color: #e9dfca;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.choice[aria-pressed="true"] {
+  border-color: #f0cd79;
+  background: #4a3e2a;
+  color: #fff2c8;
+}
+.swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.swatch {
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  border: 2px solid #89909a;
+  cursor: pointer;
+}
+.swatch[aria-pressed="true"] {
+  outline: 2px solid #e8c579;
+  outline-offset: 3px;
+}
+.cta {
+  width: 100%;
+  margin-top: 20px;
+  background: linear-gradient(#f0d698,#b78b43);
+  border: 1px solid #f5dfa8;
+  border-radius: 9px;
+  padding: 15px;
+  color: #17202d;
+  font-weight: bold;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.hint {
+  color: #b8bdc7;
+  font: 12px/1.5 system-ui;
+  text-align: center;
+  margin: 12px 0 0;
+}
+.error {
+  color: #ffc5b4;
+  min-height: 18px;
+  font: 12px system-ui;
+  margin-top: 7px;
+}
+.saved {
+  display: none;
+  text-align: center;
+  margin-top: 14px;
+  color: #f0d698;
+  font-size: 14px;
+}
+.saved.visible { display: block; }
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">LIFE RPG · 365 Days to Legendary</p>
+<h1 class="heading">The Birth of a Legend</h1>
+<p class="subtitle">
+The Chronicle has opened.
+Now give its hero a name and a face.
+</p>
+
+<div class="frame">
+<svg class="hero" viewBox="0 0 340 330"
+ role="img" aria-label="Illustrated fantasy adventurer">
+<defs>
+<radialGradient id="halo">
+<stop stop-color="#e7bd6e" stop-opacity=".6"/>
+<stop offset="1" stop-color="#e7bd6e" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="cloak" x2="1" y2="1">
+<stop stop-color="#596c83"/>
+<stop offset="1" stop-color="#263248"/>
+</linearGradient>
+</defs>
+<circle cx="170" cy="152" r="138" fill="url(#halo)"/>
+<path d="M64 330 Q66 225 112 204 L228 204
+Q274 225 276 330Z"
+fill="url(#cloak)" stroke="#d2ad6b" stroke-width="3"/>
+<path d="M104 330L117 222 154 204 186 204
+224 222 236 330"
+fill="#3e4a60" stroke="#b79b68" stroke-width="3"/>
+<path d="M135 218L170 260 205 218
+190 199 150 199Z" fill="#d4bc87"/>
+<path d="M151 201V176H189V201
+Q170 223 151 201"
+fill="var(--skin,#d4a27f)"/>
+<ellipse cx="170" cy="133" rx="55" ry="69"
+fill="var(--skin,#d4a27f)"
+stroke="#75513f" stroke-width="2"/>
+<path d="M115 140Q101 58 163 53
+Q230 47 226 139L211 115
+Q198 90 172 87Q144 103 120 113Z"
+fill="var(--hair,#322720)"/>
+<path d="M114 146Q106 83 135 72L124 168Z
+M226 146Q234 83 205 72L216 168Z"
+fill="var(--hair,#322720)"/>
+<path d="M139 136q11 -8 22 0
+M179 136q11 -8 22 0"
+stroke="#3b2c2a" stroke-width="3"
+fill="none" stroke-linecap="round"/>
+<path d="M170 139l-4 20 8 1
+M156 177q14 8 28 0"
+fill="none" stroke="#855748"
+stroke-width="2" stroke-linecap="round"/>
+<path d="M129 217L170 260 211 217"
+fill="none" stroke="#f1d39b" stroke-width="4"/>
+<circle cx="170" cy="268" r="12"
+fill="#c9a057" stroke="#fff1b8" stroke-width="2"/>
+<path d="M170 259l6 9-6 9-6-9Z"
+fill="#344c68"/>
+<path d="M72 328q15-45 36-59
+M268 328q-15-45-36-59"
+stroke="#b6985e" stroke-width="2" fill="none"/>
+</svg>
+</div>
+
+<section class="panel">
+<p class="step">Chapter I · Your Identity</p>
+<label for="name">Adventurer's name</label>
+<input id="name" maxlength="24"
+autocomplete="nickname"
+placeholder="Enter your legendary name">
+<div id="error" class="error" aria-live="polite"></div>
+
+<label>Portrait style</label>
+<div class="choices" id="looks">
+<button type="button" class="choice"
+data-look="guardian" aria-pressed="true">Guardian</button>
+<button type="button" class="choice"
+data-look="wanderer" aria-pressed="false">Wanderer</button>
+<button type="button" class="choice"
+data-look="sage" aria-pressed="false">Sage</button>
+</div>
+
+<label>Appearance palette</label>
+<div class="swatches" id="tones">
+<button type="button" class="swatch"
+data-skin="#d4a27f" aria-label="Warm skin tone"
+aria-pressed="true" style="background:#d4a27f"></button>
+<button type="button" class="swatch"
+data-skin="#8d5942" aria-label="Deep skin tone"
+aria-pressed="false" style="background:#8d5942"></button>
+<button type="button" class="swatch"
+data-skin="#edc6a6" aria-label="Light skin tone"
+aria-pressed="false" style="background:#edc6a6"></button>
+<button type="button" class="swatch"
+data-skin="#b47b55" aria-label="Medium skin tone"
+aria-pressed="false" style="background:#b47b55"></button>
+</div>
+
+<button id="continue" class="cta">
+Seal My Identity ✦
+</button>
+<p class="hint">
+Appearance is cosmetic only.
+Your class and attribute focus come next.
+</p>
+<p id="saved" class="saved" role="status"></p>
+</section>
+</main>
+
+<script>
+(() => {
+'use strict';
+const key = 'lifeRpgCharacterCreationPreviewV1';
+const name = document.getElementById('name');
+const hero = document.querySelector('.hero');
+const saved = document.getElementById('saved');
+
+let state = {
+  name: '',
+  look: 'guardian',
+  skin: '#d4a27f'
+};
+
+try {
+  const old = JSON.parse(localStorage.getItem(key) || 'null');
+  if (old && typeof old === 'object')
+    state = {...state, ...old};
+} catch {}
+
+name.value = state.name || '';
+
+function render() {
+  document.querySelectorAll('[data-look]').forEach(b =>
+    b.setAttribute('aria-pressed',
+      String(b.dataset.look === state.look))
+  );
+  document.querySelectorAll('[data-skin]').forEach(b =>
+    b.setAttribute('aria-pressed',
+      String(b.dataset.skin === state.skin))
+  );
+  hero.style.setProperty('--skin', state.skin);
+  hero.style.setProperty('--hair',
+    state.look === 'sage' ? '#d4c5a7' :
+    state.look === 'wanderer' ? '#775038' : '#322720'
+  );
+}
+render();
+
+document.getElementById('looks').addEventListener('click', e => {
+  const b = e.target.closest('[data-look]');
+  if (b) {
+    state.look = b.dataset.look;
+    render();
+  }
+});
+
+document.getElementById('tones').addEventListener('click', e => {
+  const b = e.target.closest('[data-skin]');
+  if (b) {
+    state.skin = b.dataset.skin;
+    render();
+  }
+});
+
+document.getElementById('continue').addEventListener('click', () => {
+  state.name = name.value.trim().replace(/\s+/g, ' ');
+  if (state.name.length < 2) {
+    document.getElementById('error').textContent =
+      'Choose a name with at least 2 characters.';
+    name.focus();
+    return;
+  }
+
+  document.getElementById('error').textContent = '';
+  try {
+    localStorage.setItem(key, JSON.stringify(state));
+    saved.textContent =
+      `Identity saved, ${state.name}. Your class selection awaits in the next build.`;
+  } catch {
+    saved.textContent =
+      'Your identity is ready, but this browser could not save it.';
+  }
+  saved.classList.add('visible');
+});
+})();
+</script>
+</body>
+  </html>
+  
