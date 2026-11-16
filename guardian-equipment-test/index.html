@@ -3,79 +3,77 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian Test 3E</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIFE RPG — Guardian Test 3F</title>
 
 <style>
 *{box-sizing:border-box}
-
 html,body{
- margin:0;
- width:100%;
- height:100%;
+ margin:0;width:100%;height:100%;
  overflow:hidden;
 }
-
 body{
  background:#172334;
  color:#f4e4c2;
  font:14px system-ui,sans-serif;
 }
-
-#scene{
- position:fixed;
- inset:0;
-}
-
+#scene{position:fixed;inset:0}
 #panel{
- position:fixed;
- top:12px;
- left:12px;
- right:12px;
- padding:12px 15px;
+ position:fixed;top:10px;left:12px;right:12px;
+ padding:10px 14px;
  border:1px solid #9b7b43;
  border-radius:12px;
  background:rgba(13,20,30,.92);
  pointer-events:none;
 }
-
 h1{
  margin:0 0 5px;
  font-size:17px;
  color:#e9c77c;
 }
-
 #status{
  font-size:12px;
- line-height:1.5;
+ line-height:1.45;
  white-space:pre-line;
 }
-
 #controls{
  position:fixed;
- bottom:14px;
- left:12px;
- right:12px;
+ bottom:12px;left:12px;right:12px;
  padding:12px;
+ background:rgba(13,20,30,.92);
+ border-radius:12px;
  text-align:center;
- background:rgba(13,20,30,.9);
- border-radius:10px;
 }
-
-button{
- padding:10px 18px;
+.buttons{
+ display:flex;
+ gap:7px;
+ justify-content:center;
+ flex-wrap:wrap;
  margin-bottom:8px;
+}
+button{
+ padding:10px 12px;
  border:1px solid #dfbd7d;
  border-radius:8px;
  background:#916b35;
  color:white;
  font-weight:700;
-}
-
-#info{
  font-size:12px;
 }
+button:active{background:#b58b4c}
+#adjust{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ justify-content:center;
+ margin:8px 0;
+ font-size:12px;
+}
+input[type=range]{
+ width:55%;
+ accent-color:#d6ad65;
+}
+#info{font-size:11px;line-height:1.5}
 </style>
 
 <script type="importmap">
@@ -87,21 +85,32 @@ button{
 }
 </script>
 </head>
-
 <body>
 
 <div id="scene"></div>
 
 <div id="panel">
- <h1>LIFE RPG — Guardian Test 3E</h1>
+ <h1>LIFE RPG — Guardian Test 3F</h1>
  <div id="status">Starting 3D engine...</div>
 </div>
 
 <div id="controls">
- <button id="reset">Reset Camera</button>
+ <div class="buttons">
+  <button id="reset">Reset Camera</button>
+  <button id="stance">Stance: Natural</button>
+  <button id="breathing">Breathing: On</button>
+ </div>
+
+ <div id="adjust">
+  <span>Arm Relaxation</span>
+  <input id="armSlider" type="range"
+   min="0" max="100" value="75">
+  <span id="armValue">75%</span>
+ </div>
+
  <div id="info">
   Drag to rotate · Pinch to zoom
-  <div>Build 0.5.4 — Test 3E</div>
+  <div>Build 0.5.4 — Test 3F</div>
  </div>
 </div>
 
@@ -113,6 +122,8 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 
 const status=document.getElementById("status");
 const container=document.getElementById("scene");
+const slider=document.getElementById("armSlider");
+const armValue=document.getElementById("armValue");
 
 function setStatus(message){
  status.textContent=message;
@@ -132,10 +143,7 @@ try{
  scene.background=new THREE.Color(0x172334);
 
  const camera=new THREE.PerspectiveCamera(
-  40,
-  innerWidth/innerHeight,
-  0.01,
-  1000
+  40,innerWidth/innerHeight,0.01,1000
  );
 
  const renderer=new THREE.WebGLRenderer({
@@ -150,12 +158,10 @@ try{
  renderer.setSize(innerWidth,innerHeight);
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.toneMapping=THREE.ACESFilmicToneMapping;
-
  container.appendChild(renderer.domElement);
 
  const controls=new OrbitControls(
-  camera,
-  renderer.domElement
+  camera,renderer.domElement
  );
 
  controls.enableDamping=true;
@@ -163,42 +169,105 @@ try{
  controls.minPolarAngle=0.2;
  controls.maxPolarAngle=Math.PI-0.2;
 
- scene.add(
-  new THREE.HemisphereLight(
-   0xffffff,
-   0x566070,
-   2.2
-  )
- );
+ scene.add(new THREE.HemisphereLight(
+  0xffffff,0x566070,2.2
+ ));
 
  const light=new THREE.DirectionalLight(
-  0xffe6bd,
-  3
+  0xffe6bd,3
  );
-
  light.position.set(3,6,5);
  scene.add(light);
 
  const ground=new THREE.Mesh(
   new THREE.CircleGeometry(2.5,64),
   new THREE.MeshStandardMaterial({
-   color:0x344139,
-   roughness:1
+   color:0x344139,roughness:1
   })
  );
-
  ground.rotation.x=-Math.PI/2;
  ground.position.y=-0.02;
  scene.add(ground);
 
  let guardian=null;
- let finalBounds=null;
+ let natural=true;
+ let breathing=true;
+ let relaxation=0.75;
+
+ const bones={};
+ const originalRotations=new Map();
+
+ let leftArm=null;
+ let rightArm=null;
+ let spine=null;
+
+ function captureSkeleton(root){
+
+  root.traverse(obj=>{
+   if(obj.isBone){
+    bones[obj.name.toLowerCase()]=obj;
+    originalRotations.set(
+     obj,obj.quaternion.clone()
+    );
+   }
+  });
+
+  function find(...names){
+   for(const name of names){
+    if(bones[name.toLowerCase()]){
+     return bones[name.toLowerCase()];
+    }
+   }
+   return null;
+  }
+
+  leftArm=find(
+   "upperarm_l","upperarm.l",
+   "leftupperarm","left_arm"
+  );
+
+  rightArm=find(
+   "upperarm_r","upperarm.r",
+   "rightupperarm","right_arm"
+  );
+
+  spine=find(
+   "spine_02","spine_03",
+   "spine2","chest","spine"
+  );
+
+ }
+
+ function restorePose(){
+  for(const [bone,rotation] of originalRotations){
+   bone.quaternion.copy(rotation);
+  }
+ }
+
+ function applyStance(){
+
+  if(!guardian)return;
+
+  restorePose();
+
+  if(natural && leftArm && rightArm){
+
+   // Convert the T-pose into a relaxed stance.
+   // Signs follow the earlier Test 2E experiment.
+   const angle=relaxation*1.35;
+
+   leftArm.rotateZ(-angle);
+   rightArm.rotateZ(angle);
+
+  }
+
+  guardian.updateMatrixWorld(true);
+ }
 
  function fitCamera(){
 
   if(!guardian)return;
 
-  // Update every transform before measuring.
   guardian.updateMatrixWorld(true);
 
   const bounds=new THREE.Box3()
@@ -212,29 +281,24 @@ try{
    new THREE.Vector3()
   );
 
-  finalBounds=bounds.clone();
-
-  // Use a simple full-body framing calculation.
-  const verticalFOV=THREE.MathUtils.degToRad(
+  const vFov=THREE.MathUtils.degToRad(
    camera.fov
   );
 
-  const horizontalFOV=2*Math.atan(
-   Math.tan(verticalFOV/2)*camera.aspect
+  const hFov=2*Math.atan(
+   Math.tan(vFov/2)*camera.aspect
   );
 
   const distanceV=
-   size.y/(2*Math.tan(verticalFOV/2));
+   size.y/(2*Math.tan(vFov/2));
 
   const distanceH=
-   size.x/(2*Math.tan(horizontalFOV/2));
+   size.x/(2*Math.tan(hFov/2));
 
-  // Include model depth and extra framing space.
+  // Preserve the working Test 3E approach.
   const distance=
-   Math.max(distanceV,distanceH)*
-   1.6+size.z;
+   Math.max(distanceV,distanceH)*1.6+size.z;
 
-  // Reset the camera to a known front-facing view.
   controls.enableDamping=false;
 
   controls.target.copy(center);
@@ -249,13 +313,11 @@ try{
   camera.lookAt(center);
 
   controls.minDistance=Math.max(
-   size.y*0.5,
-   0.5
+   size.y*0.5,0.5
   );
 
   controls.maxDistance=Math.max(
-   distance*5,
-   30
+   distance*5,30
   );
 
   camera.near=0.01;
@@ -265,19 +327,56 @@ try{
   controls.update();
   controls.enableDamping=true;
 
+ }
+
+ document.getElementById("reset").onclick=fitCamera;
+
+ document.getElementById("stance").onclick=()=>{
+
+  natural=!natural;
+
+  document.getElementById("stance").textContent=
+   "Stance: "+(natural?"Natural":"T-Pose");
+
+  applyStance();
+  updateDiagnostics();
+
+ };
+
+ document.getElementById("breathing").onclick=()=>{
+
+  breathing=!breathing;
+
+  document.getElementById("breathing").textContent=
+   "Breathing: "+(breathing?"On":"Off");
+
+  if(!breathing && spine){
+   const original=originalRotations.get(spine);
+   if(original)spine.quaternion.copy(original);
+  }
+
+ };
+
+ slider.oninput=()=>{
+
+  relaxation=Number(slider.value)/100;
+  armValue.textContent=slider.value+"%";
+
+  applyStance();
+
+ };
+
+ function updateDiagnostics(){
+
   setStatus(
-   "Model height: "+size.y.toFixed(2)+
-   "\nModel width: "+size.x.toFixed(2)+
-   "\nCenter Y: "+center.y.toFixed(2)+
-   "\nCamera Y: "+camera.position.y.toFixed(2)+
-   "\nDistance: "+distance.toFixed(2)
+   "Guardian: Loaded"+
+   "\nSkeleton bones: "+originalRotations.size+
+   "\nLeft arm: "+(leftArm?"Found":"Missing")+
+   "\nRight arm: "+(rightArm?"Found":"Missing")+
+   "\nStance: "+(natural?"Natural":"T-Pose")
   );
 
  }
-
- document.getElementById("reset").onclick=()=>{
-  fitCamera();
- };
 
  setStatus("Loading Guardian model...");
 
@@ -291,9 +390,6 @@ try{
 
    guardian=gltf.scene;
 
-   guardian.updateMatrixWorld(true);
-
-   // Measure original model.
    const originalBounds=new THREE.Box3()
     .setFromObject(guardian,true);
 
@@ -306,31 +402,30 @@ try{
     return;
    }
 
-   // Scale to standard Guardian height.
    guardian.scale.multiplyScalar(
     2.5/originalSize.y
    );
 
    guardian.updateMatrixWorld(true);
 
-   // Position model after scaling.
    const scaledBounds=new THREE.Box3()
     .setFromObject(guardian,true);
 
-   const scaledCenter=scaledBounds.getCenter(
+   const center=scaledBounds.getCenter(
     new THREE.Vector3()
    );
 
-   guardian.position.x-=scaledCenter.x;
-   guardian.position.z-=scaledCenter.z;
+   guardian.position.x-=center.x;
+   guardian.position.z-=center.z;
    guardian.position.y-=scaledBounds.min.y;
 
    guardian.updateMatrixWorld(true);
-
    scene.add(guardian);
 
-   // Fit after all transformations.
+   captureSkeleton(guardian);
+   applyStance();
    fitCamera();
+   updateDiagnostics();
 
   },
 
@@ -338,7 +433,6 @@ try{
 
   error=>{
    console.error(error);
-
    setStatus(
     "MODEL ERROR: "+
     (error.message||String(error))
@@ -347,40 +441,57 @@ try{
 
  );
 
+ const clock=new THREE.Clock();
+
+ renderer.setAnimationLoop(()=>{
+
+  const time=clock.getElapsedTime();
+
+  if(guardian && spine){
+
+   const original=originalRotations.get(spine);
+
+   if(original){
+
+    spine.quaternion.copy(original);
+
+    if(breathing && natural){
+
+     // Very subtle breathing movement.
+     spine.rotateX(
+      Math.sin(time*1.7)*0.012
+     );
+
+    }
+
+   }
+
+  }
+
+  controls.update();
+  renderer.render(scene,camera);
+
+ });
+
  addEventListener("resize",()=>{
 
   camera.aspect=innerWidth/innerHeight;
   camera.updateProjectionMatrix();
 
   renderer.setSize(
-   innerWidth,
-   innerHeight
+   innerWidth,innerHeight
   );
 
   fitCamera();
 
  });
 
- renderer.setAnimationLoop(()=>{
-
-  controls.update();
-
-  renderer.render(
-   scene,
-   camera
-  );
-
- });
-
 }catch(error){
 
- setStatus(
-  "ENGINE ERROR: "+error.message
- );
+ setStatus("ENGINE ERROR: "+error.message);
 
 }
 
 </script>
-
 </body>
 </html>
