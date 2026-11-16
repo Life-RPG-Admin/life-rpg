@@ -21,6 +21,39 @@ scene.add(new THREE.HemisphereLight(0xdbe8ff,0x60402d,2));const key=new THREE.Di
 const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.enablePan=false;controls.minDistance=0.5;controls.maxDistance=20;
 let spin=false;document.getElementById('spin').onclick=()=>{spin=!spin;controls.autoRotate=spin;controls.autoRotateSpeed=1;document.getElementById('spin').textContent='Auto rotate: '+(spin?'On':'Off')};
 let reset=()=>{};document.getElementById('reset').onclick=()=>reset();
-new GLTFLoader().load('./Superhero_Male_FullBody.gltf',g=>{const model=g.scene;scene.add(model);model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());const height=Math.max(size.y,0.1);controls.target.copy(center);camera.position.set(center.x,center.y+height*0.08,center.z+height*2.5);camera.near=Math.max(height*0.001,0.001);camera.far=Math.max(height*30,100);camera.updateProjectionMatrix();controls.minDistance=height*0.6;controls.maxDistance=height*7;controls.update();reset=()=>{controls.target.copy(center);camera.position.set(center.x,center.y+height*0.08,center.z+height*2.5);controls.update()};status.textContent='Model loaded · '+g.scene.children.length+' root objects · Check appearance and orientation';},undefined,e=>{console.error(e);status.textContent='Load failed: '+e.message+' — use GitHub Pages (not local file preview)';});
+function setGuardianPose(model, relaxed = true) {
+  const bones = {};
+  model.traverse(obj => {
+    if (obj.isBone) {
+      bones[obj.name.toLowerCase()] = obj;
+    }
+  });
+
+  const left = bones["upperarm_l"];
+  const right = bones["upperarm_r"];
+
+  if (!left || !right) {
+    console.warn("Guardian arm bones not found");
+    return;
+  }
+
+  if (!left.userData.originalPose) {
+    left.userData.originalPose = left.quaternion.clone();
+    right.userData.originalPose = right.quaternion.clone();
+  }
+
+  left.quaternion.copy(left.userData.originalPose);
+  right.quaternion.copy(right.userData.originalPose);
+
+  if (relaxed) {
+    left.rotateZ(-Math.PI / 2.5);
+    right.rotateZ(Math.PI / 2.5);
+  }
+
+  model.updateMatrixWorld(true);
+} } 
+  new GLTFLoader().load('./Superhero_Male_FullBody.gltf',g=>{const model=g.scene;scene.add(model);
+setGuardianPose(model, true);
+  model.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(model);const center=bounds.getCenter(new THREE.Vector3()),size=bounds.getSize(new THREE.Vector3());const height=Math.max(size.y,0.1);controls.target.copy(center);camera.position.set(center.x,center.y+height*0.08,center.z+height*2.5);camera.near=Math.max(height*0.001,0.001);camera.far=Math.max(height*30,100);camera.updateProjectionMatrix();controls.minDistance=height*0.6;controls.maxDistance=height*7;controls.update();reset=()=>{controls.target.copy(center);camera.position.set(center.x,center.y+height*0.08,center.z+height*2.5);controls.update()};status.textContent='Model loaded · '+g.scene.children.length+' root objects · Check appearance and orientation';},undefined,e=>{console.error(e);status.textContent='Load failed: '+e.message+' — use GitHub Pages (not local file preview)';});
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
 </script></body></html>
