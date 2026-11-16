@@ -4,130 +4,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian Test 3I.1</title>
+<title>LIFE RPG — Guardian Test 3I.2</title>
 
 <style>
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  margin: 0;
-  background: #101722;
-  color: #f4e4c2;
-  font-family: system-ui, sans-serif;
-  overflow: hidden;
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#101722;
+  color:#f4e4c2;
+  font-family:system-ui,sans-serif;
 }
 
-#scene {
-  position: fixed;
-  inset: 0;
+#scene{
+  position:fixed;
+  inset:0;
+  touch-action:none;
 }
 
-#panel {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  max-width: 340px;
-  padding: 12px;
-  background: rgba(14,20,30,.93);
-  border: 1px solid #806b46;
-  border-radius: 12px;
-  z-index: 10;
-  max-height: 72vh;
-  overflow-y: auto;
+#panel{
+  position:fixed;
+  top:10px;
+  left:10px;
+  width:min(340px,calc(100vw - 80px));
+  max-height:70dvh;
+  overflow-y:auto;
+  padding:12px;
+  background:rgba(14,20,30,.94);
+  border:1px solid #806b46;
+  border-radius:12px;
+  z-index:10;
 }
 
-h1 {
-  font-size: 16px;
-  margin: 0 0 4px;
-  color: #e8c57e;
+h1{
+  font-size:16px;
+  margin:0 0 5px;
+  color:#e8c57e;
 }
 
-small {
-  display: block;
-  color: #c9bd9f;
-  margin-bottom: 9px;
+small{
+  display:block;
+  color:#c9bd9f;
+  margin-bottom:10px;
+  line-height:1.4;
 }
 
-button {
-  background: #273649;
-  color: #f4e4c2;
-  border: 1px solid #796748;
-  border-radius: 7px;
-  padding: 9px;
-  font-size: 13px;
-  cursor: pointer;
+button{
+  background:#273649;
+  color:#f4e4c2;
+  border:1px solid #796748;
+  border-radius:7px;
+  padding:9px;
+  font-size:13px;
 }
 
-button.active {
-  background: #775b2c;
-  border-color: #e4bf71;
+button.active{
+  background:#775b2c;
+  border-color:#e4bf71;
 }
 
-.buttons {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 9px;
+.buttons{
+  display:flex;
+  gap:6px;
+  margin-bottom:9px;
 }
 
-.buttons button {
-  flex: 1;
+.buttons button{flex:1}
+
+.control{margin:11px 0}
+
+.control label{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  margin-bottom:5px;
 }
 
-.control {
-  margin: 10px 0;
+input[type=range]{
+  width:100%;
+  accent-color:#d5ad62;
 }
 
-.control label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  margin-bottom: 4px;
+#status{
+  margin-top:9px;
+  font-size:11px;
+  line-height:1.5;
+  color:#b9c7d2;
 }
 
-input[type=range] {
-  width: 100%;
-  accent-color: #d5ad62;
+#togglePanel{
+  position:fixed;
+  top:10px;
+  right:10px;
+  z-index:11;
 }
 
-#status {
-  font-size: 11px;
-  color: #b9c7d2;
-  margin-top: 8px;
-  line-height: 1.5;
+#footer{
+  position:fixed;
+  bottom:12px;
+  left:10px;
+  right:10px;
+  text-align:center;
+  pointer-events:none;
+  font-size:11px;
+  color:#d4c49f;
+  text-shadow:0 1px 4px #000;
 }
 
-#togglePanel {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  z-index: 11;
-}
-
-#footer {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  right: 10px;
-  pointer-events: none;
-  text-align: center;
-  font-size: 11px;
-  color: #d4c49f;
-  text-shadow: 0 1px 4px #000;
-}
-
-.hidden {
-  display: none;
-}
+.hidden{display:none!important}
 </style>
 
 <script type="importmap">
 {
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
   }
 }
 </script>
@@ -138,867 +134,688 @@ input[type=range] {
 <div id="scene"></div>
 
 <div id="panel">
-  <h1>⚔️ Guardian — Test 3I.1</h1>
-  <small>Two-Handed Longsword Prototype</small>
 
-  <div class="buttons">
-    <button id="natural" class="active">Unarmed</button>
-    <button id="longsword">Longsword</button>
-  </div>
+<h1>⚔️ Guardian — Test 3I.2</h1>
+<small>Camera Repair + Two-Handed Longsword</small>
 
-  <div class="buttons">
-    <button id="breathing">Breathing: ON</button>
-    <button id="resetCamera">Reset Camera</button>
-  </div>
+<div class="buttons">
+<button id="natural" class="active">Unarmed</button>
+<button id="longsword">Longsword</button>
+</div>
 
-  <div id="weaponControls" class="hidden">
+<div class="buttons">
+<button id="breathing">Breathing: ON</button>
+<button id="resetCamera">Reset Camera</button>
+</div>
 
-    <small>
-      Development controls — Longsword only
-    </small>
+<div id="weaponControls" class="hidden">
 
-    <div class="control">
-      <label>
-        <span>Arm Position</span>
-        <span id="armValue">45</span>
-      </label>
-      <input id="arm" type="range"
-      min="-100" max="100" value="45">
-    </div>
+<small>
+Development sliders — Longsword only.
+Natural stance settings are locked.
+</small>
 
-    <div class="control">
-      <label>
-        <span>Forward Reach</span>
-        <span id="reachValue">45</span>
-      </label>
-      <input id="reach" type="range"
-      min="-100" max="100" value="45">
-    </div>
+<div class="control">
+<label>Arm Position <span id="armValue">45</span></label>
+<input id="arm" type="range" min="-100" max="100" value="45">
+</div>
 
-    <div class="control">
-      <label>
-        <span>Elbow Bend</span>
-        <span id="elbowValue">50</span>
-      </label>
-      <input id="elbow" type="range"
-      min="-100" max="100" value="50">
-    </div>
+<div class="control">
+<label>Forward Reach <span id="reachValue">45</span></label>
+<input id="reach" type="range" min="-100" max="100" value="45">
+</div>
 
-    <div class="control">
-      <label>
-        <span>Sword Angle</span>
-        <span id="angleValue">35</span>
-      </label>
-      <input id="angle" type="range"
-      min="-80" max="80" value="35">
-    </div>
+<div class="control">
+<label>Elbow Bend <span id="elbowValue">50</span></label>
+<input id="elbow" type="range" min="-100" max="100" value="50">
+</div>
 
-    <div class="control">
-      <label>
-        <span>Grip Position</span>
-        <span id="gripValue">0</span>
-      </label>
-      <input id="grip" type="range"
-      min="-100" max="100" value="0">
-    </div>
+<div class="control">
+<label>Sword Angle <span id="angleValue">35</span></label>
+<input id="angle" type="range" min="-80" max="80" value="35">
+</div>
 
-    <button id="resetWeapon" style="width:100%">
-      Reset Longsword Test
-    </button>
+<div class="control">
+<label>Grip Position <span id="gripValue">0</span></label>
+<input id="grip" type="range" min="-100" max="100" value="0">
+</div>
 
-  </div>
+<button id="resetWeapon" style="width:100%">
+Reset Longsword Test
+</button>
 
-  <div id="status">Loading Guardian...</div>
+</div>
+
+<div id="status">Loading Guardian...</div>
+
 </div>
 
 <button id="togglePanel">Hide UI</button>
 
 <div id="footer">
-  Drag to orbit · Pinch to zoom
+Drag to orbit · Pinch to zoom
 </div>
 
 <script type="module">
 
 import * as THREE from "three";
 
-import { GLTFLoader }
+import {GLTFLoader}
 from "three/addons/loaders/GLTFLoader.js";
 
-import { OrbitControls }
+import {OrbitControls}
 from "three/addons/controls/OrbitControls.js";
 
-const scene = new THREE.Scene();
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x101722);
 
-scene.background = new THREE.Color(0x101722);
-
-const camera = new THREE.PerspectiveCamera(
-  40,
-  innerWidth / innerHeight,
-  0.01,
-  100
+const camera=new THREE.PerspectiveCamera(
+  40,1,.01,100
 );
 
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: false,
-  powerPreference: "high-performance"
+const renderer=new THREE.WebGLRenderer({
+  antialias:true,
+  powerPreference:"high-performance"
 });
 
 renderer.setPixelRatio(
-  Math.min(devicePixelRatio, 2)
+  Math.min(window.devicePixelRatio||1,2)
 );
 
-renderer.setSize(innerWidth, innerHeight);
-
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-renderer.toneMappingExposure = 1.3;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.3;
 
 document.getElementById("scene")
   .appendChild(renderer.domElement);
 
-const controls = new OrbitControls(
-  camera,
-  renderer.domElement
+const controls=new OrbitControls(
+  camera,renderer.domElement
 );
 
-controls.enableDamping = true;
-controls.dampingFactor = .07;
+controls.enableDamping=true;
+controls.dampingFactor=.07;
+controls.enablePan=true;
 
-controls.enablePan = true;
+controls.minDistance=.5;
+controls.maxDistance=30;
 
-controls.minDistance = 1.4;
-controls.maxDistance = 14;
-
-const hemi = new THREE.HemisphereLight(
-  0xffffff,
-  0x263247,
-  2.5
+const hemi=new THREE.HemisphereLight(
+  0xffffff,0x263247,2.5
 );
-
 scene.add(hemi);
 
-const keyLight = new THREE.DirectionalLight(
-  0xffe5b8,
-  3
+const key=new THREE.DirectionalLight(
+  0xffe5b8,3
 );
+key.position.set(3,6,5);
+scene.add(key);
 
-keyLight.position.set(3,6,5);
-scene.add(keyLight);
-
-const fillLight = new THREE.DirectionalLight(
-  0x8ba9d6,
-  1.5
+const fill=new THREE.DirectionalLight(
+  0x8ba9d6,1.5
 );
+fill.position.set(-4,3,-4);
+scene.add(fill);
 
-fillLight.position.set(-4,3,-4);
-scene.add(fillLight);
-
-const ground = new THREE.Mesh(
+const ground=new THREE.Mesh(
   new THREE.CircleGeometry(3,64),
   new THREE.MeshStandardMaterial({
-    color: 0x24303c,
-    roughness: 1
+    color:0x24303c,
+    roughness:1
   })
 );
 
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -.015;
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.015;
 scene.add(ground);
 
-const grid = new THREE.GridHelper(
+const grid=new THREE.GridHelper(
   6,12,0x536071,0x283440
 );
-
-grid.position.y = -.01;
+grid.position.y=-.01;
 scene.add(grid);
 
-let guardian = null;
-let sword = null;
-let swordGrip = null;
+let guardian=null;
+let sword=null;
+let mode="natural";
+let breathingEnabled=true;
 
-let mode = "natural";
-let breathingEnabled = true;
+const bones={};
+const originals=new Map();
 
-const bones = {};
-const originals = new Map();
-
-const natural = Object.freeze({
-  arms: 100,
-  elbows: 46,
-  wrists: 19,
-  fingers: 66,
-  breathing: 55
+const natural=Object.freeze({
+  arms:100,
+  elbows:46,
+  wrists:19,
+  fingers:66,
+  breathing:55
 });
 
-const weapon = {
-  arm: 45,
-  reach: 45,
-  elbow: 50,
-  angle: 35,
-  grip: 0
+const weapon={
+  arm:45,
+  reach:45,
+  elbow:50,
+  angle:35,
+  grip:0
 };
 
-const defaults = {...weapon};
+const defaults={...weapon};
 
-const status = document.getElementById("status");
+const status=document.getElementById("status");
 
-function setStatus(message) {
-  status.textContent = message;
+function setStatus(message){
+  status.textContent=message;
 }
 
-function findBone(pattern) {
-  let found = null;
+function findBone(pattern){
+  let result=null;
 
-  guardian.traverse(object => {
-    if (
-      object.isBone &&
-      pattern.test(object.name)
-    ) {
-      found = object;
+  guardian.traverse(obj=>{
+    if(obj.isBone&&pattern.test(obj.name)){
+      result=obj;
     }
   });
 
-  return found;
+  return result;
 }
 
-function collectBones() {
+function collectBones(){
 
-  bones.leftArm = findBone(/^upperarm_l$/i);
-  bones.rightArm = findBone(/^upperarm_r$/i);
+  bones.leftArm=findBone(/^upperarm_l$/i);
+  bones.rightArm=findBone(/^upperarm_r$/i);
 
-  bones.leftElbow = findBone(/^lowerarm_l$/i);
-  bones.rightElbow = findBone(/^lowerarm_r$/i);
+  bones.leftElbow=findBone(/^lowerarm_l$/i);
+  bones.rightElbow=findBone(/^lowerarm_r$/i);
 
-  bones.leftHand = findBone(/^hand_l$/i);
-  bones.rightHand = findBone(/^hand_r$/i);
+  bones.leftHand=findBone(/^hand_l$/i);
+  bones.rightHand=findBone(/^hand_r$/i);
 
-  bones.spine = findBone(/^spine_02$/i);
+  bones.spine=findBone(/^spine_02$/i);
 
-  bones.fingers = [];
+  bones.fingers=[];
 
-  guardian.traverse(object => {
-
-    if (!object.isBone) return;
+  guardian.traverse(obj=>{
+    if(!obj.isBone)return;
 
     originals.set(
-      object,
-      object.quaternion.clone()
+      obj,obj.quaternion.clone()
     );
 
-    if (
-      /thumb|index|middle|ring|pinky|little/i
-      .test(object.name)
-    ) {
-      bones.fingers.push(object);
+    if(/thumb|index|middle|ring|pinky|little/i.test(obj.name)){
+      bones.fingers.push(obj);
     }
-
   });
-
 }
 
-function restoreSkeleton() {
-
-  for (const [bone, quaternion]
-    of originals) {
-
-    bone.quaternion.copy(quaternion);
-
+function restoreSkeleton(){
+  for(const [bone,q] of originals){
+    bone.quaternion.copy(q);
   }
-
 }
 
-function applyNaturalPose() {
+function applyNaturalPose(){
 
-  if (bones.leftArm) {
+  if(bones.leftArm)
     bones.leftArm.rotateZ(-1.35);
-  }
 
-  if (bones.rightArm) {
+  if(bones.rightArm)
     bones.rightArm.rotateZ(1.35);
+
+  const elbow=natural.elbows/100*.18;
+  const wrist=natural.wrists/100*.14;
+  const finger=natural.fingers/100*.35;
+
+  if(bones.leftElbow)
+    bones.leftElbow.rotateX(elbow);
+
+  if(bones.rightElbow)
+    bones.rightElbow.rotateX(elbow);
+
+  if(bones.leftHand)
+    bones.leftHand.rotateX(wrist);
+
+  if(bones.rightHand)
+    bones.rightHand.rotateX(wrist);
+
+  for(const bone of bones.fingers){
+    bone.rotateX(finger);
   }
-
-  const elbowAmount =
-    natural.elbows / 100 * .18;
-
-  const wristAmount =
-    natural.wrists / 100 * .14;
-
-  const fingerAmount =
-    natural.fingers / 100 * .35;
-
-  if (bones.leftElbow) {
-    bones.leftElbow.rotateX(elbowAmount);
-  }
-
-  if (bones.rightElbow) {
-    bones.rightElbow.rotateX(elbowAmount);
-  }
-
-  if (bones.leftHand) {
-    bones.leftHand.rotateX(wristAmount);
-  }
-
-  if (bones.rightHand) {
-    bones.rightHand.rotateX(wristAmount);
-  }
-
-  for (const finger of bones.fingers) {
-    finger.rotateX(fingerAmount);
-  }
-
 }
 
-function applyLongswordPose() {
+function applyLongswordPose(){
 
-  // Independent weapon pose.
-  // Natural stance settings remain untouched.
+  const armOffset=weapon.arm/100*.5;
+  const reachOffset=weapon.reach/100*.55;
+  const elbowOffset=weapon.elbow/100*.75;
 
-  const armOffset = weapon.arm / 100 * .5;
-
-  const reachOffset =
-    weapon.reach / 100 * .55;
-
-  const elbowOffset =
-    weapon.elbow / 100 * .75;
-
-  if (bones.leftArm) {
-
-    bones.leftArm.rotateZ(
-      -.72 + armOffset
-    );
-
-    bones.leftArm.rotateX(
-      -.25 - reachOffset
-    );
-
+  if(bones.leftArm){
+    bones.leftArm.rotateZ(-.72+armOffset);
+    bones.leftArm.rotateX(-.25-reachOffset);
   }
 
-  if (bones.rightArm) {
-
-    bones.rightArm.rotateZ(
-      .72 - armOffset
-    );
-
-    bones.rightArm.rotateX(
-      -.25 - reachOffset
-    );
-
+  if(bones.rightArm){
+    bones.rightArm.rotateZ(.72-armOffset);
+    bones.rightArm.rotateX(-.25-reachOffset);
   }
 
-  if (bones.leftElbow) {
-
-    bones.leftElbow.rotateX(
-      elbowOffset
-    );
-
+  if(bones.leftElbow){
+    bones.leftElbow.rotateX(elbowOffset);
     bones.leftElbow.rotateY(.18);
-
   }
 
-  if (bones.rightElbow) {
-
-    bones.rightElbow.rotateX(
-      elbowOffset
-    );
-
+  if(bones.rightElbow){
+    bones.rightElbow.rotateX(elbowOffset);
     bones.rightElbow.rotateY(-.18);
-
   }
 
-  if (bones.leftHand) {
-
+  if(bones.leftHand){
     bones.leftHand.rotateX(.12);
     bones.leftHand.rotateZ(-.12);
-
   }
 
-  if (bones.rightHand) {
-
+  if(bones.rightHand){
     bones.rightHand.rotateX(.12);
     bones.rightHand.rotateZ(.12);
-
   }
 
-  for (const finger of bones.fingers) {
-
+  for(const finger of bones.fingers){
     finger.rotateX(.28);
-
   }
-
 }
 
-function applyBreathing(time) {
+function applyBreathing(time){
 
-  if (
-    !breathingEnabled ||
-    !bones.spine
-  ) return;
+  if(!breathingEnabled||!bones.spine)return;
 
-  const cycle = 4.2;
-
-  const amount =
-    Math.sin(
-      time * Math.PI * 2 / cycle
-    ) * .018 * (natural.breathing / 100);
+  const amount=
+    Math.sin(time*Math.PI*2/4.2)
+    *.018*(natural.breathing/100);
 
   bones.spine.rotateX(amount);
-
 }
 
-function makeSword() {
+function makeSword(){
 
-  const group = new THREE.Group();
+  const group=new THREE.Group();
 
-  const steel = new THREE.MeshStandardMaterial({
-    color: 0xcbd5df,
-    metalness: .85,
-    roughness: .24
+  const steel=new THREE.MeshStandardMaterial({
+    color:0xcbd5df,
+    metalness:.85,
+    roughness:.24
   });
 
-  const edge = new THREE.MeshStandardMaterial({
-    color: 0xe6edf2,
-    metalness: .8,
-    roughness: .2
+  const dark=new THREE.MeshStandardMaterial({
+    color:0x30251d,
+    roughness:.8
   });
 
-  const dark = new THREE.MeshStandardMaterial({
-    color: 0x30251d,
-    metalness: .1,
-    roughness: .8
+  const gold=new THREE.MeshStandardMaterial({
+    color:0xb99852,
+    metalness:.7,
+    roughness:.3
   });
 
-  const gold = new THREE.MeshStandardMaterial({
-    color: 0xb99852,
-    metalness: .7,
-    roughness: .3
-  });
-
-  // Sword is built vertically.
-  // Grip center is local origin.
-  // Blade extends in +Y direction.
-
-  const grip = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      .022,.025,.34,12
-    ),
+  const grip=new THREE.Mesh(
+    new THREE.CylinderGeometry(.022,.025,.34,12),
     dark
   );
-
-  grip.position.y = 0;
   group.add(grip);
 
-  const pommel = new THREE.Mesh(
+  const pommel=new THREE.Mesh(
     new THREE.SphereGeometry(.045,12,8),
     gold
   );
-
-  pommel.position.y = -.2;
+  pommel.position.y=-.2;
   group.add(pommel);
 
-  const guard = new THREE.Mesh(
+  const guard=new THREE.Mesh(
     new THREE.BoxGeometry(.36,.035,.045),
     gold
   );
-
-  guard.position.y = .2;
+  guard.position.y=.2;
   group.add(guard);
 
-  const blade = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .082,.91,.023
-    ),
+  const blade=new THREE.Mesh(
+    new THREE.BoxGeometry(.082,.91,.023),
     steel
   );
-
-  blade.position.y = .675;
+  blade.position.y=.675;
   group.add(blade);
 
-  const ridge = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      .025,.88,.029
-    ),
-    edge
+  const tipGeometry=new THREE.ConeGeometry(
+    .052,.18,4
   );
 
-  ridge.position.y = .66;
-  group.add(ridge);
-
-  // Tapered sword point.
-
-  const tipShape = new THREE.BufferGeometry();
-
-  const vertices = new Float32Array([
-    -.041,0,0,
-    .041,0,0,
-    0,.18,0
-  ]);
-
-  tipShape.setAttribute(
-    "position",
-    new THREE.BufferAttribute(vertices,3)
+  const tip=new THREE.Mesh(
+    tipGeometry,steel
   );
-
-  tipShape.computeVertexNormals();
-
-  const tip = new THREE.Mesh(
-    tipShape,
-    new THREE.MeshStandardMaterial({
-      color: 0xe0e7ec,
-      metalness: .8,
-      roughness: .25,
-      side: THREE.DoubleSide
-    })
-  );
-
-  tip.position.y = 1.13;
+  tip.rotation.y=Math.PI/4;
+  tip.position.y=1.22;
   group.add(tip);
 
   return group;
-
 }
 
-const tempVector = new THREE.Vector3();
-const tempQuaternion = new THREE.Quaternion();
+const handWorld=new THREE.Vector3();
 
-function updateSword() {
+function updateSword(){
 
-  if (!sword || !guardian) return;
+  if(!sword)return;
 
-  sword.visible = mode === "longsword";
+  sword.visible=mode==="longsword";
 
-  if (mode !== "longsword") return;
+  if(mode!=="longsword")return;
 
-  // Initial grip attachment:
-  // anchor to the right hand.
-  // The left hand must be visually
-  // checked and refined in this test.
+  if(bones.rightHand){
 
-  if (bones.rightHand) {
+    bones.rightHand.getWorldPosition(handWorld);
 
-    bones.rightHand.getWorldPosition(
-      tempVector
-    );
+    sword.position.copy(handWorld);
 
-    sword.position.copy(tempVector);
+    sword.position.y-=.09;
 
-    sword.position.y -= .09;
+  }else{
 
-  } else {
-
-    sword.position.set(
-      .12,1.15,.35
-    );
+    sword.position.set(.12,1.15,.35);
 
   }
-
-  // Convert world-space hand position
-  // to the sword parent's local space.
-
-  if (sword.parent) {
-    sword.parent.worldToLocal(
-      sword.position
-    );
-  }
-
-  // Sword blade angled diagonally up.
 
   sword.rotation.set(
     -.18,
     0,
-    -weapon.angle * Math.PI / 180
+    -weapon.angle*Math.PI/180
   );
 
-  sword.position.x +=
-    weapon.grip / 100 * .16;
-
+  sword.position.x+=weapon.grip/100*.16;
 }
 
-function updatePose(time) {
+// CAMERA REPAIR
+//
+// Fit the actual character bounds using
+// vertical and horizontal field of view.
+//
+// No aspect-ratio division of the
+// vertical distance.
+//
+// Reset uses a stable full-body target.
 
-  if (!guardian) return;
+const cameraTarget=new THREE.Vector3();
+let cameraDistance=6;
+
+function resizeRenderer(){
+
+  const width=Math.max(
+    1,window.innerWidth
+  );
+
+  const height=Math.max(
+    1,window.innerHeight
+  );
+
+  camera.aspect=width/height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(width,height,false);
+}
+
+function resetCamera(){
+
+  if(!guardian)return;
+
+  resizeRenderer();
+
+  // Measure the character in its
+  // locked natural stance.
+  //
+  // This prevents sword geometry from
+  // changing camera framing.
+
+  const previousMode=mode;
 
   restoreSkeleton();
-
-  if (mode === "natural") {
-
-    applyNaturalPose();
-
-  } else {
-
-    applyLongswordPose();
-
-  }
-
-  applyBreathing(time);
-
+  applyNaturalPose();
   guardian.updateMatrixWorld(true);
 
-  updateSword();
+  const bounds=new THREE.Box3()
+    .setFromObject(guardian);
 
+  const size=bounds.getSize(
+    new THREE.Vector3()
+  );
+
+  const center=bounds.getCenter(
+    new THREE.Vector3()
+  );
+
+  cameraTarget.copy(center);
+
+  const verticalFov=
+    THREE.MathUtils.degToRad(camera.fov);
+
+  const horizontalFov=
+    2*Math.atan(
+      Math.tan(verticalFov/2)
+      *camera.aspect
+    );
+
+  const distanceHeight=
+    (size.y/2)/
+    Math.tan(verticalFov/2);
+
+  const distanceWidth=
+    (size.x/2)/
+    Math.tan(horizontalFov/2);
+
+  const fitDistance=Math.max(
+    distanceHeight,
+    distanceWidth
+  );
+
+  // Extra room for head and feet.
+  // Perspective depth allowance.
+
+  cameraDistance=
+    fitDistance*1.45+
+    size.z*.75;
+
+  controls.target.copy(cameraTarget);
+
+  camera.position.set(
+    center.x,
+    center.y+.08,
+    center.z+cameraDistance
+  );
+
+  camera.lookAt(controls.target);
+
+  controls.update();
+
+  // Restore the correct active pose
+  // on the next animation frame.
 }
 
-function setMode(nextMode) {
+function setMode(next){
 
-  mode = nextMode;
+  mode=next;
 
   document.getElementById("natural")
     .classList.toggle(
-      "active",
-      mode === "natural"
+      "active",mode==="natural"
     );
 
   document.getElementById("longsword")
     .classList.toggle(
-      "active",
-      mode === "longsword"
+      "active",mode==="longsword"
     );
 
   document.getElementById("weaponControls")
     .classList.toggle(
-      "hidden",
-      mode !== "longsword"
+      "hidden",mode!=="longsword"
     );
 
   setStatus(
-    mode === "natural"
-      ? "Locked Natural Guardian Stance"
-      : "Longsword Test — adjust pose and inspect both hands"
+    mode==="natural"
+    ?"Locked Natural Guardian Stance"
+    :"Longsword prototype — inspect both hands and blade angle"
   );
-
 }
 
-function setCamera() {
-
-  if (!guardian) return;
-
-  const box = new THREE.Box3()
-    .setFromObject(guardian);
-
-  const size = box.getSize(
-    new THREE.Vector3()
-  );
-
-  const center = box.getCenter(
-    new THREE.Vector3()
-  );
-
-  const distanceV =
-    size.y /
-    (2 * Math.tan(
-      THREE.MathUtils.degToRad(
-        camera.fov / 2
-      )
-    ));
-
-  const distanceH =
-    distanceV / camera.aspect;
-
-  const distance =
-    Math.max(distanceV,distanceH)
-    * 2.05 + size.z;
-
-  controls.target.set(
-    center.x,
-    center.y,
-    center.z
-  );
-
-  camera.position.set(
-    center.x,
-    center.y + .25,
-    center.z + distance
-  );
-
-  camera.lookAt(controls.target);
-  controls.update();
-
-}
-
-const loader = new GLTFLoader();
+const loader=new GLTFLoader();
 
 loader.load(
-
   "../guardian-3d-test/Superhero_Male_FullBody.gltf",
 
-  gltf => {
+  gltf=>{
 
-    guardian = gltf.scene;
-
+    guardian=gltf.scene;
     scene.add(guardian);
 
-    // Normalize character height to 2.5.
-
-    const initialBox = new THREE.Box3()
+    const box=new THREE.Box3()
       .setFromObject(guardian);
 
-    const initialSize = initialBox.getSize(
+    const height=box.getSize(
       new THREE.Vector3()
-    );
+    ).y;
 
-    const scale = 2.5 / initialSize.y;
-
-    guardian.scale.setScalar(scale);
+    if(height>0){
+      guardian.scale.setScalar(2.5/height);
+    }
 
     guardian.updateMatrixWorld(true);
 
-    const scaledBox = new THREE.Box3()
+    const scaledBox=new THREE.Box3()
       .setFromObject(guardian);
 
-    guardian.position.y -= scaledBox.min.y;
+    guardian.position.y-=scaledBox.min.y;
 
     guardian.updateMatrixWorld(true);
 
     collectBones();
 
-    // Weapon is separate from the
-    // skeleton, so it cannot permanently
-    // modify the natural pose.
-
-    sword = makeSword();
+    sword=makeSword();
     scene.add(sword);
+    sword.visible=false;
 
-    sword.visible = false;
-
-    setCamera();
+    resizeRenderer();
+    resetCamera();
 
     setMode("natural");
 
     setStatus(
-      "Guardian loaded. Natural stance locked. " +
-      bones.fingers.length +
+      "Guardian loaded. Full-body camera repaired. "+
+      bones.fingers.length+
       " finger bones found."
     );
-
   },
 
   undefined,
 
-  error => {
-
+  error=>{
     console.error(error);
-
-    setStatus(
-      "Model failed to load. Check GLTF path."
-    );
-
+    setStatus("Guardian failed to load.");
   }
-
 );
 
 document.getElementById("natural")
-  .onclick = () => setMode("natural");
+  .onclick=()=>setMode("natural");
 
 document.getElementById("longsword")
-  .onclick = () => setMode("longsword");
+  .onclick=()=>setMode("longsword");
 
 document.getElementById("breathing")
-  .onclick = () => {
+  .onclick=()=>{
 
-    breathingEnabled = !breathingEnabled;
+    breathingEnabled=!breathingEnabled;
 
     document.getElementById("breathing")
-      .textContent =
-      breathingEnabled
-        ? "Breathing: ON"
-        : "Breathing: OFF";
-
+      .textContent=breathingEnabled
+      ?"Breathing: ON"
+      :"Breathing: OFF";
   };
 
 document.getElementById("resetCamera")
-  .onclick = setCamera;
+  .onclick=resetCamera;
 
 document.getElementById("resetWeapon")
-  .onclick = () => {
+  .onclick=()=>{
 
-    Object.assign(weapon, defaults);
+    Object.assign(weapon,defaults);
 
-    for (const key of Object.keys(weapon)) {
+    for(const key of Object.keys(weapon)){
 
-      const input =
-        document.getElementById(key);
+      document.getElementById(key).value=
+        weapon[key];
 
-      if (input) input.value = weapon[key];
-
-      const output =
-        document.getElementById(
-          key + "Value"
-        );
-
-      if (output) {
-        output.textContent = weapon[key];
-      }
-
+      document.getElementById(
+        key+"Value"
+      ).textContent=weapon[key];
     }
-
   };
 
-for (const key of Object.keys(weapon)) {
+for(const key of Object.keys(weapon)){
 
-  const input = document.getElementById(key);
+  const input=document.getElementById(key);
 
-  input.addEventListener("input", () => {
+  input.addEventListener("input",()=>{
 
-    weapon[key] = Number(input.value);
+    weapon[key]=Number(input.value);
 
     document.getElementById(
-      key + "Value"
-    ).textContent = input.value;
-
+      key+"Value"
+    ).textContent=input.value;
   });
-
 }
 
 document.getElementById("togglePanel")
-  .onclick = () => {
+  .onclick=()=>{
 
-    const panel =
-      document.getElementById("panel");
-
-    const hidden =
-      panel.classList.toggle("hidden");
+    const hidden=document.getElementById("panel")
+      .classList.toggle("hidden");
 
     document.getElementById("togglePanel")
-      .textContent =
-      hidden ? "Show UI" : "Hide UI";
-
+      .textContent=hidden
+      ?"Show UI"
+      :"Hide UI";
   };
 
-window.addEventListener("resize", () => {
-
-  camera.aspect =
-    innerWidth / innerHeight;
-
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(
-    innerWidth,
-    innerHeight
-  );
-
+window.addEventListener("resize",()=>{
+  resizeRenderer();
 });
 
-const clock = new THREE.Clock();
+resizeRenderer();
 
-function animate() {
+const clock=new THREE.Clock();
+
+function animate(){
 
   requestAnimationFrame(animate);
 
-  const time = clock.getElapsedTime();
+  const time=clock.getElapsedTime();
 
-  updatePose(time);
+  if(guardian){
+
+    restoreSkeleton();
+
+    if(mode==="natural"){
+      applyNaturalPose();
+    }else{
+      applyLongswordPose();
+    }
+
+    applyBreathing(time);
+
+    guardian.updateMatrixWorld(true);
+
+    updateSword();
+  }
 
   controls.update();
-
   renderer.render(scene,camera);
-
 }
 
 animate();
 
 </script>
 </body>
- </html>
- 
+  </html>
+  
