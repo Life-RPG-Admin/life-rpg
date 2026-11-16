@@ -1,1 +1,341 @@
-Test
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIFE RPG — Test 3A</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101822;color:#f1dfb6;font:14px system-ui,sans-serif}
+#stage{position:fixed;inset:0}
+header{position:fixed;top:0;left:0;right:0;padding:12px 15px;background:linear-gradient(#0d1522ef,#0d152200);pointer-events:none}
+h1{margin:0;font-size:17px;color:#f3cb77}
+#status{font-size:12px;color:#d5dddf;margin-top:4px;max-width:85vw}
+#panel{position:fixed;bottom:0;left:0;right:0;padding:10px 12px calc(12px + env(safe-area-inset-bottom));background:#101824ef;border-top:1px solid #776342;display:flex;gap:7px;flex-wrap:wrap;align-items:center;justify-content:center}
+button,select{background:#263548;color:#f7e5bf;border:1px solid #9b8252;border-radius:8px;padding:10px 11px;font:inherit}
+button:active{background:#4c5c70}
+label{font-size:12px}
+input[type=range]{width:100px;vertical-align:middle}
+#hint{width:100%;text-align:center;color:#b6c2c9;font-size:11px}
+#errors{color:#ffb3a4}
+</style>
+<script type="importmap">
+{"imports":{
+"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<div id="stage"></div>
+<header>
+<h1>LIFE RPG · Guardian Arsenal</h1>
+<div id="status">Loading Guardian…</div>
+<div id="errors"></div>
+</header>
+
+<div id="panel">
+<select id="gear" aria-label="Equipment">
+<option value="none">Unarmed / Sheathed</option>
+<option value="sword">Longsword</option>
+<option value="shield">Sword &amp; Shield</option>
+<option value="bow">Bow</option>
+<option value="staff">Staff</option>
+</select>
+<button id="draw">Drawn</button>
+<button id="visibility">Sheathed: ON</button>
+<button id="idle">Idle: ON</button>
+<button id="reset">Reset view</button>
+<label>Grip X <input id="gx" type="range" min="-1" max="1" step="0.05" value="0"></label>
+<label>Grip Y <input id="gy" type="range" min="-1" max="1" step="0.05" value="0"></label>
+<label>Grip Z <input id="gz" type="range" min="-1" max="1" step="0.05" value="0"></label>
+<div id="hint">Drag to orbit · Pinch to zoom · Temporary geometry and stances · Grip sliders calibrate right-hand attachment</div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const status=document.querySelector('#status'),errors=document.querySelector('#errors');
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.shadowMap.enabled=true;
+document.querySelector('#stage').append(renderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#172330');
+scene.add(new THREE.HemisphereLight(0xdde8ff,0x55422e,2.1));
+const key=new THREE.DirectionalLight(0xffe2b0,2.5);
+key.position.set(3,7,5);
+scene.add(key);
+const rim=new THREE.DirectionalLight(0x9dbfff,1.5);
+rim.position.set(-3,4,-4);
+scene.add(rim);
+
+const camera=new THREE.PerspectiveCamera(37,innerWidth/innerHeight,.01,200);
+camera.position.set(0,1.4,5);
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.minDistance=.7;
+controls.maxDistance=15;
+controls.enablePan=false;
+
+let character=null,bones={},original={},rightHand=null,leftHand=null,weapon=null,offhand=null,stored=[],stance='none',drawn=true,sheathedVisible=true,idleOn=true,elapsed=0,center=new THREE.Vector3(),modelHeight=2;
+const root=new THREE.Group();
+scene.add(root);
+
+function pick(...names){
+for(const n of names){if(bones[n])return bones[n]}
+return Object.values(bones).find(b=>names.some(n=>b.name.toLowerCase().includes(n.toLowerCase())))||null
+}
+function boneNames(){return Object.keys(bones).join(', ')}
+function setStatus(s){status.textContent=s}
+
+function fit(){
+if(!character)return;
+const b=new THREE.Box3().setFromObject(character);
+if(b.isEmpty())return;
+b.getCenter(center);
+modelHeight=Math.max(.2,b.max.y-b.min.y);
+controls.target.copy(center);
+const dist=Math.max(modelHeight*1.75,1.8);
+camera.position.set(center.x,center.y+modelHeight*.12,center.z+dist);
+camera.near=Math.max(.005,dist/1000);
+camera.far=dist*30;
+camera.updateProjectionMatrix();
+controls.update()
+}
+
+function swordMesh(){
+const g=new THREE.Group();
+const steel=new THREE.MeshStandardMaterial({color:0xc8d6e1,metalness:.8,roughness:.25});
+const gold=new THREE.MeshStandardMaterial({color:0xc89a48,metalness:.65,roughness:.3});
+const dark=new THREE.MeshStandardMaterial({color:0x30251f,roughness:.75});
+function part(geo,mat,pos){
+const m=new THREE.Mesh(geo,mat);
+m.position.set(...pos);
+g.add(m);
+return m
+}
+part(new THREE.BoxGeometry(.065,.58,.018),steel,[0,.40,0]);
+const tip=part(new THREE.ConeGeometry(.045,.16,4),steel,[0,.77,0]);
+tip.rotation.y=Math.PI/4;
+part(new THREE.BoxGeometry(.28,.045,.055),gold,[0,.09,0]);
+part(new THREE.CylinderGeometry(.025,.027,.20,10),dark,[0,-.04,0]);
+part(new THREE.SphereGeometry(.045,10,8),gold,[0,-.16,0]);
+g.scale.setScalar(modelHeight/2);
+return g
+}
+
+function part(g,geo,mat,pos){
+const m=new THREE.Mesh(geo,mat);
+m.position.set(...pos);
+g.add(m);
+return m
+}
+const steel=new THREE.MeshStandardMaterial({color:0xbacbd8,metalness:.75,roughness:.28}),
+gold=new THREE.MeshStandardMaterial({color:0xc39b54,metalness:.65,roughness:.34}),
+wood=new THREE.MeshStandardMaterial({color:0x6b4227,roughness:.8}),
+leather=new THREE.MeshStandardMaterial({color:0x33271d,roughness:.85});
+
+function makeItem(type){
+if(type==='sword')return swordMesh();
+const g=new THREE.Group();
+if(type==='shield'){
+part(g,new THREE.CylinderGeometry(.32,.32,.055,10),steel,[0,.0,0]).rotation.x=Math.PI/2;
+part(g,new THREE.CylinderGeometry(.25,.25,.065,10),wood,[0,0,-.035]).rotation.x=Math.PI/2;
+part(g,new THREE.BoxGeometry(.075,.50,.075),gold,[0,0,.06]);
+part(g,new THREE.BoxGeometry(.42,.075,.075),gold,[0,0,.06]);
+}else if(type==='bow'){
+const pts=[];
+for(let i=0;i<=20;i++){
+let y=-.75+i*1.5/20;
+pts.push(new THREE.Vector3(.19*(1-(y/.75)**2),y,0))
+}
+const curve=new THREE.CatmullRomCurve3(pts);
+g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,28,.022,7,false),wood));
+const string=new THREE.Line(new THREE.BufferGeometry().setFromPoints([pts[0],new THREE.Vector3(0,0,0),pts[20]]),new THREE.LineBasicMaterial({color:0xe6dfc9}));
+g.add(string);
+part(g,new THREE.CylinderGeometry(.037,.037,.20,8),leather,[.18,0,0]);
+}else if(type==='staff'){
+part(g,new THREE.CylinderGeometry(.027,.039,1.8,10),wood,[0,.25,0]);
+part(g,new THREE.IcosahedronGeometry(.115,1),new THREE.MeshStandardMaterial({color:0x64b9ee,emissive:0x174b76,emissiveIntensity:.5,metalness:.25,roughness:.25}),[0,1.22,0]);
+part(g,new THREE.TorusGeometry(.105,.018,8,20),gold,[0,1.06,0]).rotation.x=Math.PI/2;
+}
+g.scale.setScalar(modelHeight/2);
+return g;
+}
+
+function clearItems(){
+for(const o of [weapon,offhand,...stored])if(o)o.removeFromParent();
+weapon=null;offhand=null;stored=[]
+}
+function mount(parent,item,pos,rot){
+if(!parent)return null;
+parent.add(item);
+item.position.set(...pos);
+item.rotation.set(...rot);
+return item
+}
+function attachWeapon(){
+clearItems();
+if(stance==='none'||!character)return;
+const s=modelHeight/2;
+const right=rightHand,left=leftHand;
+if(drawn){
+const type=stance==='shield'?'sword':stance;
+weapon=makeItem(type);
+if(right)mount(right,weapon,[.035*s,-.025*s,.01*s],[Math.PI/2,0,Math.PI/2]);
+else {errors.textContent='Right hand bone not found';weapon=null}
+if(stance==='shield'&&left){
+offhand=makeItem('shield');
+mount(left,offhand,[0,-.08*s,.13*s],[0,0,0])
+}
+}else if(sheathedVisible){
+const hip=pick('hips','pelvis','spine');
+const back=pick('spine_02','spine_01','spine','chest')||hip;
+if(stance==='sword'||stance==='shield'){
+if(hip){
+const item=makeItem('sword');
+stored.push(mount(hip,item,[-.36*s,-.18*s,.10*s],[0,0,.22]))
+}
+if(stance==='shield'&&back){
+const item=makeItem('shield');
+stored.push(mount(back,item,[.26*s,.2*s,-.24*s],[0,Math.PI,0]))
+}
+}else if(back){
+const item=makeItem(stance);
+stored.push(mount(back,item,[.27*s,.12*s,-.20*s],[.12,0,.30]));
+}
+}
+updateGrip();
+}
+function updateGrip(){
+if(!weapon||!drawn)return;
+const scale=modelHeight/2;
+weapon.position.set((.035+Number(gx.value)*.15)*scale,(-.025+Number(gy.value)*.15)*scale,(.01+Number(gz.value)*.15)*scale)
+}
+
+function pose(t){
+if(!character)return;
+for(const [name,q] of Object.entries(original)){
+const b=bones[name];
+if(b)b.quaternion.copy(q)
+}
+const left=pick('upperarm_l','leftarm'),right=pick('upperarm_r','rightarm'),fore=pick('lowerarm_r','forearm_r','rightforearm'),hand=rightHand;
+if(left)left.rotateZ(-Math.PI/2.5);
+if(right)right.rotateZ(Math.PI/2.5);
+if(drawn && stance!=='none'){
+const leftFore=pick('lowerarm_l','forearm_l','leftforearm');
+if(stance==='sword'){
+if(right){right.rotateZ(-.32);right.rotateX(-.35)}
+if(fore){fore.rotateX(-.42);fore.rotateZ(.13)}
+if(hand)hand.rotateX(.10)
+}
+if(stance==='shield'){
+if(right){right.rotateZ(-.33);right.rotateX(-.3)}
+if(fore)fore.rotateX(-.35);
+if(left){left.rotateZ(.28);left.rotateX(-.35)}
+if(leftFore)leftFore.rotateX(-.5)
+}
+if(stance==='bow'){
+if(left){left.rotateZ(.36);left.rotateX(-.65)}
+if(right){right.rotateZ(-.45);right.rotateX(-.65)}
+if(fore)fore.rotateX(-.5);
+if(leftFore)leftFore.rotateX(-.3)
+}
+if(stance==='staff'){
+if(right){right.rotateZ(-.28);right.rotateX(-.32)}
+if(fore)fore.rotateX(-.3);
+if(hand)hand.rotateZ(.1)
+}
+}
+if(idleOn){
+const breathe=Math.sin(t*1.55)*.012;
+const spine=pick('spine_02','spine_01','spine','chest');
+if(spine)spine.rotateX(breathe);
+if(left)left.rotateZ(breathe*.55);
+if(right)right.rotateZ(-breathe*.55)
+}
+}
+
+function init(gltf){
+character=gltf.scene;
+root.add(character);
+character.traverse(o=>{
+if(o.isBone){
+bones[o.name.toLowerCase()]=o;
+original[o.name.toLowerCase()]=o.quaternion.clone()
+}
+if(o.isMesh){o.frustumCulled=false}
+});
+rightHand=pick('hand_r','righthand','right_hand','hand.r','mixamorigRightHand');
+if(!rightHand){
+const candidates=Object.values(bones).filter(b=>/hand/i.test(b.name));
+rightHand=candidates.find(b=>/_r|right|\.r/i.test(b.name))||null
+}
+leftHand=pick('hand_l','lefthand','left_hand','hand.l','mixamorigLeftHand');
+fit();
+pose(0);
+setStatus('Guardian loaded · '+Object.keys(bones).length+' bones · '+(rightHand?'Right hand found: '+rightHand.name:'Hand attachment unavailable'));
+}
+const loader=new GLTFLoader();
+loader.load('./Superhero_Male_FullBody.gltf',init,progress=>{
+if(progress.total)setStatus('Loading Guardian '+Math.round(progress.loaded/progress.total*100)+'%')
+},err=>{
+errors.textContent='Could not load model. Copy GLTF, BIN and textures into this folder. '+err.message;
+setStatus('Model loading failed')
+});
+
+const gear=document.querySelector('#gear'),
+gx=document.querySelector('#gx'),gy=document.querySelector('#gy'),gz=document.querySelector('#gz');
+function refresh(){
+pose(elapsed);
+attachWeapon();
+setStatus('Guardian · '+(stance==='none'?'Unarmed':gear.options[gear.selectedIndex].text)+' · '+(drawn?'drawn':'sheathed')+' · '+Object.keys(bones).length+' bones')
+}
+gear.onchange=()=>{
+stance=gear.value;
+drawn=stance!=='none';
+document.querySelector('#draw').textContent=drawn?'Drawn':'Sheathed';
+refresh()
+};
+document.querySelector('#draw').onclick=e=>{
+drawn=!drawn;
+e.currentTarget.textContent=drawn?'Drawn':'Sheathed';
+refresh()
+};
+document.querySelector('#visibility').onclick=e=>{
+sheathedVisible=!sheathedVisible;
+e.currentTarget.textContent='Sheathed: '+(sheathedVisible?'ON':'OFF');
+refresh()
+};
+for(const el of [gx,gy,gz])el.oninput=updateGrip;
+document.querySelector('#idle').onclick=e=>{
+idleOn=!idleOn;
+e.currentTarget.textContent='Idle: '+(idleOn?'ON':'OFF');
+pose(elapsed)
+};
+document.querySelector('#reset').onclick=fit;
+addEventListener('resize',()=>{
+camera.aspect=innerWidth/innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(innerWidth,innerHeight)
+});
+const clock=new THREE.Clock();
+function animate(){
+requestAnimationFrame(animate);
+elapsed+=Math.min(clock.getDelta(),.05);
+pose(elapsed);
+controls.update();
+renderer.render(scene,camera)
+}
+animate();
+</script>
+</body>
+                               </html>
+  
