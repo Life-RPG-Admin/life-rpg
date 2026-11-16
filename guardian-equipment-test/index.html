@@ -3,8 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian Camera Diagnostic</title>
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIFE RPG — Guardian Test 3E</title>
 
 <style>
 *{box-sizing:border-box}
@@ -92,7 +93,7 @@ button{
 <div id="scene"></div>
 
 <div id="panel">
- <h1>LIFE RPG — Camera Diagnostic</h1>
+ <h1>LIFE RPG — Guardian Test 3E</h1>
  <div id="status">Starting 3D engine...</div>
 </div>
 
@@ -100,7 +101,7 @@ button{
  <button id="reset">Reset Camera</button>
  <div id="info">
   Drag to rotate · Pinch to zoom
-  <div>Build 0.5.4 — Test 3D Diagnostic</div>
+  <div>Build 0.5.4 — Test 3E</div>
  </div>
 </div>
 
@@ -112,8 +113,6 @@ import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 
 const status=document.getElementById("status");
 const container=document.getElementById("scene");
-const panel=document.getElementById("panel");
-const footer=document.getElementById("controls");
 
 function setStatus(message){
  status.textContent=message;
@@ -193,14 +192,17 @@ try{
  scene.add(ground);
 
  let guardian=null;
- let lastDiagnostic="";
+ let finalBounds=null;
 
  function fitCamera(){
 
   if(!guardian)return;
 
+  // Update every transform before measuring.
+  guardian.updateMatrixWorld(true);
+
   const bounds=new THREE.Box3()
-   .setFromObject(guardian);
+   .setFromObject(guardian,true);
 
   const size=bounds.getSize(
    new THREE.Vector3()
@@ -210,69 +212,45 @@ try{
    new THREE.Vector3()
   );
 
-  const top=
-   panel.getBoundingClientRect().bottom+20;
+  finalBounds=bounds.clone();
 
-  const bottom=
-   footer.getBoundingClientRect().top-20;
-
-  const available=Math.max(
-   100,
-   bottom-top
-  );
-
-  const vFov=THREE.MathUtils.degToRad(
+  // Use a simple full-body framing calculation.
+  const verticalFOV=THREE.MathUtils.degToRad(
    camera.fov
   );
 
-  const hFov=2*Math.atan(
-   Math.tan(vFov/2)*camera.aspect
+  const horizontalFOV=2*Math.atan(
+   Math.tan(verticalFOV/2)*camera.aspect
   );
 
-  const verticalDistance=
-   (size.y*1.18)/
-   (2*Math.tan(vFov/2)*
-   (available/innerHeight));
+  const distanceV=
+   size.y/(2*Math.tan(verticalFOV/2));
 
-  const horizontalDistance=
-   (size.x*1.18)/
-   (2*Math.tan(hFov/2));
+  const distanceH=
+   size.x/(2*Math.tan(horizontalFOV/2));
 
-  const distance=Math.max(
-   verticalDistance,
-   horizontalDistance,
-   size.z*2,
-   4
-  );
+  // Include model depth and extra framing space.
+  const distance=
+   Math.max(distanceV,distanceH)*
+   1.6+size.z;
 
-  const visibleMid=(top+bottom)/2;
+  // Reset the camera to a known front-facing view.
+  controls.enableDamping=false;
 
-  const offsetPixels=
-   visibleMid-innerHeight/2;
-
-  const offsetWorld=
-   offsetPixels*
-   2*distance*
-   Math.tan(vFov/2)/
-   innerHeight;
-
-  const targetY=center.y-offsetWorld;
-
-  controls.target.set(
-   center.x,
-   targetY,
-   center.z
-  );
+  controls.target.copy(center);
 
   camera.position.set(
    center.x,
-   targetY,
+   center.y,
    center.z+distance
   );
 
+  camera.up.set(0,1,0);
+  camera.lookAt(center);
+
   controls.minDistance=Math.max(
-   size.y*.7,
-   1
+   size.y*0.5,
+   0.5
   );
 
   controls.maxDistance=Math.max(
@@ -281,23 +259,20 @@ try{
   );
 
   camera.near=0.01;
-  camera.far=Math.max(
-   distance*30,
-   100
+  camera.far=Math.max(distance*30,100);
+  camera.updateProjectionMatrix();
+
+  controls.update();
+  controls.enableDamping=true;
+
+  setStatus(
+   "Model height: "+size.y.toFixed(2)+
+   "\nModel width: "+size.x.toFixed(2)+
+   "\nCenter Y: "+center.y.toFixed(2)+
+   "\nCamera Y: "+camera.position.y.toFixed(2)+
+   "\nDistance: "+distance.toFixed(2)
   );
 
-  camera.updateProjectionMatrix();
-  controls.update();
-
-  lastDiagnostic=
-   "Camera distance: "+distance.toFixed(2)+
-   "\nModel height: "+size.y.toFixed(2)+
-   "\nModel width: "+size.x.toFixed(2)+
-   "\nModel depth: "+size.z.toFixed(2)+
-   "\nAvailable height: "+available.toFixed(0)+"px"+
-   "\nScreen: "+innerWidth+" × "+innerHeight;
-
-  setStatus(lastDiagnostic);
  }
 
  document.getElementById("reset").onclick=()=>{
@@ -316,37 +291,45 @@ try{
 
    guardian=gltf.scene;
 
-   const bounds=new THREE.Box3()
-    .setFromObject(guardian);
+   guardian.updateMatrixWorld(true);
 
-   const size=bounds.getSize(
+   // Measure original model.
+   const originalBounds=new THREE.Box3()
+    .setFromObject(guardian,true);
+
+   const originalSize=originalBounds.getSize(
     new THREE.Vector3()
    );
 
-   const center=bounds.getCenter(
-    new THREE.Vector3()
-   );
-
-   if(size.y<=0){
-    setStatus(
-     "ERROR: Invalid model dimensions"
-    );
+   if(originalSize.y<=0){
+    setStatus("ERROR: Invalid model dimensions");
     return;
    }
 
+   // Scale to standard Guardian height.
    guardian.scale.multiplyScalar(
-    2.5/size.y
+    2.5/originalSize.y
    );
 
-   bounds.setFromObject(guardian);
-   bounds.getCenter(center);
+   guardian.updateMatrixWorld(true);
 
-   guardian.position.x-=center.x;
-   guardian.position.z-=center.z;
-   guardian.position.y-=bounds.min.y;
+   // Position model after scaling.
+   const scaledBounds=new THREE.Box3()
+    .setFromObject(guardian,true);
+
+   const scaledCenter=scaledBounds.getCenter(
+    new THREE.Vector3()
+   );
+
+   guardian.position.x-=scaledCenter.x;
+   guardian.position.z-=scaledCenter.z;
+   guardian.position.y-=scaledBounds.min.y;
+
+   guardian.updateMatrixWorld(true);
 
    scene.add(guardian);
 
+   // Fit after all transformations.
    fitCamera();
 
   },
