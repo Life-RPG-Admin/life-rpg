@@ -6,7 +6,7 @@
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian Test 3I.2</title>
+<title>LIFE RPG — Guardian Test 3I.3</title>
 
 <style>
 *{box-sizing:border-box}
@@ -75,7 +75,6 @@ button.active{
 }
 
 .buttons button{flex:1}
-
 .control{margin:11px 0}
 
 .control label{
@@ -134,9 +133,8 @@ input[type=range]{
 <div id="scene"></div>
 
 <div id="panel">
-
-<h1>⚔️ Guardian — Test 3I.2</h1>
-<small>Camera Repair + Two-Handed Longsword</small>
+<h1>⚔️ Guardian — Test 3I.3</h1>
+<small>Fixed Camera + Two-Handed Longsword</small>
 
 <div class="buttons">
 <button id="natural" class="active">Unarmed</button>
@@ -151,8 +149,8 @@ input[type=range]{
 <div id="weaponControls" class="hidden">
 
 <small>
-Development sliders — Longsword only.
-Natural stance settings are locked.
+Development controls — Longsword only.
+Natural stance is permanently locked.
 </small>
 
 <div class="control">
@@ -187,7 +185,6 @@ Reset Longsword Test
 </div>
 
 <div id="status">Loading Guardian...</div>
-
 </div>
 
 <button id="togglePanel">Hide UI</button>
@@ -210,7 +207,10 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x101722);
 
 const camera=new THREE.PerspectiveCamera(
-  40,1,.01,100
+  40,
+  window.innerWidth/window.innerHeight,
+  .01,
+  100
 );
 
 const renderer=new THREE.WebGLRenderer({
@@ -220,6 +220,11 @@ const renderer=new THREE.WebGLRenderer({
 
 renderer.setPixelRatio(
   Math.min(window.devicePixelRatio||1,2)
+);
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
 );
 
 renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -237,7 +242,7 @@ controls.enableDamping=true;
 controls.dampingFactor=.07;
 controls.enablePan=true;
 
-controls.minDistance=.5;
+controls.minDistance=1;
 controls.maxDistance=30;
 
 const hemi=new THREE.HemisphereLight(
@@ -264,7 +269,6 @@ const ground=new THREE.Mesh(
     roughness:1
   })
 );
-
 ground.rotation.x=-Math.PI/2;
 ground.position.y=-.015;
 scene.add(ground);
@@ -308,6 +312,7 @@ function setStatus(message){
 }
 
 function findBone(pattern){
+
   let result=null;
 
   guardian.traverse(obj=>{
@@ -335,6 +340,7 @@ function collectBones(){
   bones.fingers=[];
 
   guardian.traverse(obj=>{
+
     if(!obj.isBone)return;
 
     originals.set(
@@ -482,12 +488,9 @@ function makeSword(){
   blade.position.y=.675;
   group.add(blade);
 
-  const tipGeometry=new THREE.ConeGeometry(
-    .052,.18,4
-  );
-
   const tip=new THREE.Mesh(
-    tipGeometry,steel
+    new THREE.ConeGeometry(.052,.18,4),
+    steel
   );
   tip.rotation.y=Math.PI/4;
   tip.position.y=1.22;
@@ -511,13 +514,10 @@ function updateSword(){
     bones.rightHand.getWorldPosition(handWorld);
 
     sword.position.copy(handWorld);
-
     sword.position.y-=.09;
 
   }else{
-
     sword.position.set(.12,1.15,.35);
-
   }
 
   sword.rotation.set(
@@ -529,109 +529,32 @@ function updateSword(){
   sword.position.x+=weapon.grip/100*.16;
 }
 
-// CAMERA REPAIR
+// FIXED CAMERA
 //
-// Fit the actual character bounds using
-// vertical and horizontal field of view.
-//
-// No aspect-ratio division of the
-// vertical distance.
-//
-// Reset uses a stable full-body target.
-
-const cameraTarget=new THREE.Vector3();
-let cameraDistance=6;
-
-function resizeRenderer(){
-
-  const width=Math.max(
-    1,window.innerWidth
-  );
-
-  const height=Math.max(
-    1,window.innerHeight
-  );
-
-  camera.aspect=width/height;
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(width,height,false);
-}
+// Guardian height is normalized to 2.5.
+// Camera targets y=1.25.
+// No bounding-box distance calculation.
 
 function resetCamera(){
 
-  if(!guardian)return;
-
-  resizeRenderer();
-
-  // Measure the character in its
-  // locked natural stance.
-  //
-  // This prevents sword geometry from
-  // changing camera framing.
-
-  const previousMode=mode;
-
-  restoreSkeleton();
-  applyNaturalPose();
-  guardian.updateMatrixWorld(true);
-
-  const bounds=new THREE.Box3()
-    .setFromObject(guardian);
-
-  const size=bounds.getSize(
-    new THREE.Vector3()
+  const target=new THREE.Vector3(
+    0,1.25,0
   );
 
-  const center=bounds.getCenter(
-    new THREE.Vector3()
-  );
+  controls.target.copy(target);
 
-  cameraTarget.copy(center);
-
-  const verticalFov=
-    THREE.MathUtils.degToRad(camera.fov);
-
-  const horizontalFov=
-    2*Math.atan(
-      Math.tan(verticalFov/2)
-      *camera.aspect
-    );
-
-  const distanceHeight=
-    (size.y/2)/
-    Math.tan(verticalFov/2);
-
-  const distanceWidth=
-    (size.x/2)/
-    Math.tan(horizontalFov/2);
-
-  const fitDistance=Math.max(
-    distanceHeight,
-    distanceWidth
-  );
-
-  // Extra room for head and feet.
-  // Perspective depth allowance.
-
-  cameraDistance=
-    fitDistance*1.45+
-    size.z*.75;
-
-  controls.target.copy(cameraTarget);
+  // Fixed position, deliberately
+  // farther away than previous tests.
 
   camera.position.set(
-    center.x,
-    center.y+.08,
-    center.z+cameraDistance
+    0,
+    1.45,
+    9
   );
 
-  camera.lookAt(controls.target);
+  camera.lookAt(target);
 
   controls.update();
-
-  // Restore the correct active pose
-  // on the next animation frame.
 }
 
 function setMode(next){
@@ -696,13 +619,12 @@ loader.load(
     scene.add(sword);
     sword.visible=false;
 
-    resizeRenderer();
     resetCamera();
 
     setMode("natural");
 
     setStatus(
-      "Guardian loaded. Full-body camera repaired. "+
+      "Guardian loaded. Fixed camera at distance 9. "+
       bones.fingers.length+
       " finger bones found."
     );
@@ -779,10 +701,17 @@ document.getElementById("togglePanel")
   };
 
 window.addEventListener("resize",()=>{
-  resizeRenderer();
-});
 
-resizeRenderer();
+  camera.aspect=
+    window.innerWidth/window.innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+  );
+});
 
 const clock=new THREE.Clock();
 
@@ -805,7 +734,6 @@ function animate(){
     applyBreathing(time);
 
     guardian.updateMatrixWorld(true);
-
     updateSword();
   }
 
