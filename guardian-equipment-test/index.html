@@ -4,48 +4,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian Test 3G.1</title>
-
+<title>LIFE RPG — Guardian Test 3H</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden}
-body{background:#172334;color:#f4e4c2;font:14px system-ui,sans-serif}
+body{background:#172334;color:#f4e4c2;font:13px system-ui,sans-serif}
 #scene{position:fixed;inset:0}
 #panel{
- position:fixed;top:10px;left:12px;right:12px;
- padding:10px 14px;border:1px solid #9b7b43;
- border-radius:12px;background:rgba(13,20,30,.92);
- pointer-events:none;
+ position:fixed;top:8px;left:8px;right:8px;
+ padding:8px 11px;border:1px solid #9b7b43;
+ border-radius:10px;background:rgba(13,20,30,.88);
+ pointer-events:none
 }
-h1{margin:0 0 5px;font-size:17px;color:#e9c77c}
-#status{font-size:12px;line-height:1.45;white-space:pre-line}
+h1{margin:0;font-size:15px;color:#e9c77c}
+#status{font-size:11px;white-space:pre-line;margin-top:4px}
 #controls{
- position:fixed;bottom:12px;left:12px;right:12px;
- padding:12px;background:rgba(13,20,30,.92);
- border-radius:12px;text-align:center;
+ position:fixed;bottom:8px;left:8px;right:8px;
+ padding:9px;background:rgba(13,20,30,.94);
+ border:1px solid #9b7b43;border-radius:12px;
+ text-align:center
 }
-.buttons{
- display:flex;gap:7px;justify-content:center;
- flex-wrap:wrap;margin-bottom:8px;
-}
+.buttons{display:flex;gap:5px;margin-bottom:7px}
 button{
- padding:10px 12px;border:1px solid #dfbd7d;
- border-radius:8px;background:#916b35;
- color:white;font-weight:700;font-size:12px;
+ flex:1;min-width:0;padding:8px 4px;
+ border:1px solid #dfbd7d;border-radius:7px;
+ background:#916b35;color:white;
+ font-weight:600;font-size:11px
 }
 button:active{background:#b58b4c}
 .adjust{
- display:flex;align-items:center;gap:10px;
- justify-content:center;margin:8px 0;font-size:12px;
+ display:flex;align-items:center;gap:7px;
+ margin:6px 0;font-size:11px
 }
-.adjust label{min-width:105px;text-align:left}
+.adjust label{width:98px;text-align:left}
 input[type=range]{
- flex:1;min-width:0;accent-color:#d6ad65;
+ flex:1;min-width:0;accent-color:#d6ad65
 }
-.value{min-width:38px;text-align:right}
-#info{font-size:11px;line-height:1.5}
+.value{width:34px;text-align:right}
+#info{font-size:10px;color:#c5cdd3;margin-top:5px}
+#toggleInfo{
+ position:fixed;top:8px;right:8px;
+ width:auto;padding:6px 9px;z-index:10
+}
+.hidden{display:none}
 </style>
-
 <script type="importmap">
 {
  "imports":{
@@ -55,40 +57,63 @@ input[type=range]{
 }
 </script>
 </head>
-
 <body>
+
 <div id="scene"></div>
 
 <div id="panel">
- <h1>LIFE RPG — Guardian Test 3G.1</h1>
- <div id="status">Starting 3D engine...</div>
+ <h1>LIFE RPG — Guardian Test 3H</h1>
+ <div id="status">Loading Guardian...</div>
 </div>
+
+<button id="toggleInfo">Hide Info</button>
 
 <div id="controls">
  <div class="buttons">
   <button id="reset">Reset Camera</button>
-  <button id="stance">Stance: Natural</button>
-  <button id="breathing">Breathing: On</button>
-  <button id="diagnostic">Motion: Natural</button>
+  <button id="stance">Natural</button>
+  <button id="breathing">Breathing On</button>
+ </div>
+ <div class="buttons">
+  <button id="preset">Reference Pose</button>
+  <button id="baseline">3F Baseline</button>
+  <button id="motion">Normal Motion</button>
  </div>
 
  <div class="adjust">
   <label>Arm Relaxation</label>
-  <input id="armSlider" type="range"
-   min="0" max="100" value="75">
-  <span class="value" id="armValue">75%</span>
+  <input id="arms" type="range" min="0" max="100" value="75">
+  <span class="value" id="armsV">75%</span>
  </div>
-
  <div class="adjust">
-  <label>Breath Intensity</label>
-  <input id="breathSlider" type="range"
-   min="0" max="100" value="55">
-  <span class="value" id="breathValue">55%</span>
+  <label>Shoulders</label>
+  <input id="shoulders" type="range" min="-100" max="100" value="0">
+  <span class="value" id="shouldersV">0</span>
+ </div>
+ <div class="adjust">
+  <label>Elbows</label>
+  <input id="elbows" type="range" min="-100" max="100" value="0">
+  <span class="value" id="elbowsV">0</span>
+ </div>
+ <div class="adjust">
+  <label>Hands</label>
+  <input id="hands" type="range" min="-100" max="100" value="0">
+  <span class="value" id="handsV">0</span>
+ </div>
+ <div class="adjust">
+  <label>Foot Angle</label>
+  <input id="feet" type="range" min="-100" max="100" value="0">
+  <span class="value" id="feetV">0</span>
+ </div>
+ <div class="adjust">
+  <label>Breathing</label>
+  <input id="breath" type="range" min="0" max="100" value="55">
+  <span class="value" id="breathV">55%</span>
  </div>
 
  <div id="info">
   Drag to rotate · Pinch to zoom
-  <div>Build 0.5.4 — Test 3G.1</div>
+  <div>Test 3H — Adjustable Natural Stance</div>
  </div>
 </div>
 
@@ -97,20 +122,13 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
-const status=document.getElementById('status');
-const container=document.getElementById('scene');
-const armSlider=document.getElementById('armSlider');
-const breathSlider=document.getElementById('breathSlider');
+const $=id=>document.getElementById(id);
+const status=$('status');
 
-function setStatus(s){
- status.textContent=s;
-}
+function setStatus(s){status.textContent=s}
 
-window.addEventListener('error',e=>
- setStatus('ERROR: '+e.message)
-);
-
-window.addEventListener('unhandledrejection',e=>
+addEventListener('error',e=>setStatus('ERROR: '+e.message));
+addEventListener('unhandledrejection',e=>
  setStatus('ERROR: '+String(e.reason))
 );
 
@@ -124,15 +142,13 @@ const camera=new THREE.PerspectiveCamera(
 );
 
 const renderer=new THREE.WebGLRenderer({
- antialias:true,
- powerPreference:'high-performance'
+ antialias:true,powerPreference:'high-performance'
 });
-
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-container.appendChild(renderer.domElement);
+$('scene').appendChild(renderer.domElement);
 
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;
@@ -143,7 +159,6 @@ controls.maxPolarAngle=Math.PI-.2;
 scene.add(new THREE.HemisphereLight(
  0xffffff,0x566070,2.2
 ));
-
 const light=new THREE.DirectionalLight(0xffe6bd,3);
 light.position.set(3,6,5);
 scene.add(light);
@@ -161,50 +176,51 @@ scene.add(ground);
 let guardian=null;
 let natural=true;
 let breathing=true;
-let relaxation=.75;
-let breathIntensity=.55;
 let diagnostic=false;
+
+const settings={
+ arms:75,
+ shoulders:0,
+ elbows:0,
+ hands:0,
+ feet:0,
+ breath:55
+};
 
 const bones={};
 const originalRotations=new Map();
-
-let leftArm=null;
-let rightArm=null;
-let spine=null;
+const joints={};
 
 function captureSkeleton(root){
-
  root.traverse(obj=>{
   if(obj.isBone){
    bones[obj.name.toLowerCase()]=obj;
-   originalRotations.set(
-    obj,obj.quaternion.clone()
-   );
+   originalRotations.set(obj,obj.quaternion.clone());
   }
  });
 
  function find(...names){
   for(const n of names){
-   if(bones[n.toLowerCase()])
-    return bones[n.toLowerCase()];
+   if(bones[n.toLowerCase()])return bones[n.toLowerCase()];
   }
   return null;
  }
 
- leftArm=find(
-  'upperarm_l','upperarm.l',
-  'leftupperarm','left_arm'
- );
+ joints.leftArm=find('upperarm_l','upperarm.l','leftupperarm','left_arm');
+ joints.rightArm=find('upperarm_r','upperarm.r','rightupperarm','right_arm');
+ joints.spine=find('spine_02','spine_03','spine2','chest','spine');
 
- rightArm=find(
-  'upperarm_r','upperarm.r',
-  'rightupperarm','right_arm'
- );
+ joints.leftShoulder=find('clavicle_l','clavicle.l','leftshoulder','shoulder_l');
+ joints.rightShoulder=find('clavicle_r','clavicle.r','rightshoulder','shoulder_r');
 
- spine=find(
-  'spine_02','spine_03',
-  'spine2','chest','spine'
- );
+ joints.leftElbow=find('lowerarm_l','lowerarm.l','forearm_l','leftforearm');
+ joints.rightElbow=find('lowerarm_r','lowerarm.r','forearm_r','rightforearm');
+
+ joints.leftHand=find('hand_l','hand.l','lefthand');
+ joints.rightHand=find('hand_r','hand.r','righthand');
+
+ joints.leftFoot=find('foot_l','foot.l','leftfoot');
+ joints.rightFoot=find('foot_r','foot.r','rightfoot');
 }
 
 function restorePose(){
@@ -213,195 +229,180 @@ function restorePose(){
  }
 }
 
-// Restore the exact working 3F arm rotations.
-// Equipment-specific stances can replace this layer later.
-function applyUnarmedStance(){
+function rotate(bone,axis,angle){
+ if(!bone)return;
+ if(axis==='x')bone.rotateX(angle);
+ if(axis==='y')bone.rotateY(angle);
+ if(axis==='z')bone.rotateZ(angle);
+}
 
- if(natural&&leftArm&&rightArm){
+function applyNaturalStance(){
+ if(!natural)return;
 
-  const angle=relaxation*1.35;
+ // Verified working Test 3F arm positioning.
+ const armAngle=(settings.arms/100)*1.35;
+ rotate(joints.leftArm,'z',-armAngle);
+ rotate(joints.rightArm,'z',armAngle);
 
-  leftArm.rotateZ(-angle);
-  rightArm.rotateZ(angle);
+ // Independent experimental refinements.
+ const shoulderAngle=settings.shoulders/100*.10;
+ rotate(joints.leftShoulder,'z',-shoulderAngle);
+ rotate(joints.rightShoulder,'z',shoulderAngle);
 
- }
+ const elbowAngle=settings.elbows/100*.18;
+ rotate(joints.leftElbow,'x',elbowAngle);
+ rotate(joints.rightElbow,'x',elbowAngle);
+
+ const handAngle=settings.hands/100*.14;
+ rotate(joints.leftHand,'x',handAngle);
+ rotate(joints.rightHand,'x',handAngle);
+
+ const footAngle=settings.feet/100*.12;
+ rotate(joints.leftFoot,'y',-footAngle);
+ rotate(joints.rightFoot,'y',footAngle);
 }
 
 function applyBreathing(t){
-
- if(!breathing||!natural||!spine)return;
-
+ if(!breathing||!natural||!joints.spine)return;
  const wave=Math.sin(t*2*Math.PI/4.2);
  const gain=diagnostic?2.6:1;
- const amplitude=.018*breathIntensity*gain;
-
- // Skeletal rotation only: no scaling.
- spine.rotateX(wave*amplitude);
+ const amplitude=.018*(settings.breath/100)*gain;
+ joints.spine.rotateX(wave*amplitude);
 }
 
 function applyPose(t){
-
  if(!guardian)return;
-
  restorePose();
- applyUnarmedStance();
+ applyNaturalStance();
  applyBreathing(t);
-
  guardian.updateMatrixWorld(true);
 }
 
 function fitCamera(){
-
  if(!guardian)return;
-
  guardian.updateMatrixWorld(true);
 
- const bounds=new THREE.Box3()
-  .setFromObject(guardian,true);
-
- const size=bounds.getSize(
-  new THREE.Vector3()
- );
-
- const center=bounds.getCenter(
-  new THREE.Vector3()
- );
+ const bounds=new THREE.Box3().setFromObject(guardian,true);
+ const size=bounds.getSize(new THREE.Vector3());
+ const center=bounds.getCenter(new THREE.Vector3());
 
  const vFov=THREE.MathUtils.degToRad(camera.fov);
- const hFov=2*Math.atan(
-  Math.tan(vFov/2)*camera.aspect
- );
-
+ const hFov=2*Math.atan(Math.tan(vFov/2)*camera.aspect);
  const distanceV=size.y/(2*Math.tan(vFov/2));
  const distanceH=size.x/(2*Math.tan(hFov/2));
 
- const distance=
-  Math.max(distanceV,distanceH)*1.6+size.z;
+ // Same working camera method.
+ const distance=Math.max(distanceV,distanceH)*2.05+size.z;
 
  controls.enableDamping=false;
  controls.target.copy(center);
-
- camera.position.set(
-  center.x,
-  center.y,
-  center.z+distance
- );
-
+ camera.position.set(center.x,center.y,center.z+distance);
  camera.up.set(0,1,0);
  camera.lookAt(center);
 
- controls.minDistance=Math.max(
-  size.y*.5,.5
- );
-
- controls.maxDistance=Math.max(
-  distance*5,30
- );
-
+ controls.minDistance=Math.max(size.y*.5,.5);
+ controls.maxDistance=Math.max(distance*5,30);
  camera.near=.01;
  camera.far=Math.max(distance*30,100);
  camera.updateProjectionMatrix();
-
  controls.update();
  controls.enableDamping=true;
 }
 
-document.getElementById('reset').onclick=()=>{
+function syncSliders(){
+ for(const key of Object.keys(settings)){
+  $(key).value=settings[key];
+  $(key+'V').textContent=
+   settings[key]+(key==='arms'||key==='breath'?'%':'');
+ }
+}
+
+for(const key of Object.keys(settings)){
+ $(key).oninput=()=>{
+  settings[key]=Number($(key).value);
+  syncSliders();
+ };
+}
+
+$('baseline').onclick=()=>{
+ Object.assign(settings,{
+  arms:75,shoulders:0,elbows:0,
+  hands:0,feet:0,breath:55
+ });
+ syncSliders();
+};
+
+$('preset').onclick=()=>{
+ // Conservative candidate, not yet approved.
+ Object.assign(settings,{
+  arms:80,shoulders:12,elbows:12,
+  hands:10,feet:12,breath:55
+ });
+ syncSliders();
+};
+
+$('reset').onclick=()=>{
  applyPose(0);
  fitCamera();
 };
 
-document.getElementById('stance').onclick=()=>{
-
+$('stance').onclick=()=>{
  natural=!natural;
-
- document.getElementById('stance').textContent=
-  'Stance: '+(natural?'Natural':'T-Pose');
-
- updateDiagnostics();
+ $('stance').textContent=natural?'Natural':'T-Pose';
 };
 
-document.getElementById('breathing').onclick=()=>{
-
+$('breathing').onclick=()=>{
  breathing=!breathing;
-
- document.getElementById('breathing').textContent=
-  'Breathing: '+(breathing?'On':'Off');
+ $('breathing').textContent=
+  breathing?'Breathing On':'Breathing Off';
 };
 
-document.getElementById('diagnostic').onclick=()=>{
-
+$('motion').onclick=()=>{
  diagnostic=!diagnostic;
-
- document.getElementById('diagnostic').textContent=
-  'Motion: '+(diagnostic?'Diagnostic':'Natural');
+ $('motion').textContent=
+  diagnostic?'Diagnostic':'Normal Motion';
 };
 
-armSlider.oninput=()=>{
-
- relaxation=Number(armSlider.value)/100;
-
- document.getElementById('armValue').textContent=
-  armSlider.value+'%';
+$('toggleInfo').onclick=()=>{
+ const hidden=$('panel').classList.toggle('hidden');
+ $('toggleInfo').textContent=hidden?'Show Info':'Hide Info';
 };
 
-breathSlider.oninput=()=>{
-
- breathIntensity=Number(breathSlider.value)/100;
-
- document.getElementById('breathValue').textContent=
-  breathSlider.value+'%';
-};
-
-function updateDiagnostics(){
-
+function diagnostics(){
  setStatus(
   'Guardian: Loaded'+
-  '\nSkeleton bones: '+originalRotations.size+
-  '\nLeft arm: '+(leftArm?'Found':'Missing')+
-  '\nRight arm: '+(rightArm?'Found':'Missing')+
-  '\nBreathing spine: '+(spine?spine.name:'Missing')+
-  '\nStance: '+(natural?'Natural':'T-Pose')
+  '\nSkeleton: '+originalRotations.size+' bones'+
+  '\nArms: '+(joints.leftArm&&joints.rightArm?'Found':'Missing')+
+  '\nShoulders: '+(joints.leftShoulder&&joints.rightShoulder?'Found':'Partial')+
+  '\nElbows: '+(joints.leftElbow&&joints.rightElbow?'Found':'Partial')+
+  '\nHands: '+(joints.leftHand&&joints.rightHand?'Found':'Partial')+
+  '\nFeet: '+(joints.leftFoot&&joints.rightFoot?'Found':'Partial')
  );
 }
 
-setStatus('Loading Guardian model...');
+setStatus('Loading Guardian...');
 
 new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
-
  gltf=>{
-
   guardian=gltf.scene;
+  const box=new THREE.Box3().setFromObject(guardian,true);
+  const size=box.getSize(new THREE.Vector3());
 
-  const originalBounds=new THREE.Box3()
-   .setFromObject(guardian,true);
-
-  const originalSize=originalBounds.getSize(
-   new THREE.Vector3()
-  );
-
-  if(originalSize.y<=0){
+  if(size.y<=0){
    setStatus('ERROR: Invalid model dimensions');
    return;
   }
 
-  guardian.scale.multiplyScalar(
-   2.5/originalSize.y
-  );
-
+  guardian.scale.multiplyScalar(2.5/size.y);
   guardian.updateMatrixWorld(true);
 
-  const scaledBounds=new THREE.Box3()
-   .setFromObject(guardian,true);
-
-  const center=scaledBounds.getCenter(
-   new THREE.Vector3()
-  );
+  const scaled=new THREE.Box3().setFromObject(guardian,true);
+  const center=scaled.getCenter(new THREE.Vector3());
 
   guardian.position.x-=center.x;
   guardian.position.z-=center.z;
-  guardian.position.y-=scaledBounds.min.y;
+  guardian.position.y-=scaled.min.y;
 
   guardian.updateMatrixWorld(true);
   scene.add(guardian);
@@ -409,44 +410,32 @@ new GLTFLoader().load(
   captureSkeleton(guardian);
   applyPose(0);
   fitCamera();
-  updateDiagnostics();
-
+  diagnostics();
  },
-
  undefined,
-
  error=>{
   console.error(error);
-  setStatus(
-   'MODEL ERROR: '+
-   (error.message||String(error))
-  );
+  setStatus('MODEL ERROR: '+(error.message||String(error)));
  }
 );
 
 const clock=new THREE.Clock();
 
 renderer.setAnimationLoop(()=>{
-
  applyPose(clock.getElapsedTime());
-
  controls.update();
  renderer.render(scene,camera);
 });
 
 addEventListener('resize',()=>{
-
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
-
  renderer.setSize(innerWidth,innerHeight);
  fitCamera();
 });
 
 }catch(error){
-
  setStatus('ENGINE ERROR: '+error.message);
-
 }
 </script>
 </body>
