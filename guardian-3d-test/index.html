@@ -2,249 +2,272 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>LIFE RPG — Guardian Test 2D</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: #111923;
-      color: #f3e5c5;
-      font: 15px system-ui, sans-serif;
-      overflow: hidden;
-    }
-    #view { position: fixed; inset: 0; }
-    header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      padding: 15px 18px;
-      background: linear-gradient(#10151fe8, transparent);
-      pointer-events: none;
-    }
-    h1 { font-size: 18px; margin: 0; color: #e9c77c; }
-    #status { font-size: 12px; margin-top: 6px; color: #e0d9cc; }
-    footer {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      padding: 12px;
-      background: #10151fdb;
-      text-align: center;
-      font-size: 12px;
-    }
-    button {
-      background: #a77b3b;
-      border: 1px solid #dfbd7d;
-      color: white;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-weight: 700;
-    }
-    #actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 8px;
-    }
-  </style>
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIFE RPG — Guardian Test 2E</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111923;color:#f3e5c5;font:15px system-ui,sans-serif;overflow:hidden}
+#view{position:fixed;inset:0}
+header{position:fixed;top:0;left:0;right:0;padding:15px 18px;background:linear-gradient(#10151fe8,transparent);pointer-events:none}
+h1{font-size:18px;margin:0;color:#e9c77c}
+#status{font-size:12px;margin-top:6px;color:#e0d9cc;line-height:1.5}
+footer{position:fixed;bottom:0;left:0;right:0;padding:12px;background:#10151fdb;text-align:center;font-size:12px}
+button{background:#a77b3b;border:1px solid #dfbd7d;color:#fff;border-radius:8px;padding:10px 13px;font-weight:700}
+#actions{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+#pose{background:#71522e}
+</style>
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+ }
+}
+</script>
 </head>
 <body>
-  <div id="view"></div>
+<div id="view"></div>
+<header>
+<h1>LIFE RPG — Guardian Test 2E</h1>
+<div id="status">Loading Guardian...</div>
+</header>
+<footer>
+<div id="actions">
+<button id="reset">Reset camera</button>
+<button id="spin">Auto rotate: Off</button>
+<button id="pose">Pose: Refined</button>
+</div>
+Drag to rotate · Pinch to zoom · Stance refinement
+</footer>
 
-  <header>
-    <h1>LIFE RPG — Guardian Foundation</h1>
-    <div id="status">Loading 3D character...</div>
-  </header>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
-  <footer>
-    <div id="actions">
-      <button id="reset">Reset camera</button>
-      <button id="spin">Auto rotate: Off</button>
-    </div>
-    Drag to rotate · Pinch to zoom · Pose experiment
-  </footer>
+const el=document.getElementById('view');
+const status=document.getElementById('status');
 
-  <script type="module">
-    import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+window.addEventListener('error',e=>{
+ status.textContent='JavaScript error: '+e.message;
+});
+window.addEventListener('unhandledrejection',e=>{
+ status.textContent='Error: '+String(e.reason);
+});
 
-    const el = document.getElementById('view');
-    const status = document.getElementById('status');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#182330');
 
-    window.addEventListener('error', event => {
-      status.textContent = 'JavaScript error: ' + event.message;
-    });
+const camera=new THREE.PerspectiveCamera(
+ 35,innerWidth/innerHeight,0.01,1000
+);
 
-    window.addEventListener('unhandledrejection', event => {
-      status.textContent = 'Error: ' + String(event.reason);
-    });
+const renderer=new THREE.WebGLRenderer({
+ antialias:true,
+ powerPreference:'high-performance'
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+el.appendChild(renderer.domElement);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#182330');
+scene.add(new THREE.HemisphereLight(0xdbe8ff,0x60402d,2));
 
-    const camera = new THREE.PerspectiveCamera(
-      35,
-      innerWidth / innerHeight,
-      0.01,
-      1000
+const key=new THREE.DirectionalLight(0xffdfb3,3);
+key.position.set(3,6,5);
+scene.add(key);
+
+const rim=new THREE.DirectionalLight(0x8faedc,1.8);
+rim.position.set(-4,3,-4);
+scene.add(rim);
+
+const controls=new OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.enablePan=false;
+controls.minDistance=0.5;
+controls.maxDistance=20;
+
+let spin=false;
+let reset=()=>{};
+let model=null;
+let poseMode='refined';
+let bones={};
+const originalRotations=new Map();
+
+document.getElementById('spin').onclick=()=>{
+ spin=!spin;
+ controls.autoRotate=spin;
+ controls.autoRotateSpeed=1;
+ document.getElementById('spin').textContent=
+  'Auto rotate: '+(spin?'On':'Off');
+};
+
+document.getElementById('reset').onclick=()=>reset();
+
+function captureSkeleton(root){
+ bones={};
+ originalRotations.clear();
+
+ root.traverse(obj=>{
+  if(obj.isBone){
+   bones[obj.name.toLowerCase()]=obj;
+   originalRotations.set(obj,obj.quaternion.clone());
+  }
+ });
+}
+
+function findBone(...names){
+ for(const name of names){
+  if(bones[name.toLowerCase()]){
+   return bones[name.toLowerCase()];
+  }
+ }
+ return null;
+}
+
+function restoreSkeleton(){
+ for(const [bone,rotation] of originalRotations){
+  bone.quaternion.copy(rotation);
+ }
+}
+
+function applyGuardianPose(mode){
+ if(!model)return;
+
+ restoreSkeleton();
+
+ const leftArm=findBone('upperarm_l');
+ const rightArm=findBone('upperarm_r');
+
+ const leftForearm=findBone(
+  'lowerarm_l','forearm_l','lowerarm.l'
+ );
+ const rightForearm=findBone(
+  'lowerarm_r','forearm_r','lowerarm.r'
+ );
+
+ const leftHand=findBone('hand_l','hand.l');
+ const rightHand=findBone('hand_r','hand.r');
+
+ if(!leftArm||!rightArm){
+  status.textContent='Guardian loaded · Arm bones not found';
+  return;
+ }
+
+ if(mode==='refined'){
+  // Natural stance experiment:
+  // slightly less shoulder rotation than Test 2D.
+  leftArm.rotateZ(-1.13);
+  rightArm.rotateZ(1.13);
+
+  // Small forearm adjustments.
+  // Bone-local axes may require later calibration.
+  if(leftForearm){
+   leftForearm.rotateX(0.10);
+  }
+  if(rightForearm){
+   rightForearm.rotateX(0.10);
+  }
+
+  // Subtle wrist refinement.
+  if(leftHand){
+   leftHand.rotateZ(0.06);
+  }
+  if(rightHand){
+   rightHand.rotateZ(-0.06);
+  }
+ }else{
+  // Previous successful Test 2D pose.
+  leftArm.rotateZ(-Math.PI/2.5);
+  rightArm.rotateZ(Math.PI/2.5);
+ }
+
+ model.updateMatrixWorld(true);
+
+ status.textContent=
+  'Guardian loaded · '+(
+   mode==='refined'
+    ?'Refined stance active'
+    :'Previous Test 2D stance active'
+  )+
+  ' · Bones: '+originalRotations.size;
+}
+
+document.getElementById('pose').onclick=()=>{
+ poseMode=poseMode==='refined'?'previous':'refined';
+ document.getElementById('pose').textContent=
+  'Pose: '+(poseMode==='refined'?'Refined':'Previous');
+ applyGuardianPose(poseMode);
+};
+
+const loader=new GLTFLoader();
+
+loader.load(
+ './Superhero_Male_FullBody.gltf',
+ gltf=>{
+  try{
+   model=gltf.scene;
+   scene.add(model);
+
+   captureSkeleton(model);
+   applyGuardianPose(poseMode);
+
+   const bounds=new THREE.Box3().setFromObject(model);
+   const center=bounds.getCenter(new THREE.Vector3());
+   const size=bounds.getSize(new THREE.Vector3());
+   const height=Math.max(size.y,0.1);
+
+   controls.target.copy(center);
+   camera.position.set(
+    center.x,
+    center.y+height*0.08,
+    center.z+height*2.5
+   );
+
+   camera.near=Math.max(height*0.001,0.001);
+   camera.far=Math.max(height*30,100);
+   camera.updateProjectionMatrix();
+
+   controls.minDistance=height*0.6;
+   controls.maxDistance=height*7;
+   controls.update();
+
+   reset=()=>{
+    controls.target.copy(center);
+    camera.position.set(
+     center.x,
+     center.y+height*0.08,
+     center.z+height*2.5
     );
+    controls.update();
+   };
 
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      powerPreference: 'high-performance'
-    });
+  }catch(error){
+   console.error(error);
+   status.textContent='Setup error: '+error.message;
+  }
+ },
+ undefined,
+ error=>{
+  console.error(error);
+  status.textContent='Model load failed: '+(
+   error.message||String(error)
+  );
+ }
+);
 
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    el.appendChild(renderer.domElement);
+addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
 
-    scene.add(new THREE.HemisphereLight(0xdbe8ff, 0x60402d, 2));
-
-    const key = new THREE.DirectionalLight(0xffdfb3, 3);
-    key.position.set(3, 6, 5);
-    scene.add(key);
-
-    const rim = new THREE.DirectionalLight(0x8faedc, 1.8);
-    rim.position.set(-4, 3, -4);
-    scene.add(rim);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.enablePan = false;
-    controls.minDistance = 0.5;
-    controls.maxDistance = 20;
-
-    let spin = false;
-    let reset = () => {};
-
-    document.getElementById('spin').onclick = () => {
-      spin = !spin;
-      controls.autoRotate = spin;
-      controls.autoRotateSpeed = 1;
-      document.getElementById('spin').textContent =
-        'Auto rotate: ' + (spin ? 'On' : 'Off');
-    };
-
-    document.getElementById('reset').onclick = () => reset();
-
-    function setGuardianPose(model, relaxed = true) {
-      const bones = {};
-
-      model.traverse(obj => {
-        if (obj.isBone) {
-          bones[obj.name.toLowerCase()] = obj;
-        }
-      });
-
-      const left = bones['upperarm_l'];
-      const right = bones['upperarm_r'];
-
-      if (!left || !right) {
-        console.warn('Guardian arm bones not found');
-        return false;
-      }
-
-      if (!left.userData.originalPose) {
-        left.userData.originalPose = left.quaternion.clone();
-        right.userData.originalPose = right.quaternion.clone();
-      }
-
-      left.quaternion.copy(left.userData.originalPose);
-      right.quaternion.copy(right.userData.originalPose);
-
-      if (relaxed) {
-        left.rotateZ(-Math.PI / 2.5);
-        right.rotateZ(Math.PI / 2.5);
-      }
-
-      model.updateMatrixWorld(true);
-      return true;
-    }
-
-    const loader = new GLTFLoader();
-
-    loader.load(
-      './Superhero_Male_FullBody.gltf',
-
-      gltf => {
-        try {
-          const model = gltf.scene;
-          scene.add(model);
-
-          const poseApplied = setGuardianPose(model, true);
-
-          model.updateMatrixWorld(true);
-
-          const bounds = new THREE.Box3().setFromObject(model);
-          const center = bounds.getCenter(new THREE.Vector3());
-          const size = bounds.getSize(new THREE.Vector3());
-          const height = Math.max(size.y, 0.1);
-
-          controls.target.copy(center);
-
-          camera.position.set(
-            center.x,
-            center.y + height * 0.08,
-            center.z + height * 2.5
-          );
-
-          camera.near = Math.max(height * 0.001, 0.001);
-          camera.far = Math.max(height * 30, 100);
-          camera.updateProjectionMatrix();
-
-          controls.minDistance = height * 0.6;
-          controls.maxDistance = height * 7;
-          controls.update();
-
-          reset = () => {
-            controls.target.copy(center);
-            camera.position.set(
-              center.x,
-              center.y + height * 0.08,
-              center.z + height * 2.5
-            );
-            controls.update();
-          };
-
-          status.textContent = poseApplied
-            ? 'Guardian loaded · Relaxed pose applied'
-            : 'Guardian loaded · Arm bones not found (original pose)';
-        } catch (error) {
-          console.error(error);
-          status.textContent = 'Pose/setup error: ' + error.message;
-        }
-      },
-
-      undefined,
-
-      error => {
-        console.error(error);
-        status.textContent = 'Model load failed: ' +
-          (error.message || String(error));
-      }
-    );
-
-    addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
-
-    renderer.setAnimationLoop(() => {
-      controls.update();
-      renderer.render(scene, camera);
-    });
-  </script>
+renderer.setAnimationLoop(()=>{
+ controls.update();
+ renderer.render(scene,camera);
+});
+</script>
 </body>
 </html>
