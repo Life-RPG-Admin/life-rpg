@@ -3,8 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian Test 3H</title>
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>LIFE RPG — Guardian Test 3H.2</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -13,7 +14,7 @@ body{background:#172334;color:#f4e4c2;font:13px system-ui,sans-serif}
 #panel{
  position:fixed;top:8px;left:8px;right:8px;
  padding:8px 11px;border:1px solid #9b7b43;
- border-radius:10px;background:rgba(13,20,30,.88);
+ border-radius:10px;background:rgba(13,20,30,.9);
  pointer-events:none
 }
 h1{margin:0;font-size:15px;color:#e9c77c}
@@ -31,7 +32,6 @@ button{
  background:#916b35;color:white;
  font-weight:600;font-size:11px
 }
-button:active{background:#b58b4c}
 .adjust{
  display:flex;align-items:center;gap:7px;
  margin:6px 0;font-size:11px
@@ -62,7 +62,7 @@ input[type=range]{
 <div id="scene"></div>
 
 <div id="panel">
- <h1>LIFE RPG — Guardian Test 3H</h1>
+ <h1>LIFE RPG — Guardian Test 3H.2</h1>
  <div id="status">Loading Guardian...</div>
 </div>
 
@@ -75,52 +75,54 @@ input[type=range]{
   <button id="breathing">Breathing On</button>
  </div>
  <div class="buttons">
-  <button id="preset">Reference Pose</button>
-  <button id="baseline">3F Baseline</button>
+  <button id="baseline">3H Baseline</button>
+  <button id="preset">Relaxed Hands</button>
   <button id="motion">Normal Motion</button>
  </div>
 
  <div class="adjust">
   <label>Arm Relaxation</label>
-  <input id="arms" type="range" min="0" max="100" value="75">
-  <span class="value" id="armsV">75%</span>
+  <input id="arms" type="range"
+   min="0" max="100" value="100">
+  <span class="value" id="armsV">100%</span>
  </div>
  <div class="adjust">
-  <label>Shoulders</label>
-  <input id="shoulders" type="range" min="-100" max="100" value="0">
-  <span class="value" id="shouldersV">0</span>
- </div>
- <div class="adjust">
-  <label>Elbows</label>
-  <input id="elbows" type="range" min="-100" max="100" value="0">
+  <label>Elbow Bend</label>
+  <input id="elbows" type="range"
+   min="-100" max="100" value="0">
   <span class="value" id="elbowsV">0</span>
  </div>
  <div class="adjust">
-  <label>Hands</label>
-  <input id="hands" type="range" min="-100" max="100" value="0">
-  <span class="value" id="handsV">0</span>
+  <label>Wrist Angle</label>
+  <input id="wrists" type="range"
+   min="-100" max="100" value="0">
+  <span class="value" id="wristsV">0</span>
  </div>
  <div class="adjust">
-  <label>Foot Angle</label>
-  <input id="feet" type="range" min="-100" max="100" value="0">
-  <span class="value" id="feetV">0</span>
+  <label>Finger Curl</label>
+  <input id="fingers" type="range"
+   min="-100" max="100" value="0">
+  <span class="value" id="fingersV">0</span>
  </div>
  <div class="adjust">
   <label>Breathing</label>
-  <input id="breath" type="range" min="0" max="100" value="55">
+  <input id="breath" type="range"
+   min="0" max="100" value="55">
   <span class="value" id="breathV">55%</span>
  </div>
 
  <div id="info">
   Drag to rotate · Pinch to zoom
-  <div>Test 3H — Adjustable Natural Stance</div>
+  <div>Test 3H.2 — Natural Arm Refinement</div>
  </div>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from
+ 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from
+ 'three/addons/controls/OrbitControls.js';
 
 const $=id=>document.getElementById(id);
 const status=$('status');
@@ -142,7 +144,8 @@ const camera=new THREE.PerspectiveCamera(
 );
 
 const renderer=new THREE.WebGLRenderer({
- antialias:true,powerPreference:'high-performance'
+ antialias:true,
+ powerPreference:'high-performance'
 });
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
 renderer.setSize(innerWidth,innerHeight);
@@ -159,6 +162,7 @@ controls.maxPolarAngle=Math.PI-.2;
 scene.add(new THREE.HemisphereLight(
  0xffffff,0x566070,2.2
 ));
+
 const light=new THREE.DirectionalLight(0xffe6bd,3);
 light.position.set(3,6,5);
 scene.add(light);
@@ -179,52 +183,72 @@ let breathing=true;
 let diagnostic=false;
 
 const settings={
- arms:75,
- shoulders:0,
+ arms:100,
  elbows:0,
- hands:0,
- feet:0,
+ wrists:0,
+ fingers:0,
  breath:55
 };
 
 const bones={};
-const originalRotations=new Map();
+const originals=new Map();
 const joints={};
+let fingerBones=[];
 
 function captureSkeleton(root){
+
  root.traverse(obj=>{
-  if(obj.isBone){
-   bones[obj.name.toLowerCase()]=obj;
-   originalRotations.set(obj,obj.quaternion.clone());
-  }
+  if(!obj.isBone)return;
+  bones[obj.name.toLowerCase()]=obj;
+  originals.set(obj,obj.quaternion.clone());
  });
 
  function find(...names){
   for(const n of names){
-   if(bones[n.toLowerCase()])return bones[n.toLowerCase()];
+   if(bones[n.toLowerCase()])
+    return bones[n.toLowerCase()];
   }
   return null;
  }
 
- joints.leftArm=find('upperarm_l','upperarm.l','leftupperarm','left_arm');
- joints.rightArm=find('upperarm_r','upperarm.r','rightupperarm','right_arm');
- joints.spine=find('spine_02','spine_03','spine2','chest','spine');
+ joints.leftArm=find(
+  'upperarm_l','upperarm.l',
+  'leftupperarm','left_arm'
+ );
+ joints.rightArm=find(
+  'upperarm_r','upperarm.r',
+  'rightupperarm','right_arm'
+ );
 
- joints.leftShoulder=find('clavicle_l','clavicle.l','leftshoulder','shoulder_l');
- joints.rightShoulder=find('clavicle_r','clavicle.r','rightshoulder','shoulder_r');
+ joints.leftElbow=find(
+  'lowerarm_l','lowerarm.l',
+  'forearm_l','leftforearm'
+ );
+ joints.rightElbow=find(
+  'lowerarm_r','lowerarm.r',
+  'forearm_r','rightforearm'
+ );
 
- joints.leftElbow=find('lowerarm_l','lowerarm.l','forearm_l','leftforearm');
- joints.rightElbow=find('lowerarm_r','lowerarm.r','forearm_r','rightforearm');
+ joints.leftHand=find(
+  'hand_l','hand.l','lefthand'
+ );
+ joints.rightHand=find(
+  'hand_r','hand.r','righthand'
+ );
 
- joints.leftHand=find('hand_l','hand.l','lefthand');
- joints.rightHand=find('hand_r','hand.r','righthand');
+ joints.spine=find(
+  'spine_02','spine_03',
+  'spine2','chest','spine'
+ );
 
- joints.leftFoot=find('foot_l','foot.l','leftfoot');
- joints.rightFoot=find('foot_r','foot.r','rightfoot');
+ fingerBones=Object.values(bones).filter(b=>{
+  const n=b.name.toLowerCase();
+  return /thumb|index|middle|ring|pinky|little/.test(n);
+ });
 }
 
 function restorePose(){
- for(const [bone,q] of originalRotations){
+ for(const [bone,q] of originals){
   bone.quaternion.copy(q);
  }
 }
@@ -239,34 +263,35 @@ function rotate(bone,axis,angle){
 function applyNaturalStance(){
  if(!natural)return;
 
- // Verified working Test 3F arm positioning.
- const armAngle=(settings.arms/100)*1.35;
- rotate(joints.leftArm,'z',-armAngle);
- rotate(joints.rightArm,'z',armAngle);
+ // Exact 3F upper-arm rotation.
+ const angle=settings.arms/100*1.35;
+ rotate(joints.leftArm,'z',-angle);
+ rotate(joints.rightArm,'z',angle);
 
- // Independent experimental refinements.
- const shoulderAngle=settings.shoulders/100*.10;
- rotate(joints.leftShoulder,'z',-shoulderAngle);
- rotate(joints.rightShoulder,'z',shoulderAngle);
+ // Experimental elbow adjustment.
+ const elbow=settings.elbows/100*.18;
+ rotate(joints.leftElbow,'x',elbow);
+ rotate(joints.rightElbow,'x',elbow);
 
- const elbowAngle=settings.elbows/100*.18;
- rotate(joints.leftElbow,'x',elbowAngle);
- rotate(joints.rightElbow,'x',elbowAngle);
+ // Experimental wrist adjustment.
+ const wrist=settings.wrists/100*.14;
+ rotate(joints.leftHand,'x',wrist);
+ rotate(joints.rightHand,'x',wrist);
 
- const handAngle=settings.hands/100*.14;
- rotate(joints.leftHand,'x',handAngle);
- rotate(joints.rightHand,'x',handAngle);
-
- const footAngle=settings.feet/100*.12;
- rotate(joints.leftFoot,'y',-footAngle);
- rotate(joints.rightFoot,'y',footAngle);
+ // Finger curl: isolated from wrist and arm.
+ const curl=settings.fingers/100*.35;
+ for(const bone of fingerBones){
+  rotate(bone,'x',curl);
+ }
 }
 
 function applyBreathing(t){
  if(!breathing||!natural||!joints.spine)return;
+
  const wave=Math.sin(t*2*Math.PI/4.2);
  const gain=diagnostic?2.6:1;
  const amplitude=.018*(settings.breath/100)*gain;
+
  joints.spine.rotateX(wave*amplitude);
 }
 
@@ -280,23 +305,29 @@ function applyPose(t){
 
 function fitCamera(){
  if(!guardian)return;
+
  guardian.updateMatrixWorld(true);
 
- const bounds=new THREE.Box3().setFromObject(guardian,true);
+ const bounds=new THREE.Box3()
+  .setFromObject(guardian,true);
  const size=bounds.getSize(new THREE.Vector3());
  const center=bounds.getCenter(new THREE.Vector3());
 
  const vFov=THREE.MathUtils.degToRad(camera.fov);
- const hFov=2*Math.atan(Math.tan(vFov/2)*camera.aspect);
+ const hFov=2*Math.atan(
+  Math.tan(vFov/2)*camera.aspect
+ );
  const distanceV=size.y/(2*Math.tan(vFov/2));
  const distanceH=size.x/(2*Math.tan(hFov/2));
 
- // Same working camera method.
- const distance=Math.max(distanceV,distanceH)*2.05+size.z;
+ const distance=
+  Math.max(distanceV,distanceH)*2.05+size.z;
 
  controls.enableDamping=false;
  controls.target.copy(center);
- camera.position.set(center.x,center.y,center.z+distance);
+ camera.position.set(
+  center.x,center.y,center.z+distance
+ );
  camera.up.set(0,1,0);
  camera.lookAt(center);
 
@@ -313,7 +344,9 @@ function syncSliders(){
  for(const key of Object.keys(settings)){
   $(key).value=settings[key];
   $(key+'V').textContent=
-   settings[key]+(key==='arms'||key==='breath'?'%':'');
+   settings[key]+(
+    key==='arms'||key==='breath'?'%':''
+   );
  }
 }
 
@@ -326,17 +359,16 @@ for(const key of Object.keys(settings)){
 
 $('baseline').onclick=()=>{
  Object.assign(settings,{
-  arms:75,shoulders:0,elbows:0,
-  hands:0,feet:0,breath:55
+  arms:100,elbows:0,wrists:0,
+  fingers:0,breath:55
  });
  syncSliders();
 };
 
 $('preset').onclick=()=>{
- // Conservative candidate, not yet approved.
  Object.assign(settings,{
-  arms:80,shoulders:12,elbows:12,
-  hands:10,feet:12,breath:55
+  arms:100,elbows:12,wrists:8,
+  fingers:25,breath:55
  });
  syncSliders();
 };
@@ -348,7 +380,8 @@ $('reset').onclick=()=>{
 
 $('stance').onclick=()=>{
  natural=!natural;
- $('stance').textContent=natural?'Natural':'T-Pose';
+ $('stance').textContent=
+  natural?'Natural':'T-Pose';
 };
 
 $('breathing').onclick=()=>{
@@ -365,18 +398,27 @@ $('motion').onclick=()=>{
 
 $('toggleInfo').onclick=()=>{
  const hidden=$('panel').classList.toggle('hidden');
- $('toggleInfo').textContent=hidden?'Show Info':'Hide Info';
+ $('toggleInfo').textContent=
+  hidden?'Show Info':'Hide Info';
 };
 
 function diagnostics(){
  setStatus(
   'Guardian: Loaded'+
-  '\nSkeleton: '+originalRotations.size+' bones'+
-  '\nArms: '+(joints.leftArm&&joints.rightArm?'Found':'Missing')+
-  '\nShoulders: '+(joints.leftShoulder&&joints.rightShoulder?'Found':'Partial')+
-  '\nElbows: '+(joints.leftElbow&&joints.rightElbow?'Found':'Partial')+
-  '\nHands: '+(joints.leftHand&&joints.rightHand?'Found':'Partial')+
-  '\nFeet: '+(joints.leftFoot&&joints.rightFoot?'Found':'Partial')
+  '\nSkeleton: '+originals.size+' bones'+
+  '\nUpper arms: '+(
+   joints.leftArm&&joints.rightArm?'Found':'Missing'
+  )+
+  '\nElbows: '+(
+   joints.leftElbow&&joints.rightElbow?'Found':'Missing'
+  )+
+  '\nWrists: '+(
+   joints.leftHand&&joints.rightHand?'Found':'Missing'
+  )+
+  '\nFinger bones: '+fingerBones.length+
+  '\nBreathing spine: '+(
+   joints.spine?joints.spine.name:'Missing'
+  )
  );
 }
 
@@ -386,7 +428,9 @@ new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
  gltf=>{
   guardian=gltf.scene;
-  const box=new THREE.Box3().setFromObject(guardian,true);
+
+  const box=new THREE.Box3()
+   .setFromObject(guardian,true);
   const size=box.getSize(new THREE.Vector3());
 
   if(size.y<=0){
@@ -397,7 +441,8 @@ new GLTFLoader().load(
   guardian.scale.multiplyScalar(2.5/size.y);
   guardian.updateMatrixWorld(true);
 
-  const scaled=new THREE.Box3().setFromObject(guardian,true);
+  const scaled=new THREE.Box3()
+   .setFromObject(guardian,true);
   const center=scaled.getCenter(new THREE.Vector3());
 
   guardian.position.x-=center.x;
@@ -415,7 +460,9 @@ new GLTFLoader().load(
  undefined,
  error=>{
   console.error(error);
-  setStatus('MODEL ERROR: '+(error.message||String(error)));
+  setStatus(
+   'MODEL ERROR: '+(error.message||String(error))
+  );
  }
 );
 
@@ -439,4 +486,5 @@ addEventListener('resize',()=>{
 }
 </script>
 </body>
-</html>
+ </html>
+ 
