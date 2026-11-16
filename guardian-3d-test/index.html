@@ -1,6 +1,17 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>LIFE RPG — Guardian 2A</title><style>*{box-sizing:border-box}body{margin:0;background:#111923;color:#f3e5c5;font:15px system-ui,sans-serif;overflow:hidden}#view{position:fixed;inset:0}header{position:fixed;top:0;left:0;right:0;padding:15px 18px;background:linear-gradient(#10151fe8,transparent);pointer-events:none}h1{font-size:18px;margin:0;color:#e9c77c}#status{font-size:12px;margin-top:6px;color:#e0d9cc}footer{position:fixed;bottom:0;left:0;right:0;padding:12px;background:#10151fdb;text-align:center;font-size:12px}button{background:#a77b3b;border:1px solid #dfbd7d;color:#fff;border-radius:8px;padding:10px 16px;font-weight:700}#actions{display:flex;gap:10px;justify-content:center;margin-bottom:8px}</style></head><body><div id="view"></div><header><h1>LIFE RPG — Guardian Foundation</h1><div id="status">Loading 3D character…</div></header><footer><div id="actions"><button id="reset">Reset camera</button><button id="spin">Auto rotate: Off</button></div>Drag to rotate · Pinch to zoom · Visual foundation only</footer><script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
-import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>LIFE RPG — Guardian 2A</title><style>*{box-sizing:border-box}body{margin:0;background:#111923;color:#f3e5c5;font:15px system-ui,sans-serif;overflow:hidden}#view{position:fixed;inset:0}header{position:fixed;top:0;left:0;right:0;padding:15px 18px;background:linear-gradient(#10151fe8,transparent);pointer-events:none}h1{font-size:18px;margin:0;color:#e9c77c}#status{font-size:12px;margin-top:6px;color:#e0d9cc}footer{position:fixed;bottom:0;left:0;right:0;padding:12px;background:#10151fdb;text-align:center;font-size:12px}button{background:#a77b3b;border:1px solid #dfbd7d;color:#fff;border-radius:8px;padding:10px 16px;font-weight:700}#actions{display:flex;gap:10px;justify-content:center;margin-bottom:8px}</style></head><body><div id="view"></div><header><h1>LIFE RPG — Guardian Foundation</h1><div id="status">Loading 3D character…</div></header><footer><div id="actions"><button id="reset">Reset camera</button><button id="spin">Auto rotate: Off</button></div>Drag to rotate · Pinch to zoom · Visual foundation only</footer>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+  
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+  
+  import {GLTFLoader} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
 import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/controls/OrbitControls.js';
 const el=document.getElementById('view'),status=document.getElementById('status');
 const scene=new THREE.Scene();scene.background=new THREE.Color('#182330');
