@@ -1,1 +1,335 @@
-test
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<title>LIFE RPG — Guardian Test 3A</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #101722;
+  color: #f4e4c2;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#scene {
+  position: fixed;
+  inset: 0;
+}
+
+#panel {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  padding: 15px;
+  border: 1px solid #9b7b43;
+  border-radius: 12px;
+  background: rgba(13, 20, 30, 0.9);
+  pointer-events: none;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #e9c77c;
+}
+
+#status {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+#controls {
+  position: fixed;
+  bottom: 20px;
+  left: 12px;
+  right: 12px;
+  text-align: center;
+  padding: 12px;
+  background: rgba(13, 20, 30, 0.85);
+  border-radius: 10px;
+  font-size: 13px;
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="panel">
+  <h1>LIFE RPG — Guardian</h1>
+  <div id="status">Starting 3D engine...</div>
+</div>
+
+<div id="controls">
+  Drag to rotate • Pinch to zoom
+  <div>Build 0.5.4 — Test 3A</div>
+</div>
+
+<script type="module">
+
+import * as THREE from "three";
+
+import { GLTFLoader }
+from "three/addons/loaders/GLTFLoader.js";
+
+import { OrbitControls }
+from "three/addons/controls/OrbitControls.js";
+
+const status = document.getElementById("status");
+const container = document.getElementById("scene");
+
+function updateStatus(message) {
+  status.textContent = message;
+}
+
+window.addEventListener("error", event => {
+  updateStatus("Error: " + event.message);
+});
+
+window.addEventListener(
+  "unhandledrejection",
+  event => {
+    updateStatus(
+      "Error: " +
+      (event.reason?.message || event.reason)
+    );
+  }
+);
+
+try {
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x172334);
+
+  const camera = new THREE.PerspectiveCamera(
+    40,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+  );
+
+  camera.position.set(0, 1.6, 5);
+
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: false
+  });
+
+  renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+  );
+
+  renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+  );
+
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  container.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(
+    camera,
+    renderer.domElement
+  );
+
+  controls.enableDamping = true;
+  controls.enablePan = false;
+
+  controls.target.set(0, 1.1, 0);
+  controls.minDistance = 1.5;
+  controls.maxDistance = 9;
+  controls.update();
+
+  // Lighting
+
+  scene.add(
+    new THREE.HemisphereLight(
+      0xffffff,
+      0x566070,
+      2.2
+    )
+  );
+
+  const sunlight = new THREE.DirectionalLight(
+    0xffe6bd,
+    3
+  );
+
+  sunlight.position.set(3, 6, 5);
+  scene.add(sunlight);
+
+  // Ground
+
+  const ground = new THREE.Mesh(
+    new THREE.CircleGeometry(2.5, 64),
+    new THREE.MeshStandardMaterial({
+      color: 0x344139,
+      roughness: 1
+    })
+  );
+
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = -0.02;
+  scene.add(ground);
+
+  // Guardian model
+
+  updateStatus("Loading Guardian model...");
+
+  const loader = new GLTFLoader();
+
+  const modelPath =
+    "../guardian-3d-test/Superhero_Male_FullBody.gltf";
+
+  loader.load(
+
+    modelPath,
+
+    gltf => {
+
+      const guardian = gltf.scene;
+
+      // Find the model's actual dimensions
+      const bounds = new THREE.Box3()
+        .setFromObject(guardian);
+
+      const size = new THREE.Vector3();
+      const center = new THREE.Vector3();
+
+      bounds.getSize(size);
+      bounds.getCenter(center);
+
+      if (size.y <= 0) {
+        updateStatus("Model has invalid dimensions.");
+        return;
+      }
+
+      // Scale the Guardian to a consistent height
+      const scale = 2.5 / size.y;
+
+      guardian.scale.multiplyScalar(scale);
+
+      // Recalculate after scaling
+      bounds.setFromObject(guardian);
+      bounds.getCenter(center);
+
+      // Center horizontally and place feet on ground
+      guardian.position.x -= center.x;
+      guardian.position.z -= center.z;
+      guardian.position.y -= bounds.min.y;
+
+      scene.add(guardian);
+
+      // Fit the camera to the Guardian
+      const fittedBounds =
+        new THREE.Box3().setFromObject(guardian);
+
+      const fittedCenter =
+        fittedBounds.getCenter(new THREE.Vector3());
+
+      camera.position.set(
+        0,
+        fittedCenter.y + 0.3,
+        5.5
+      );
+
+      controls.target.copy(fittedCenter);
+      controls.update();
+
+      updateStatus(
+        "SUCCESS — Guardian model loaded!"
+      );
+
+    },
+
+    progress => {
+
+      if (progress.total > 0) {
+
+        const percent = Math.round(
+          progress.loaded / progress.total * 100
+        );
+
+        updateStatus(
+          "Loading Guardian: " + percent + "%"
+        );
+
+      }
+
+    },
+
+    error => {
+
+      console.error(error);
+
+      updateStatus(
+        "MODEL ERROR: " +
+        (error.message || String(error))
+      );
+
+    }
+
+  );
+
+  function animate() {
+
+    requestAnimationFrame(animate);
+
+    controls.update();
+
+    renderer.render(scene, camera);
+
+  }
+
+  animate();
+
+  window.addEventListener("resize", () => {
+
+    camera.aspect =
+      window.innerWidth / window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  });
+
+} catch (error) {
+
+  updateStatus(
+    "ENGINE ERROR: " + error.message
+  );
+
+}
+
+</script>
+
+</body>
+  </html>
+  
