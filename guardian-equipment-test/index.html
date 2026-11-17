@@ -4,21 +4,57 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Skeleton Calibration 3J.0</title>
+<title>LIFE RPG — Guardian 3J.1</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
+body{
+ margin:0;background:#101722;color:#f3e4c5;
+ font:13px system-ui,sans-serif;overflow:hidden
+}
 #scene{position:fixed;inset:0}
-#top{position:fixed;top:8px;left:8px;right:8px;padding:9px;background:#111b2bea;border:1px solid #aa8d57;border-radius:10px;pointer-events:none}
+#top{
+ position:fixed;top:8px;left:8px;right:8px;
+ background:#111b2bea;border:1px solid #aa8d57;
+ border-radius:10px;padding:9px;
+ pointer-events:none
+}
 h3{margin:0 0 4px;color:#e9c67d;font-size:15px}
 #status,#debug{font-size:11px;line-height:1.5}
 #debug{color:#b6cbd7}
-#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:37vh;overflow:auto;background:#101a2bea;border:1px solid #aa8d57;border-radius:12px;padding:10px}
-button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:8px;margin:3px}
+#panel{
+ position:fixed;bottom:8px;left:8px;right:8px;
+ max-height:42vh;overflow:auto;
+ background:#101a2bea;border:1px solid #aa8d57;
+ border-radius:12px;padding:10px
+}
+button{
+ background:#29394d;color:#fff;
+ border:1px solid #b99a59;border-radius:7px;
+ padding:8px;margin:3px
+}
 button.active{background:#765d30}
-.setting{display:grid;grid-template-columns:110px 1fr 38px;gap:7px;align-items:center;margin:9px 0}
+.setting{
+ display:grid;grid-template-columns:115px 1fr 40px;
+ gap:7px;align-items:center;margin:10px 0
+}
 input[type=range]{width:100%;accent-color:#d6ad64}
 small{color:#b6c4d0}
+#values{font-size:11px;color:#d8c9a9;margin-top:8px}
+#toggleUI{
+ position:fixed;top:12px;right:12px;
+ z-index:1000;
+ background:rgba(35,48,65,.88);
+ border:1px solid #b99a59;
+ border-radius:8px;
+ padding:9px 13px
+}
+body.ui-hidden #top,
+body.ui-hidden #panel{display:none}
+body.ui-hidden #toggleUI{
+ opacity:.38;
+ padding:6px 9px;
+ font-size:11px
+}
 </style>
 <script type="importmap">
 {"imports":{
@@ -28,75 +64,110 @@ small{color:#b6c4d0}
 </script>
 </head>
 <body>
+
 <div id="scene"></div>
+
+<button id="toggleUI">Hide UI</button>
+
 <div id="top">
-<h3>LIFE RPG — Skeleton Calibration 3J.0</h3>
+<h3>LIFE RPG — Guardian 3J.1</h3>
 <div id="status">Loading Guardian...</div>
-<div id="debug">Waiting for skeleton</div>
+<div id="debug">Independent arm calibration</div>
 </div>
+
 <div id="panel">
 <div>
-<button id="neutral">Locked Natural</button>
-<button id="left" class="active">Left Arm</button>
+<button id="natural">Locked Natural</button>
+<button id="left">Left Arm</button>
 <button id="right">Right Arm</button>
-<button id="both">Both Arms</button>
+<button id="both" class="active">Both Arms</button>
 <button id="markers">Markers ON</button>
 <button id="breath">Breathing OFF</button>
-<button id="reset">Reset Camera</button>
+<button id="resetCamera">Reset Camera</button>
 </div>
-<small>Calibration only — no weapon or permanent stance changes</small>
-<div id="sliders"></div>
+
+<hr style="border:0;border-top:1px solid #8a764d55">
+
 <div>
-<button id="zero">Zero Calibration</button>
-<button id="forward">Forward Test</button>
-<button id="bend">Elbow Test</button>
-<button id="combined">Combined Test</button>
+<button id="editLeft" class="active">Edit Left</button>
+<button id="editRight">Edit Right</button>
 </div>
-<small>Markers: yellow shoulders, green elbows, cyan wrists. White lines show the actual bone chains.</small>
+
+<small>Independent anatomical calibration — no weapon yet</small>
+<div id="sliders"></div>
+
+<div>
+<button id="resetArm">Reset Selected Arm</button>
+<button id="resetBoth">Reset Both Arms</button>
+<button id="copyArm">Copy to Other Arm</button>
+<button id="save">Save Calibration</button>
+</div>
+<div id="values"></div>
 </div>
 
 <script type="module">
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from
+'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from
+'three/addons/controls/OrbitControls.js';
 
-const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
+const V=(x=0,y=0,z=0)=>
+ new THREE.Vector3(x,y,z);
+
+const RAD=Math.PI/180;
+
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x101722);
 
 const camera=new THREE.PerspectiveCamera(
-40,innerWidth/innerHeight,.05,100
+ 40,innerWidth/innerHeight,.05,100
 );
 camera.position.set(0,1.45,9);
 
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const renderer=new THREE.WebGLRenderer({
+ antialias:true
+});
 renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(
+ Math.min(devicePixelRatio,2)
+);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
-document.getElementById('scene').appendChild(renderer.domElement);
+document.getElementById('scene')
+ .appendChild(renderer.domElement);
 
-const controls=new OrbitControls(camera,renderer.domElement);
+const controls=new OrbitControls(
+ camera,renderer.domElement
+);
 controls.target.set(0,1.25,0);
 controls.enableDamping=true;
 controls.minDistance=2.5;
 controls.maxDistance=30;
 controls.update();
 
-scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394457,2.3));
-const light=new THREE.DirectionalLight(0xffe4bc,2.5);
-light.position.set(3,7,6);
-scene.add(light);
+scene.add(new THREE.HemisphereLight(
+ 0xeaf2ff,0x394457,2.3
+));
 
-const ground=new THREE.Mesh(
-new THREE.CircleGeometry(3.4,64),
-new THREE.MeshStandardMaterial({color:0x273445})
+const sun=new THREE.DirectionalLight(
+ 0xffe4bc,2.5
 );
-ground.rotation.x=-Math.PI/2;
-ground.position.y=-.025;
-scene.add(ground);
+sun.position.set(3,7,6);
+scene.add(sun);
+
+const floor=new THREE.Mesh(
+ new THREE.CircleGeometry(3.4,64),
+ new THREE.MeshStandardMaterial({
+  color:0x273445
+ })
+);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-.025;
+scene.add(floor);
 
 let guardian=null;
-let mode='left';
+let viewMode='both';
+let editSide='l';
 let showMarkers=true;
 let breathing=false;
 let rigReady=false;
@@ -104,392 +175,579 @@ let rigReady=false;
 const bones={};
 const originals=new Map();
 const chains={};
-const settings={
-raise:0,
-bend:0,
-spread:0
+
+const defaults={
+ raise:16,
+ spread:-3,
+ bend:60,
+ across:0,
+ twist:0,
+ wristX:0,
+ wristY:0
 };
 
-const configs=[
-['raise','Forward Raise',0,85],
-['bend','Elbow Bend',0,120],
-['spread','Elbow Spread',-45,45]
+const settings={
+ l:{...defaults},
+ r:{...defaults}
+};
+
+const config=[
+ ['raise','Shoulder Forward',-30,90],
+ ['spread','Shoulder Outward',-45,45],
+ ['bend','Elbow Bend',0,135],
+ ['across','Forearm Across',-60,60],
+ ['twist','Forearm Twist',-90,90],
+ ['wristX','Wrist Up/Down',-60,60],
+ ['wristY','Wrist Side',-45,45]
 ];
 
 const inputs={};
 
-for(const [key,label,min,max] of configs){
-const row=document.createElement('div');
-row.className='setting';
-const name=document.createElement('span');
-name.textContent=label;
-const input=document.createElement('input');
-input.type='range';
-input.min=min;input.max=max;input.value=0;
-const value=document.createElement('span');
-value.textContent='0';
+for(const [key,label,min,max] of config){
+ const row=document.createElement('div');
+ row.className='setting';
 
-input.oninput=()=>{
-settings[key]=Number(input.value);
-value.textContent=input.value;
-updatePose();
-};
+ const title=document.createElement('span');
+ title.textContent=label;
 
-inputs[key]={input,value};
-row.append(name,input,value);
-document.getElementById('sliders').appendChild(row);
+ const input=document.createElement('input');
+ input.type='range';
+ input.min=min;
+ input.max=max;
+ input.step=1;
+
+ const value=document.createElement('span');
+
+ input.oninput=()=>{
+  settings[editSide][key]=Number(input.value);
+  value.textContent=input.value;
+  updatePose();
+ };
+
+ row.append(title,input,value);
+ document.getElementById('sliders')
+  .appendChild(row);
+
+ inputs[key]={input,value};
 }
 
-function setSettings(values){
-for(const key of Object.keys(settings)){
-settings[key]=values[key]??0;
-inputs[key].input.value=settings[key];
-inputs[key].value.textContent=settings[key];
-}
-updatePose();
+function refreshInputs(){
+ for(const [key] of config){
+  const value=settings[editSide][key];
+  inputs[key].input.value=value;
+  inputs[key].value.textContent=value;
+ }
+ document.getElementById('values')
+  .textContent=
+  'Editing '+(editSide==='l'?'LEFT':'RIGHT')+
+  ' arm independently';
 }
 
-function bone(name){return bones[name]||null}
-function world(){guardian.updateMatrixWorld(true)}
-function pos(b){return b.getWorldPosition(V())}
+function bone(name){
+ return bones[name]||null;
+}
+
+function world(){
+ guardian.updateMatrixWorld(true);
+}
+
+function pos(b){
+ return b.getWorldPosition(V());
+}
 
 function capture(){
-guardian.traverse(o=>{
-if(o.isBone){
-bones[o.name.toLowerCase()]=o;
-originals.set(o,o.quaternion.clone());
-}
-});
+ guardian.traverse(o=>{
+  if(o.isBone){
+   bones[o.name.toLowerCase()]=o;
+   originals.set(o,o.quaternion.clone());
+  }
+ });
 }
 
 function restore(){
-for(const [b,q] of originals)b.quaternion.copy(q);
-world();
+ for(const [b,q] of originals){
+  b.quaternion.copy(q);
+ }
+ world();
 }
 
-// Approved unarmed pose, unchanged.
+// Locked Natural Guardian Stance.
+// These settings must not be altered by weapon calibration.
 function natural(){
-const l=bone('upperarm_l');
-const r=bone('upperarm_r');
-if(l)l.rotateZ(-1.35);
-if(r)r.rotateZ(1.35);
+ const l=bone('upperarm_l');
+ const r=bone('upperarm_r');
 
-for(const side of ['l','r']){
-const fore=bone('lowerarm_'+side);
-const hand=bone('hand_'+side);
-if(fore)fore.rotateX(.46*.18);
-if(hand)hand.rotateX(.19*.14);
+ if(l)l.rotateZ(-1.35);
+ if(r)r.rotateZ(1.35);
+
+ for(const side of ['l','r']){
+  const fore=bone('lowerarm_'+side);
+  const hand=bone('hand_'+side);
+
+  if(fore)fore.rotateX(.46*.18);
+  if(hand)hand.rotateX(.19*.14);
+ }
+
+ for(const [name,b] of Object.entries(bones)){
+  if(/finger|thumb|index|middle|ring|pinky/.test(name)){
+   b.rotateX(.66*.35);
+  }
+ }
+ world();
 }
 
-for(const [name,b] of Object.entries(bones)){
-if(/finger|thumb|index|middle|ring|pinky/.test(name)){
-b.rotateX(.66*.35);
-}
-}
-world();
-}
-
-// Apply a world-space axis rotation to a joint.
-// The parent's world orientation converts the axis
-// into the joint's actual local coordinate system.
 function rotateWorld(joint,axis,angle){
-if(!joint||axis.lengthSq()<1e-10)return;
+ if(!joint||axis.lengthSq()<1e-10)return;
 
-world();
+ world();
 
-const parentQ=joint.parent.getWorldQuaternion(
-new THREE.Quaternion()
-);
+ const parentQ=joint.parent.getWorldQuaternion(
+  new THREE.Quaternion()
+ );
 
-const localAxis=axis.clone()
-.applyQuaternion(parentQ.clone().invert())
-.normalize();
+ const localAxis=axis.clone()
+  .applyQuaternion(parentQ.clone().invert())
+  .normalize();
 
-joint.quaternion.premultiply(
-new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
-);
-world();
+ joint.quaternion.premultiply(
+  new THREE.Quaternion()
+   .setFromAxisAngle(localAxis,angle)
+ );
+
+ world();
 }
 
-function perpendicular(a,b){
-const v=b.clone().addScaledVector(a,-b.dot(a));
-return v.lengthSq()>1e-9?v.normalize():null;
+function perpendicular(direction,target){
+ const v=target.clone().addScaledVector(
+  direction,-target.dot(direction)
+ );
+ return v.lengthSq()>1e-9?v.normalize():null;
+}
+
+function axisToward(direction,target){
+ const toward=perpendicular(direction,target);
+ if(!toward)return null;
+
+ return new THREE.Vector3()
+  .crossVectors(direction,toward)
+  .normalize();
 }
 
 function calibrate(){
-restore();
-natural();
+ restore();
+ natural();
 
-for(const side of ['l','r']){
-const upper=bone('upperarm_'+side);
-const lower=bone('lowerarm_'+side);
-const hand=bone('hand_'+side);
+ for(const side of ['l','r']){
+  const upper=bone('upperarm_'+side);
+  const lower=bone('lowerarm_'+side);
+  const hand=bone('hand_'+side);
 
-if(!upper||!lower||!hand)continue;
+  if(!upper||!lower||!hand)continue;
 
-const shoulder=pos(upper);
-const elbow=pos(lower);
-const wrist=pos(hand);
+  const shoulder=pos(upper);
+  const elbow=pos(lower);
+  const wrist=pos(hand);
 
-const upperDir=elbow.clone().sub(shoulder).normalize();
-const foreDir=wrist.clone().sub(elbow).normalize();
+  const upperDir=elbow.clone()
+   .sub(shoulder).normalize();
 
-// Determine front from the actual chest-to-back rig
-// if possible, otherwise use the known +Z scene direction.
-const front=V(0,0,1);
+  const foreDir=wrist.clone()
+   .sub(elbow).normalize();
 
-// For raising, rotate the upper-arm direction
-// toward the front of the character.
-const forward=perpendicular(upperDir,front);
-const raiseAxis=forward?
-new THREE.Vector3().crossVectors(upperDir,forward).normalize():
-V(1,0,0);
+  chains[side]={
+   upper,lower,hand,
+   upperDir,
+   foreDir,
+   raiseAxis:axisToward(upperDir,V(0,0,1))
+  };
+ }
 
-// For elbow bending, move the wrist toward the
-// front while preserving the elbow as the pivot.
-const bendForward=perpendicular(foreDir,front);
-const bendAxis=bendForward?
-new THREE.Vector3().crossVectors(foreDir,bendForward).normalize():
-V(1,0,0);
-
-chains[side]={
-upper,lower,hand,
-raiseAxis,bendAxis,
-upperDir,foreDir,
-shoulder,elbow,wrist
-};
-}
-
-rigReady=!!chains.l&&!!chains.r;
+ rigReady=!!chains.l&&!!chains.r;
 }
 
 const diagnostic=new THREE.Group();
 scene.add(diagnostic);
 
 function sphere(color,r=.035){
-const m=new THREE.Mesh(
-new THREE.SphereGeometry(r,12,8),
-new THREE.MeshBasicMaterial({color,depthTest:false})
-);
-diagnostic.add(m);
-return m;
+ const m=new THREE.Mesh(
+  new THREE.SphereGeometry(r,12,8),
+  new THREE.MeshBasicMaterial({
+   color,depthTest:false
+  })
+ );
+ diagnostic.add(m);
+ return m;
 }
 
 const displays={};
 
 for(const side of ['l','r']){
-const shoulder=sphere(0xffdf50,.039);
-const elbow=sphere(0x39ff79,.041);
-const wrist=sphere(0x00dfff,.038);
+ const shoulder=sphere(0xffdf50,.038);
+ const elbow=sphere(
+  side==='l'?0x39ff79:0xff55cc,.042
+ );
+ const wrist=sphere(0x00dfff,.037);
 
-const geo=new THREE.BufferGeometry();
-geo.setAttribute('position',
-new THREE.BufferAttribute(new Float32Array(9),3)
-);
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute(
+  'position',
+  new THREE.BufferAttribute(
+   new Float32Array(9),3
+  )
+ );
 
-const line=new THREE.Line(
-geo,new THREE.LineBasicMaterial({
-color:side==='l'?0x33ff99:0xff99dd,
-depthTest:false
-})
-);
-diagnostic.add(line);
+ const line=new THREE.Line(
+  geo,
+  new THREE.LineBasicMaterial({
+   color:side==='l'?0x33ff99:0xff99dd,
+   depthTest:false
+  })
+ );
 
-displays[side]={shoulder,elbow,wrist,line};
+ diagnostic.add(line);
+ displays[side]={shoulder,elbow,wrist,line};
 }
 
 function updateDiagnostics(){
-if(!guardian||!rigReady)return;
-world();
+ if(!guardian||!rigReady)return;
+ world();
 
-for(const side of ['l','r']){
-const c=chains[side];
-const d=displays[side];
-const p0=pos(c.upper);
-const p1=pos(c.lower);
-const p2=pos(c.hand);
+ for(const side of ['l','r']){
+  const c=chains[side];
+  const d=displays[side];
 
-d.shoulder.position.copy(p0);
-d.elbow.position.copy(p1);
-d.wrist.position.copy(p2);
+  const p0=pos(c.upper);
+  const p1=pos(c.lower);
+  const p2=pos(c.hand);
 
-const arr=d.line.geometry.attributes.position.array;
-arr.set([
-p0.x,p0.y,p0.z,
-p1.x,p1.y,p1.z,
-p2.x,p2.y,p2.z
-]);
-d.line.geometry.attributes.position.needsUpdate=true;
-d.line.geometry.computeBoundingSphere();
+  d.shoulder.position.copy(p0);
+  d.elbow.position.copy(p1);
+  d.wrist.position.copy(p2);
+
+  const arr=d.line.geometry
+   .attributes.position.array;
+
+  arr.set([
+   p0.x,p0.y,p0.z,
+   p1.x,p1.y,p1.z,
+   p2.x,p2.y,p2.z
+  ]);
+
+  d.line.geometry.attributes
+   .position.needsUpdate=true;
+
+  d.line.geometry.computeBoundingSphere();
+ }
+
+ diagnostic.visible=showMarkers;
 }
 
-diagnostic.visible=showMarkers;
-}
+function applyArm(side){
+ const c=chains[side];
+ if(!c)return;
 
-function applyCalibration(side){
-const c=chains[side];
-if(!c)return;
+ const s=settings[side];
+ const sign=side==='l'?-1:1;
 
-const rad=Math.PI/180;
-const sign=side==='l'?-1:1;
+ // Shoulder forward elevation
+ if(c.raiseAxis){
+  rotateWorld(
+   c.upper,c.raiseAxis,s.raise*RAD
+  );
+ }
 
-// The axes were measured from the neutral rig,
-// so this is an isolated relative movement.
-rotateWorld(c.upper,c.raiseAxis,settings.raise*rad);
+ // Shoulder outward positioning
+ rotateWorld(
+  c.upper,V(0,0,1),
+  sign*s.spread*RAD
+ );
 
-world();
+ // Anatomical elbow flexion
+ world();
 
-// Recalculate the actual forearm direction after
-// moving the upper arm.
-const elbow=pos(c.lower);
-const wrist=pos(c.hand);
-const fore=wrist.sub(elbow).normalize();
+ let elbow=pos(c.lower);
+ let wrist=pos(c.hand);
+ let fore=wrist.sub(elbow).normalize();
 
-const front=V(0,0,1);
-const toward=perpendicular(fore,front);
+ const bendAxis=axisToward(fore,V(0,0,1));
 
-if(toward){
-const axis=new THREE.Vector3()
-.crossVectors(fore,toward).normalize();
-rotateWorld(c.lower,axis,settings.bend*rad);
-}
+ if(bendAxis){
+  rotateWorld(
+   c.lower,bendAxis,s.bend*RAD
+  );
+ }
 
-// Small shoulder outward movement for diagnostics.
-if(settings.spread!==0){
-rotateWorld(c.upper,V(0,0,1),
-sign*settings.spread*rad);
-}
+ // Across-body movement
+ rotateWorld(
+  c.upper,V(0,1,0),
+  sign*s.across*RAD*.55
+ );
+
+ // Forearm rotation
+ world();
+ elbow=pos(c.lower);
+ wrist=pos(c.hand);
+ fore=wrist.sub(elbow).normalize();
+
+ rotateWorld(
+  c.lower,fore,s.twist*RAD
+ );
+
+ // Wrist pitch and yaw
+ world();
+
+ const hand=c.hand;
+ const parentQ=hand.parent.getWorldQuaternion(
+  new THREE.Quaternion()
+ );
+
+ const wristX=V(1,0,0)
+  .applyQuaternion(parentQ);
+
+ const wristY=V(0,1,0)
+  .applyQuaternion(parentQ);
+
+ rotateWorld(
+  hand,wristX,s.wristX*RAD
+ );
+
+ rotateWorld(
+  hand,wristY,s.wristY*RAD
+ );
 }
 
 function updatePose(){
-if(!guardian)return;
-restore();
-natural();
+ if(!guardian)return;
 
-if(rigReady&&mode!=='neutral'){
-if(mode==='left'||mode==='both')applyCalibration('l');
-if(mode==='right'||mode==='both')applyCalibration('r');
-}
+ restore();
+ natural();
 
-updateDiagnostics();
+ if(rigReady&&viewMode!=='natural'){
+  if(viewMode==='left'||viewMode==='both'){
+   applyArm('l');
+  }
+  if(viewMode==='right'||viewMode==='both'){
+   applyArm('r');
+  }
+ }
 
-if(rigReady){
-const c=chains.l;
-const shoulder=pos(c.upper);
-const elbow=pos(c.lower);
-const wrist=pos(c.hand);
+ updateDiagnostics();
 
-const a=shoulder.distanceTo(elbow);
-const b=elbow.distanceTo(wrist);
+ if(rigReady){
+  const L=chains.l;
+  const R=chains.r;
 
-document.getElementById('debug').textContent=
-`Left upper/forearm: ${a.toFixed(3)} / ${b.toFixed(3)} · Mode: ${mode}`;
-}
+  const leftElbow=pos(L.lower);
+  const rightElbow=pos(R.lower);
+
+  document.getElementById('debug')
+   .textContent=
+   'Independent arm control · '+
+   'Elbow separation: '+
+   leftElbow.distanceTo(rightElbow)
+    .toFixed(3);
+ }
 }
 
 function selectMode(next){
-mode=next;
-for(const id of ['neutral','left','right','both']){
-document.getElementById(id).classList.toggle('active',id===next);
+ viewMode=next;
+
+ for(const id of ['natural','left','right','both']){
+  document.getElementById(id)
+   .classList.toggle(
+    'active',id===next
+   );
+ }
+
+ updatePose();
 }
-updatePose();
+
+function selectEdit(side){
+ editSide=side;
+
+ document.getElementById('editLeft')
+  .classList.toggle('active',side==='l');
+
+ document.getElementById('editRight')
+  .classList.toggle('active',side==='r');
+
+ refreshInputs();
 }
 
-for(const id of ['neutral','left','right','both']){
-document.getElementById(id).onclick=()=>selectMode(id);
+for(const id of ['natural','left','right','both']){
+ document.getElementById(id).onclick=()=>
+  selectMode(id);
 }
 
-document.getElementById('zero').onclick=()=>
-setSettings({raise:0,bend:0,spread:0});
+document.getElementById('editLeft').onclick=()=>
+ selectEdit('l');
 
-document.getElementById('forward').onclick=()=>
-setSettings({raise:40,bend:0,spread:0});
+document.getElementById('editRight').onclick=()=>
+ selectEdit('r');
 
-document.getElementById('bend').onclick=()=>
-setSettings({raise:0,bend:65,spread:0});
+document.getElementById('resetArm').onclick=()=>{
+ settings[editSide]={...defaults};
+ refreshInputs();
+ updatePose();
+};
 
-document.getElementById('combined').onclick=()=>
-setSettings({raise:40,bend:65,spread:0});
+document.getElementById('resetBoth').onclick=()=>{
+ settings.l={...defaults};
+ settings.r={...defaults};
+ refreshInputs();
+ updatePose();
+};
+
+document.getElementById('copyArm').onclick=()=>{
+ const other=editSide==='l'?'r':'l';
+ settings[other]={...settings[editSide]};
+ updatePose();
+};
+
+document.getElementById('save').onclick=()=>{
+ try{
+  localStorage.setItem(
+   'lifeRPG_3J1_armCalibration',
+   JSON.stringify(settings)
+  );
+  document.getElementById('values')
+   .textContent='Calibration saved locally';
+ }catch(e){
+  document.getElementById('values')
+   .textContent='Local save unavailable';
+ }
+};
 
 document.getElementById('markers').onclick=()=>{
-showMarkers=!showMarkers;
-document.getElementById('markers').textContent=
-showMarkers?'Markers ON':'Markers OFF';
-updateDiagnostics();
+ showMarkers=!showMarkers;
+
+ document.getElementById('markers')
+  .textContent=showMarkers?
+  'Markers ON':'Markers OFF';
+
+ updateDiagnostics();
 };
 
 document.getElementById('breath').onclick=()=>{
-breathing=!breathing;
-document.getElementById('breath').textContent=
-breathing?'Breathing ON':'Breathing OFF';
+ breathing=!breathing;
+
+ document.getElementById('breath')
+  .textContent=breathing?
+  'Breathing ON':'Breathing OFF';
 };
 
-document.getElementById('reset').onclick=()=>{
-camera.position.set(0,1.45,9);
-controls.target.set(0,1.25,0);
-controls.update();
+document.getElementById('resetCamera').onclick=()=>{
+ camera.position.set(0,1.45,9);
+ controls.target.set(0,1.25,0);
+ controls.update();
 };
+
+// Hide / Show UI
+document.getElementById('toggleUI').onclick=()=>{
+ const hidden=document.body.classList.toggle(
+  'ui-hidden'
+ );
+
+ document.getElementById('toggleUI').textContent=
+  hidden?'Show UI':'Hide UI';
+};
+
+try{
+ const saved=JSON.parse(
+  localStorage.getItem(
+   'lifeRPG_3J1_armCalibration'
+  )||'null'
+ );
+
+ if(saved&&saved.l&&saved.r){
+  for(const side of ['l','r']){
+   for(const [key,,min,max] of config){
+    const n=Number(saved[side][key]);
+    if(Number.isFinite(n)){
+     settings[side][key]=
+      THREE.MathUtils.clamp(n,min,max);
+    }
+   }
+  }
+ }
+}catch(e){}
+
+refreshInputs();
 
 new GLTFLoader().load(
-'../guardian-3d-test/Superhero_Male_FullBody.gltf',
-gltf=>{
-guardian=gltf.scene;
+ '../guardian-3d-test/Superhero_Male_FullBody.gltf',
+ gltf=>{
+  guardian=gltf.scene;
 
-const box=new THREE.Box3().setFromObject(guardian);
-const size=box.getSize(V());
-const center=box.getCenter(V());
+  const box=new THREE.Box3()
+   .setFromObject(guardian);
 
-guardian.position.sub(center);
-guardian.scale.setScalar(2.5/Math.max(size.y,.001));
-guardian.position.y+=1.25;
+  const size=box.getSize(V());
+  const center=box.getCenter(V());
 
-scene.add(guardian);
-world();
-capture();
-calibrate();
+  guardian.position.sub(center);
+  guardian.scale.setScalar(
+   2.5/Math.max(size.y,.001)
+  );
+  guardian.position.y+=1.25;
 
-document.getElementById('status').textContent=
-`Guardian loaded · ${Object.keys(bones).length} bones · Calibration ${rigReady?'READY':'INCOMPLETE'}`;
+  scene.add(guardian);
+  world();
 
-updatePose();
-},
-undefined,
-e=>{
-console.error(e);
-document.getElementById('status').textContent='Model load failed — check asset path';
-}
+  capture();
+  calibrate();
+
+  document.getElementById('status')
+   .textContent=
+   'Guardian loaded · '+
+   Object.keys(bones).length+
+   ' bones · Test 3J.1 '+
+   (rigReady?'READY':'INCOMPLETE');
+
+  updatePose();
+ },
+ undefined,
+ error=>{
+  console.error(error);
+  document.getElementById('status')
+   .textContent=
+   'Model load failed — check GLTF path';
+ }
 );
 
 const clock=new THREE.Clock();
 
 function animate(){
-requestAnimationFrame(animate);
+ requestAnimationFrame(animate);
 
-if(guardian){
-updatePose();
+ if(guardian){
+  updatePose();
 
-if(breathing){
-const spine=bone('spine_02');
-if(spine){
-const phase=Math.sin(
-clock.getElapsedTime()*Math.PI*2/4.2
-);
-spine.rotateX(phase*.018*.55);
-world();
-updateDiagnostics();
-}
-}
+  if(breathing){
+   const spine=bone('spine_02');
+
+   if(spine){
+    const phase=Math.sin(
+     clock.getElapsedTime()*Math.PI*2/4.2
+    );
+
+    spine.rotateX(phase*.018*.55);
+    world();
+    updateDiagnostics();
+   }
+  }
+ }
+
+ controls.update();
+ renderer.render(scene,camera);
 }
 
-controls.update();
-renderer.render(scene,camera);
-}
 animate();
 
 addEventListener('resize',()=>{
-camera.aspect=innerWidth/innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(innerWidth,innerHeight);
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
 });
 </script>
 </body>
