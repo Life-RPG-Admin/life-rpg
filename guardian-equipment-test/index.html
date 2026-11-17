@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian 3K.2.2</title>
+<title>LIFE RPG — Guardian 3K.2.4.2</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
@@ -64,7 +64,7 @@ window.addEventListener('unhandledrejection',function(e){
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3K.2.2</h3>
+<h3>LIFE RPG — Guardian 3K.2.4.2</h3>
 <div id="status">Loading Guardian...</div>
 <div id="debug">Approved upper-body stance preserved</div>
 </div>
@@ -79,8 +79,8 @@ window.addEventListener('unhandledrejection',function(e){
 </div>
 
 <hr>
-<h3>Test 3K.2.2 — Left Leg Calibration</h3>
-<small>Two exploratory hip rotations. Upper-body grip remains locked.</small>
+<h3>Test 3K.2.4.2 — Left Leg Calibration</h3>
+<small>Three exploratory controls. Upper-body grip remains locked.</small>
 
 <div class="setting">
 <span>Left Thigh</span>
@@ -92,6 +92,12 @@ window.addEventListener('unhandledrejection',function(e){
 <span>Left Hip Spread</span>
 <input id="leftSpreadSlider" type="range" min="-20" max="20" step="1" value="0">
 <span id="leftSpreadValue">0°</span>
+</div>
+
+<div class="setting">
+<span>Left Knee Bend</span>
+<input id="leftKneeSlider" type="range" min="-25" max="25" step="1" value="0">
+<span id="leftKneeValue">0°</span>
 </div>
 
 <button id="resetLeg">Reset Left Leg</button>
@@ -177,6 +183,7 @@ let breathing=false;
 let rigReady=false;
 let leftThighAngle=0;
 let leftSpreadAngle=0;
+let leftKneeAngle=0;
 let latestLegReport='';
 
 const bones={};
@@ -443,21 +450,27 @@ function applyArm(side){
  applyFingers(side);
 }
 
-// TEST 3K.2.2 — TWO LEFT HIP CONTROLS
+// TEST 3K.2.4.2 — LEFT LEG CONTROLS
 function applyLeftLeg(){
  if(mode!=='stance')return;
 
  const thigh=bone('thigh_l');
  if(!thigh)return;
 
- // Preserve previously tested local X rotation.
+ // Existing 3K.2.2 thigh rotation.
  if(leftThighAngle){
   thigh.rotateX(leftThighAngle*RAD);
  }
 
- // New exploratory local Z hip spread.
+ // Existing 3K.2.2 hip spread.
  if(leftSpreadAngle){
   thigh.rotateZ(leftSpreadAngle*RAD);
+ }
+
+ // New independent knee rotation.
+ const calf=bone('calf_l');
+ if(calf&&leftKneeAngle){
+  calf.rotateX(leftKneeAngle*RAD);
  }
 }
 
@@ -479,7 +492,8 @@ function updatePose(){
 function updateCalibrationStatus(){
  $('calibrationStatus').textContent=
   'Left thigh X: '+leftThighAngle+
-  '° · Left hip spread Z: '+leftSpreadAngle+'°';
+  '° · Left hip spread Z: '+leftSpreadAngle+
+  '° · Left knee X: '+leftKneeAngle+'°';
 }
 
 $('leftThighSlider').oninput=()=>{
@@ -494,14 +508,24 @@ $('leftSpreadSlider').oninput=()=>{
  updateCalibrationStatus();
 };
 
+$('leftKneeSlider').oninput=()=>{
+ leftKneeAngle=Number($('leftKneeSlider').value);
+ $('leftKneeValue').textContent=leftKneeAngle+'°';
+ updateCalibrationStatus();
+};
+
 $('resetLeg').onclick=()=>{
  leftThighAngle=0;
  leftSpreadAngle=0;
+ leftKneeAngle=0;
 
  $('leftThighSlider').value=0;
  $('leftSpreadSlider').value=0;
+ $('leftKneeSlider').value=0;
+
  $('leftThighValue').textContent='0°';
  $('leftSpreadValue').textContent='0°';
+ $('leftKneeValue').textContent='0°';
 
  updateCalibrationStatus();
  updatePose();
@@ -529,7 +553,7 @@ function scanLegBones(){
  );
 
  let report='GUARDIAN LOWER-BODY SKELETON\n';
- report+='Build 3K.2.2\n';
+ report+='Build 3K.2.4.2\n';
  report+='Total bones: '+Object.keys(bones).length+'\n\n';
 
  for(const b of candidates){
@@ -603,7 +627,7 @@ $('toggleUI').onclick=()=>{
 
 function backup(){
  return JSON.stringify({
-  build:'3K.2.2',
+  build:'3K.2.4.2',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -693,12 +717,12 @@ new GLTFLoader().load(
     'Guardian loaded · '+Object.keys(bones).length+' bones · READY';
 
    $('debug').textContent=
-    'Upper-body LOCKED · '+weaponDefinition.name+' · Left-leg calibration';
+    'Upper-body LOCKED · '+weaponDefinition.name+' · Left-knee calibration';
 
    $('calibrationStatus').textContent=
-    bone('thigh_l')
-     ?'Left thigh detected · Both controls ready'
-     :'Left thigh bone missing';
+    bone('thigh_l')&&bone('calf_l')
+     ?'Left thigh and calf detected · Three controls ready'
+     :'Required left-leg bone missing';
 
    updatePose();
    scanLegBones();
@@ -758,4 +782,3 @@ addEventListener('resize',()=>{
 </script>
 </body>
 </html>
-
