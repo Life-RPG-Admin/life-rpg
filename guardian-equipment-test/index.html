@@ -4,21 +4,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian 3I.9</title>
+<title>LIFE RPG — Skeleton Calibration 3J.0</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
 #scene{position:fixed;inset:0}
-#top{position:fixed;top:8px;left:8px;right:8px;background:#111b2be8;border:1px solid #a88b55;border-radius:10px;padding:9px;pointer-events:none}
-h3{margin:0 0 4px;color:#e8c47a;font-size:15px}
+#top{position:fixed;top:8px;left:8px;right:8px;padding:9px;background:#111b2bea;border:1px solid #aa8d57;border-radius:10px;pointer-events:none}
+h3{margin:0 0 4px;color:#e9c67d;font-size:15px}
 #status,#debug{font-size:11px;line-height:1.5}
-#debug{color:#b8c9d5}
-#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:36vh;overflow:auto;background:#101a2be8;border:1px solid #a88b55;border-radius:12px;padding:10px}
-button{background:#29394d;color:white;border:1px solid #b99a59;border-radius:7px;padding:9px;margin:3px}
+#debug{color:#b6cbd7}
+#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:37vh;overflow:auto;background:#101a2bea;border:1px solid #aa8d57;border-radius:12px;padding:10px}
+button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:8px;margin:3px}
 button.active{background:#765d30}
-.setting{display:grid;grid-template-columns:100px 1fr 35px;gap:7px;align-items:center;margin:9px 0}
+.setting{display:grid;grid-template-columns:110px 1fr 38px;gap:7px;align-items:center;margin:9px 0}
 input[type=range]{width:100%;accent-color:#d6ad64}
-small{color:#afbdca}
+small{color:#b6c4d0}
 </style>
 <script type="importmap">
 {"imports":{
@@ -30,30 +30,37 @@ small{color:#afbdca}
 <body>
 <div id="scene"></div>
 <div id="top">
-<h3>LIFE RPG — Guardian 3I.9</h3>
+<h3>LIFE RPG — Skeleton Calibration 3J.0</h3>
 <div id="status">Loading Guardian...</div>
-<div id="debug">Anatomical arm reconstruction</div>
+<div id="debug">Waiting for skeleton</div>
 </div>
 <div id="panel">
 <div>
-<button id="unarmed">Unarmed</button>
-<button id="longsword" class="active">Longsword</button>
-<button id="breath">Breathing ON</button>
+<button id="neutral">Locked Natural</button>
+<button id="left" class="active">Left Arm</button>
+<button id="right">Right Arm</button>
+<button id="both">Both Arms</button>
 <button id="markers">Markers ON</button>
+<button id="breath">Breathing OFF</button>
 <button id="reset">Reset Camera</button>
 </div>
-<div id="weaponControls">
-<small>Weapon-specific calibration — development only</small>
+<small>Calibration only — no weapon or permanent stance changes</small>
 <div id="sliders"></div>
+<div>
+<button id="zero">Zero Calibration</button>
+<button id="forward">Forward Test</button>
+<button id="bend">Elbow Test</button>
+<button id="combined">Combined Test</button>
 </div>
+<small>Markers: yellow shoulders, green elbows, cyan wrists. White lines show the actual bone chains.</small>
 </div>
+
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
-
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x101722);
 
@@ -63,8 +70,8 @@ const camera=new THREE.PerspectiveCamera(
 camera.position.set(0,1.45,9);
 
 const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 document.getElementById('scene').appendChild(renderer.domElement);
 
@@ -76,82 +83,75 @@ controls.maxDistance=30;
 controls.update();
 
 scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394457,2.3));
+const light=new THREE.DirectionalLight(0xffe4bc,2.5);
+light.position.set(3,7,6);
+scene.add(light);
 
-const sun=new THREE.DirectionalLight(0xffe4bc,2.5);
-sun.position.set(3,7,6);
-scene.add(sun);
-
-const floor=new THREE.Mesh(
+const ground=new THREE.Mesh(
 new THREE.CircleGeometry(3.4,64),
 new THREE.MeshStandardMaterial({color:0x273445})
 );
-floor.rotation.x=-Math.PI/2;
-floor.position.y=-.025;
-scene.add(floor);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-.025;
+scene.add(ground);
 
 let guardian=null;
-let sword=null;
-let mode='sword';
-let breathing=true;
+let mode='left';
 let showMarkers=true;
+let breathing=false;
+let rigReady=false;
 
 const bones={};
 const originals=new Map();
-
+const chains={};
 const settings={
-angle:38,
-forward:46,
-height:38,
-spacing:20,
-elbowOut:32,
-curl:70
+raise:0,
+bend:0,
+spread:0
 };
 
 const configs=[
-['angle','Blade Angle',15,65],
-['forward','Grip Forward',20,75],
-['height','Grip Drop',20,65],
-['spacing','Hand Spacing',12,30],
-['elbowOut','Elbow Spread',10,65],
-['curl','Finger Curl',0,100]
+['raise','Forward Raise',0,85],
+['bend','Elbow Bend',0,120],
+['spread','Elbow Spread',-45,45]
 ];
+
+const inputs={};
 
 for(const [key,label,min,max] of configs){
 const row=document.createElement('div');
 row.className='setting';
-const title=document.createElement('span');
-title.textContent=label;
-
+const name=document.createElement('span');
+name.textContent=label;
 const input=document.createElement('input');
 input.type='range';
-input.min=min;
-input.max=max;
-input.value=settings[key];
-
-const val=document.createElement('span');
-val.textContent=input.value;
+input.min=min;input.max=max;input.value=0;
+const value=document.createElement('span');
+value.textContent='0';
 
 input.oninput=()=>{
-settings[key]=+input.value;
-val.textContent=input.value;
+settings[key]=Number(input.value);
+value.textContent=input.value;
 updatePose();
 };
 
-row.append(title,input,val);
+inputs[key]={input,value};
+row.append(name,input,value);
 document.getElementById('sliders').appendChild(row);
 }
 
-function bone(name){
-return bones[name]||null;
+function setSettings(values){
+for(const key of Object.keys(settings)){
+settings[key]=values[key]??0;
+inputs[key].input.value=settings[key];
+inputs[key].value.textContent=settings[key];
+}
+updatePose();
 }
 
-function pos(b){
-return b.getWorldPosition(V());
-}
-
-function updateWorld(){
-guardian.updateMatrixWorld(true);
-}
+function bone(name){return bones[name]||null}
+function world(){guardian.updateMatrixWorld(true)}
+function pos(b){return b.getWorldPosition(V())}
 
 function capture(){
 guardian.traverse(o=>{
@@ -163,25 +163,22 @@ originals.set(o,o.quaternion.clone());
 }
 
 function restore(){
-for(const [b,q] of originals){
-b.quaternion.copy(q);
-}
-updateWorld();
+for(const [b,q] of originals)b.quaternion.copy(q);
+world();
 }
 
+// Approved unarmed pose, unchanged.
 function natural(){
 const l=bone('upperarm_l');
 const r=bone('upperarm_r');
-
 if(l)l.rotateZ(-1.35);
 if(r)r.rotateZ(1.35);
 
 for(const side of ['l','r']){
-const f=bone('lowerarm_'+side);
-const h=bone('hand_'+side);
-
-if(f)f.rotateX(.46*.18);
-if(h)h.rotateX(.19*.14);
+const fore=bone('lowerarm_'+side);
+const hand=bone('hand_'+side);
+if(fore)fore.rotateX(.46*.18);
+if(hand)hand.rotateX(.19*.14);
 }
 
 for(const [name,b] of Object.entries(bones)){
@@ -189,286 +186,242 @@ if(/finger|thumb|index|middle|ring|pinky/.test(name)){
 b.rotateX(.66*.35);
 }
 }
-
-updateWorld();
+world();
 }
 
-function createSword(){
-const g=new THREE.Group();
+// Apply a world-space axis rotation to a joint.
+// The parent's world orientation converts the axis
+// into the joint's actual local coordinate system.
+function rotateWorld(joint,axis,angle){
+if(!joint||axis.lengthSq()<1e-10)return;
 
-const steel=new THREE.MeshStandardMaterial({
-color:0xcbd6df,metalness:.8,roughness:.27
-});
-const leather=new THREE.MeshStandardMaterial({
-color:0x35251a,roughness:.85
-});
-const gold=new THREE.MeshStandardMaterial({
-color:0xbfa16a,metalness:.7,roughness:.3
-});
-
-function cyl(rt,rb,h,y,m){
-const x=new THREE.Mesh(
-new THREE.CylinderGeometry(rt,rb,h,12),m
-);
-x.position.y=y;
-g.add(x);
-}
-
-cyl(.024,.026,.54,-.19,leather);
-cyl(.048,.048,.055,-.48,gold);
-
-const guard=new THREE.Mesh(
-new THREE.BoxGeometry(.40,.05,.08),gold
-);
-guard.position.y=.105;
-g.add(guard);
-
-const blade=new THREE.Mesh(
-new THREE.BoxGeometry(.105,1.42,.035),steel
-);
-blade.position.y=.84;
-g.add(blade);
-
-const tip=new THREE.Mesh(
-new THREE.ConeGeometry(.074,.23,4),steel
-);
-tip.position.y=1.66;
-tip.rotation.y=Math.PI/4;
-g.add(tip);
-
-scene.add(g);
-return g;
-}
-
-const markerGroup=new THREE.Group();
-scene.add(markerGroup);
-
-function mk(color,r=.032){
-const m=new THREE.Mesh(
-new THREE.SphereGeometry(r,12,8),
-new THREE.MeshBasicMaterial({color,depthTest:false})
-);
-markerGroup.add(m);
-return m;
-}
-
-const marks={
-leftTarget:mk(0x00e5ff),
-rightTarget:mk(0xff9b33),
-leftElbow:mk(0x36ff72,.045),
-rightElbow:mk(0xff3ec9,.045),
-leftWrist:mk(0xffffff,.022),
-rightWrist:mk(0xffffff,.022)
-};
-
-function pointSegment(joint,child,desiredPoint){
-updateWorld();
-
-const start=pos(joint);
-const current=pos(child).sub(start);
-const desired=desiredPoint.clone().sub(start);
-
-if(current.lengthSq()<1e-10||desired.lengthSq()<1e-10)return;
-
-const delta=new THREE.Quaternion().setFromUnitVectors(
-current.normalize(),desired.normalize()
-);
+world();
 
 const parentQ=joint.parent.getWorldQuaternion(
 new THREE.Quaternion()
 );
-const worldQ=joint.getWorldQuaternion(
-new THREE.Quaternion()
-);
 
-joint.quaternion.copy(
-parentQ.invert().multiply(delta.multiply(worldQ))
+const localAxis=axis.clone()
+.applyQuaternion(parentQ.clone().invert())
+.normalize();
+
+joint.quaternion.premultiply(
+new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
 );
-updateWorld();
+world();
 }
 
-function solveArm(side,wanted,spread){
+function perpendicular(a,b){
+const v=b.clone().addScaledVector(a,-b.dot(a));
+return v.lengthSq()>1e-9?v.normalize():null;
+}
+
+function calibrate(){
+restore();
+natural();
+
+for(const side of ['l','r']){
 const upper=bone('upperarm_'+side);
 const lower=bone('lowerarm_'+side);
 const hand=bone('hand_'+side);
 
-if(!upper||!lower||!hand)return null;
-
-updateWorld();
+if(!upper||!lower||!hand)continue;
 
 const shoulder=pos(upper);
 const elbow=pos(lower);
 const wrist=pos(hand);
 
-const a=shoulder.distanceTo(elbow);
-const b=elbow.distanceTo(wrist);
+const upperDir=elbow.clone().sub(shoulder).normalize();
+const foreDir=wrist.clone().sub(elbow).normalize();
 
-if(a<.01||b<.01)return null;
+// Determine front from the actual chest-to-back rig
+// if possible, otherwise use the known +Z scene direction.
+const front=V(0,0,1);
 
-const raw=wanted.clone().sub(shoulder);
-const minD=Math.abs(a-b)+.002;
-const maxD=a+b-.012;
-const d=THREE.MathUtils.clamp(raw.length(),minD,maxD);
-const axis=raw.normalize();
+// For raising, rotate the upper-arm direction
+// toward the front of the character.
+const forward=perpendicular(upperDir,front);
+const raiseAxis=forward?
+new THREE.Vector3().crossVectors(upperDir,forward).normalize():
+V(1,0,0);
 
-const target=shoulder.clone().addScaledVector(axis,d);
+// For elbow bending, move the wrist toward the
+// front while preserving the elbow as the pivot.
+const bendForward=perpendicular(foreDir,front);
+const bendAxis=bendForward?
+new THREE.Vector3().crossVectors(foreDir,bendForward).normalize():
+V(1,0,0);
 
-const along=(a*a-b*b+d*d)/(2*d);
-const radius=Math.sqrt(Math.max(0,a*a-along*along));
-
-const sideSign=side==='l'?-1:1;
-
-const pole=shoulder.clone().add(
-V(sideSign*(.20+spread),-.22,.62)
-);
-
-const bend=pole.sub(shoulder).addScaledVector(
-axis,-pole.clone().sub(shoulder).dot(axis)
-);
-
-if(bend.lengthSq()<1e-8){
-bend.set(sideSign,0,.3);
-bend.addScaledVector(axis,-bend.dot(axis));
-}
-
-bend.normalize();
-
-const elbowTarget=shoulder.clone()
-.addScaledVector(axis,along)
-.addScaledVector(bend,radius);
-
-pointSegment(upper,lower,elbowTarget);
-pointSegment(lower,hand,target);
-pointSegment(upper,lower,elbowTarget);
-pointSegment(lower,hand,target);
-
-return {
-upper,lower,hand,target,elbowTarget,
-error:pos(hand).distanceTo(wanted)
+chains[side]={
+upper,lower,hand,
+raiseAxis,bendAxis,
+upperDir,foreDir,
+shoulder,elbow,wrist
 };
 }
 
-function weaponFingers(){
-for(const [name,b] of Object.entries(bones)){
-if(/finger|thumb|index|middle|ring|pinky/.test(name)){
-b.rotateX(settings.curl/100*.42);
-}
-}
+rigReady=!!chains.l&&!!chains.r;
 }
 
-function swordPose(){
-const ul=bone('upperarm_l');
-const ur=bone('upperarm_r');
+const diagnostic=new THREE.Group();
+scene.add(diagnostic);
 
-if(!ul||!ur)return;
+function sphere(color,r=.035){
+const m=new THREE.Mesh(
+new THREE.SphereGeometry(r,12,8),
+new THREE.MeshBasicMaterial({color,depthTest:false})
+);
+diagnostic.add(m);
+return m;
+}
 
-updateWorld();
+const displays={};
 
-const L=pos(ul);
-const R=pos(ur);
-const center=L.clone().add(R).multiplyScalar(.5);
+for(const side of ['l','r']){
+const shoulder=sphere(0xffdf50,.039);
+const elbow=sphere(0x39ff79,.041);
+const wrist=sphere(0x00dfff,.038);
 
-const grip=V(
-center.x,
-center.y-settings.height/100,
-center.z+settings.forward/100
+const geo=new THREE.BufferGeometry();
+geo.setAttribute('position',
+new THREE.BufferAttribute(new Float32Array(9),3)
 );
 
-const angle=THREE.MathUtils.degToRad(settings.angle);
-const axis=V(
-Math.sin(angle),
-Math.cos(angle),
-.20
-).normalize();
+const line=new THREE.Line(
+geo,new THREE.LineBasicMaterial({
+color:side==='l'?0x33ff99:0xff99dd,
+depthTest:false
+})
+);
+diagnostic.add(line);
 
-sword.position.copy(grip);
-sword.quaternion.setFromUnitVectors(V(0,1,0),axis);
-sword.updateMatrixWorld(true);
-
-const gap=settings.spacing/100;
-
-const upperGrip=grip.clone()
-.addScaledVector(axis,-.12+gap/2);
-
-const lowerGrip=grip.clone()
-.addScaledVector(axis,-.12-gap/2);
-
-const leftTarget=upperGrip.clone().add(V(-.045,0,.02));
-const rightTarget=lowerGrip.clone().add(V(.045,0,.02));
-
-marks.leftTarget.position.copy(leftTarget);
-marks.rightTarget.position.copy(rightTarget);
-
-const left=solveArm('l',leftTarget,settings.elbowOut/100);
-const right=solveArm('r',rightTarget,settings.elbowOut/100);
-
-if(!left||!right){
-document.getElementById('debug').textContent='Arm chain missing';
-return;
+displays[side]={shoulder,elbow,wrist,line};
 }
 
-weaponFingers();
-updateWorld();
+function updateDiagnostics(){
+if(!guardian||!rigReady)return;
+world();
 
-marks.leftElbow.position.copy(pos(left.lower));
-marks.rightElbow.position.copy(pos(right.lower));
-marks.leftWrist.position.copy(pos(left.hand));
-marks.rightWrist.position.copy(pos(right.hand));
+for(const side of ['l','r']){
+const c=chains[side];
+const d=displays[side];
+const p0=pos(c.upper);
+const p1=pos(c.lower);
+const p2=pos(c.hand);
 
-const el=pos(left.hand).distanceTo(leftTarget);
-const er=pos(right.hand).distanceTo(rightTarget);
+d.shoulder.position.copy(p0);
+d.elbow.position.copy(p1);
+d.wrist.position.copy(p2);
 
-document.getElementById('debug').textContent=
-`Wrist error L/R: ${el.toFixed(3)} / ${er.toFixed(3)} · Green/Pink = elbows`;
+const arr=d.line.geometry.attributes.position.array;
+arr.set([
+p0.x,p0.y,p0.z,
+p1.x,p1.y,p1.z,
+p2.x,p2.y,p2.z
+]);
+d.line.geometry.attributes.position.needsUpdate=true;
+d.line.geometry.computeBoundingSphere();
+}
+
+diagnostic.visible=showMarkers;
+}
+
+function applyCalibration(side){
+const c=chains[side];
+if(!c)return;
+
+const rad=Math.PI/180;
+const sign=side==='l'?-1:1;
+
+// The axes were measured from the neutral rig,
+// so this is an isolated relative movement.
+rotateWorld(c.upper,c.raiseAxis,settings.raise*rad);
+
+world();
+
+// Recalculate the actual forearm direction after
+// moving the upper arm.
+const elbow=pos(c.lower);
+const wrist=pos(c.hand);
+const fore=wrist.sub(elbow).normalize();
+
+const front=V(0,0,1);
+const toward=perpendicular(fore,front);
+
+if(toward){
+const axis=new THREE.Vector3()
+.crossVectors(fore,toward).normalize();
+rotateWorld(c.lower,axis,settings.bend*rad);
+}
+
+// Small shoulder outward movement for diagnostics.
+if(settings.spread!==0){
+rotateWorld(c.upper,V(0,0,1),
+sign*settings.spread*rad);
+}
 }
 
 function updatePose(){
-if(!guardian||!sword)return;
-
+if(!guardian)return;
 restore();
-
-if(mode==='natural'){
 natural();
-sword.visible=false;
-markerGroup.visible=false;
+
+if(rigReady&&mode!=='neutral'){
+if(mode==='left'||mode==='both')applyCalibration('l');
+if(mode==='right'||mode==='both')applyCalibration('r');
+}
+
+updateDiagnostics();
+
+if(rigReady){
+const c=chains.l;
+const shoulder=pos(c.upper);
+const elbow=pos(c.lower);
+const wrist=pos(c.hand);
+
+const a=shoulder.distanceTo(elbow);
+const b=elbow.distanceTo(wrist);
+
 document.getElementById('debug').textContent=
-'Locked Natural Guardian Stance';
-}else{
-sword.visible=true;
-markerGroup.visible=showMarkers;
-swordPose();
+`Left upper/forearm: ${a.toFixed(3)} / ${b.toFixed(3)} · Mode: ${mode}`;
 }
 }
 
-function changeMode(m){
-mode=m;
-
-document.getElementById('unarmed')
-.classList.toggle('active',m==='natural');
-
-document.getElementById('longsword')
-.classList.toggle('active',m==='sword');
-
-document.getElementById('weaponControls').style.display=
-m==='sword'?'block':'none';
-
+function selectMode(next){
+mode=next;
+for(const id of ['neutral','left','right','both']){
+document.getElementById(id).classList.toggle('active',id===next);
+}
 updatePose();
 }
 
-document.getElementById('unarmed').onclick=()=>changeMode('natural');
-document.getElementById('longsword').onclick=()=>changeMode('sword');
+for(const id of ['neutral','left','right','both']){
+document.getElementById(id).onclick=()=>selectMode(id);
+}
 
-document.getElementById('breath').onclick=()=>{
-breathing=!breathing;
-document.getElementById('breath').textContent=
-breathing?'Breathing ON':'Breathing OFF';
-};
+document.getElementById('zero').onclick=()=>
+setSettings({raise:0,bend:0,spread:0});
+
+document.getElementById('forward').onclick=()=>
+setSettings({raise:40,bend:0,spread:0});
+
+document.getElementById('bend').onclick=()=>
+setSettings({raise:0,bend:65,spread:0});
+
+document.getElementById('combined').onclick=()=>
+setSettings({raise:40,bend:65,spread:0});
 
 document.getElementById('markers').onclick=()=>{
 showMarkers=!showMarkers;
 document.getElementById('markers').textContent=
 showMarkers?'Markers ON':'Markers OFF';
-updatePose();
+updateDiagnostics();
+};
+
+document.getElementById('breath').onclick=()=>{
+breathing=!breathing;
+document.getElementById('breath').textContent=
+breathing?'Breathing ON':'Breathing OFF';
 };
 
 document.getElementById('reset').onclick=()=>{
@@ -491,20 +444,19 @@ guardian.scale.setScalar(2.5/Math.max(size.y,.001));
 guardian.position.y+=1.25;
 
 scene.add(guardian);
-updateWorld();
+world();
 capture();
-sword=createSword();
+calibrate();
 
 document.getElementById('status').textContent=
-`Guardian loaded · ${Object.keys(bones).length} bones · Test 3I.9`;
+`Guardian loaded · ${Object.keys(bones).length} bones · Calibration ${rigReady?'READY':'INCOMPLETE'}`;
 
 updatePose();
 },
 undefined,
 e=>{
 console.error(e);
-document.getElementById('status').textContent=
-'Guardian load failed — check GLTF path';
+document.getElementById('status').textContent='Model load failed — check asset path';
 }
 );
 
@@ -513,18 +465,18 @@ const clock=new THREE.Clock();
 function animate(){
 requestAnimationFrame(animate);
 
-if(guardian&&sword){
+if(guardian){
 updatePose();
 
 if(breathing){
 const spine=bone('spine_02');
-
 if(spine){
 const phase=Math.sin(
 clock.getElapsedTime()*Math.PI*2/4.2
 );
 spine.rotateX(phase*.018*.55);
-updateWorld();
+world();
+updateDiagnostics();
 }
 }
 }
@@ -532,7 +484,6 @@ updateWorld();
 controls.update();
 renderer.render(scene,camera);
 }
-
 animate();
 
 addEventListener('resize',()=>{
