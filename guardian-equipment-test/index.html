@@ -6,7 +6,7 @@
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian 3J.3.3</title>
+<title>LIFE RPG — Guardian 3K.1.2</title>
 
 <style>
 *{box-sizing:border-box}
@@ -120,6 +120,31 @@ hr{
  border-top:1px solid #8a764d55;
  margin:10px 0;
 }
+
+/* NEW: Diagnostic display only */
+
+#legDiagnostic{
+ margin-top:10px;
+ padding:10px;
+ border:1px solid #aa8d57;
+ border-radius:8px;
+ background:#182638;
+}
+
+#legReport{
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+ font-size:11px;
+ line-height:1.6;
+ color:#c9d8e0;
+ margin-top:8px;
+}
+
+#legStatus{
+ color:#e9c67d;
+ font-size:12px;
+}
+
 </style>
 
 <script type="importmap">
@@ -139,9 +164,9 @@ hr{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3J.3.3</h3>
+<h3>LIFE RPG — Guardian 3K.1.2</h3>
 <div id="status">Loading Guardian...</div>
-<div id="debug">Independent weapon calibration</div>
+<div id="debug">Approved upper-body stance preserved</div>
 </div>
 
 <div id="panel">
@@ -152,6 +177,20 @@ hr{
 <button id="swordToggle" class="active">Sword ON</button>
 <button id="breath">Breathing OFF</button>
 <button id="resetCamera">Reset Camera</button>
+</div>
+
+<hr>
+
+<h3>Lower-Body Skeleton Detection</h3>
+<small>
+Diagnostic only. No leg movement is applied.
+</small>
+
+<div id="legDiagnostic">
+<div id="legStatus">Waiting for skeleton...</div>
+<button id="scanLegs">Scan Leg Bones</button>
+<button id="copyLegReport">Copy Bone Report</button>
+<div id="legReport"></div>
 </div>
 
 <hr>
@@ -296,7 +335,8 @@ const lockedGrip={
  }
 };
 
-// Your last saved sword dimensions
+// Original independent sword configuration.
+// Saved values remain authoritative.
 const defaults={
  ...weaponDefinition.dimensions
 };
@@ -312,7 +352,6 @@ const attachment={
  ]
 };
 
-// EXTENDED CALIBRATION RANGES
 const config=[
  ['bladeLength','Blade Length',0.7,4.0,0.01],
  ['bladeWidth','Blade Width',0.04,0.3,0.005],
@@ -780,6 +819,109 @@ function updatePose(){
  updateSword();
 }
 
+// =====================================
+// NEW — LOWER-BODY BONE DIAGNOSTICS
+// READ-ONLY: NO BONE TRANSFORMS
+// =====================================
+
+let latestLegReport='';
+
+function scanLegBones(){
+
+ if(!guardian){
+  $('legStatus').textContent=
+   'Guardian not loaded yet.';
+  return;
+ }
+
+ world();
+
+ const patterns={
+  pelvis:/pelvis|hips|root/i,
+  thigh:/thigh|upper.?leg/i,
+  shin:/calf|shin|lower.?leg/i,
+  foot:/foot|ankle/i,
+  toe:/toe/i
+ };
+
+ const candidates=Object.values(bones).filter(b=>
+  Object.values(patterns).some(p=>
+   p.test(b.name)
+  )
+ );
+
+ let report='GUARDIAN LOWER-BODY SKELETON\n';
+ report+='Build 3K.1.2\n';
+ report+='Total bones: '+
+  Object.keys(bones).length+'\n\n';
+
+ for(const b of candidates){
+
+  const p=pos(b);
+
+  report+='BONE: '+b.name+'\n';
+  report+='PARENT: '+
+   (b.parent?.name||'none')+'\n';
+
+  report+='WORLD: '+
+   p.x.toFixed(3)+', '+
+   p.y.toFixed(3)+', '+
+   p.z.toFixed(3)+'\n\n';
+ }
+
+ if(candidates.length===0){
+  report+='No matching lower-body names found.\n';
+  report+='Full bone list:\n';
+
+  for(const b of Object.values(bones)){
+   report+=b.name+'\n';
+  }
+ }
+
+ latestLegReport=report;
+
+ $('legReport').textContent=report;
+
+ $('legStatus').textContent=
+  candidates.length+
+  ' lower-body candidate bones detected';
+
+ $('debug').textContent=
+  'Upper-body LOCKED · '+
+  weaponDefinition.name+
+  ' · Lower-body diagnostic READY';
+}
+
+$('scanLegs').onclick=()=>{
+ scanLegBones();
+};
+
+$('copyLegReport').onclick=async()=>{
+
+ if(!latestLegReport){
+  scanLegBones();
+ }
+
+ try{
+
+  await navigator.clipboard.writeText(
+   latestLegReport
+  );
+
+  $('legStatus').textContent=
+   'Bone report copied successfully.';
+ }
+ catch(e){
+
+  $('legReport').textContent=
+   latestLegReport;
+ }
+};
+
+// =====================================
+// ORIGINAL BUTTON CONTROLS
+// =====================================
+
 $('natural').onclick=()=>{
 
  mode='natural';
@@ -865,7 +1007,7 @@ $('toggleUI').onclick=()=>{
 function backup(){
 
  return JSON.stringify({
-  build:'3J.3.3',
+  build:'3K.1.2',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -904,7 +1046,6 @@ $('copy').onclick=async()=>{
 
   $('values').textContent=
    'Sword configuration copied.';
-
  }
  catch(e){
 
@@ -1027,9 +1168,12 @@ new GLTFLoader().load(
   $('debug').textContent=
    'Upper-body stance LOCKED · '+
    weaponDefinition.name+
-   ' · Extended calibration';
+   ' · Lower-body diagnostic';
 
   updatePose();
+
+  // Run initial bone scan after loading.
+  scanLegBones();
  },
 
  undefined,
@@ -1103,5 +1247,4 @@ addEventListener('resize',()=>{
 
 </script>
 </body>
- </html>
- 
+</html>
