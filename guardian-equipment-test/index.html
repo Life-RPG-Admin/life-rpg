@@ -6,7 +6,7 @@
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian 3K.1.2</title>
+<title>LIFE RPG — Guardian 3K.2</title>
 
 <style>
 *{box-sizing:border-box}
@@ -89,13 +89,6 @@ input[type=range]{
 
 small{color:#b6c4d0}
 
-#values{
- font-size:11px;
- color:#d8c9a9;
- margin-top:8px;
- white-space:pre-wrap;
-}
-
 #toggleUI{
  position:fixed;
  top:12px;
@@ -120,8 +113,6 @@ hr{
  border-top:1px solid #8a764d55;
  margin:10px 0;
 }
-
-/* NEW: Diagnostic display only */
 
 #legDiagnostic{
  margin-top:10px;
@@ -164,7 +155,7 @@ hr{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3K.1.2</h3>
+<h3>LIFE RPG — Guardian 3K.2</h3>
 <div id="status">Loading Guardian...</div>
 <div id="debug">Approved upper-body stance preserved</div>
 </div>
@@ -181,9 +172,21 @@ hr{
 
 <hr>
 
+<h3>Test 3K.2 — Combat Stance</h3>
+<small>
+Development controls only.
+Upper-body grip remains locked.
+</small>
+
+<div id="legSliders"></div>
+
+<button id="resetLegs">Reset Legs</button>
+
+<hr>
+
 <h3>Lower-Body Skeleton Detection</h3>
 <small>
-Diagnostic only. No leg movement is applied.
+Diagnostic only. No leg movement is applied by the scanner.
 </small>
 
 <div id="legDiagnostic">
@@ -335,8 +338,7 @@ const lockedGrip={
  }
 };
 
-// Original independent sword configuration.
-// Saved values remain authoritative.
+// INDEPENDENT LONGSWORD CONFIGURATION
 const defaults={
  ...weaponDefinition.dimensions
 };
@@ -454,6 +456,163 @@ function refresh(){
  }
 }
 
+// =====================================
+// TEST 3K.2 — LOWER-BODY CALIBRATION
+// =====================================
+
+const legCalibration={
+ leftSpread:0,
+ rightSpread:0,
+ leftForward:0,
+ rightForward:0,
+ leftKnee:0,
+ rightKnee:0
+};
+
+const legControls=[
+ {
+  key:'leftSpread',
+  label:'Left Hip Spread',
+  min:-20,
+  max:20
+ },
+ {
+  key:'rightSpread',
+  label:'Right Hip Spread',
+  min:-20,
+  max:20
+ },
+ {
+  key:'leftForward',
+  label:'Left Leg Forward',
+  min:-25,
+  max:25
+ },
+ {
+  key:'rightForward',
+  label:'Right Leg Forward',
+  min:-25,
+  max:25
+ },
+ {
+  key:'leftKnee',
+  label:'Left Knee Bend',
+  min:-25,
+  max:25
+ },
+ {
+  key:'rightKnee',
+  label:'Right Knee Bend',
+  min:-25,
+  max:25
+ }
+];
+
+const legSliderElements={};
+
+for(const setting of legControls){
+
+ const row=document.createElement('div');
+ row.className='setting';
+
+ const label=document.createElement('span');
+ label.textContent=setting.label;
+
+ const slider=document.createElement('input');
+ slider.type='range';
+ slider.min=setting.min;
+ slider.max=setting.max;
+ slider.step=1;
+ slider.value=0;
+
+ const value=document.createElement('span');
+ value.textContent='0°';
+
+ slider.oninput=()=>{
+
+  legCalibration[setting.key]=
+   Number(slider.value);
+
+  value.textContent=slider.value+'°';
+ };
+
+ row.append(label,slider,value);
+
+ $('legSliders').appendChild(row);
+
+ legSliderElements[setting.key]={
+  slider,
+  value
+ };
+}
+
+function applyLegCalibration(){
+
+ if(!guardian || mode!=='stance'){
+  return;
+ }
+
+ const leftThigh=bone('thigh_l');
+ const rightThigh=bone('thigh_r');
+
+ const leftCalf=bone('calf_l');
+ const rightCalf=bone('calf_r');
+
+ if(leftThigh){
+
+  leftThigh.rotateZ(
+   legCalibration.leftSpread*RAD
+  );
+
+  leftThigh.rotateX(
+   legCalibration.leftForward*RAD
+  );
+ }
+
+ if(rightThigh){
+
+  rightThigh.rotateZ(
+   -legCalibration.rightSpread*RAD
+  );
+
+  rightThigh.rotateX(
+   legCalibration.rightForward*RAD
+  );
+ }
+
+ if(leftCalf){
+
+  leftCalf.rotateX(
+   legCalibration.leftKnee*RAD
+  );
+ }
+
+ if(rightCalf){
+
+  rightCalf.rotateX(
+   legCalibration.rightKnee*RAD
+  );
+ }
+}
+
+$('resetLegs').onclick=()=>{
+
+ for(const setting of legControls){
+
+  legCalibration[setting.key]=0;
+
+  const control=
+   legSliderElements[setting.key];
+
+  control.slider.value=0;
+  control.value.textContent='0°';
+ }
+};
+
+// =====================================
+// GUARDIAN SKELETON AND POSE
+// =====================================
+
 function capture(){
 
  guardian.traverse(o=>{
@@ -508,7 +667,7 @@ function restore(){
  world();
 }
 
-// NATURAL STANCE — UNCHANGED
+// NATURAL STANCE — PRESERVED
 function natural(){
 
  const l=bone('upperarm_l');
@@ -814,14 +973,16 @@ function updatePose(){
  ){
   applyArm('l');
   applyArm('r');
+
+  // TEST 3K.2 — LEG CALIBRATION
+  applyLegCalibration();
  }
 
  updateSword();
 }
 
 // =====================================
-// NEW — LOWER-BODY BONE DIAGNOSTICS
-// READ-ONLY: NO BONE TRANSFORMS
+// LOWER-BODY BONE DIAGNOSTICS
 // =====================================
 
 let latestLegReport='';
@@ -851,7 +1012,7 @@ function scanLegBones(){
  );
 
  let report='GUARDIAN LOWER-BODY SKELETON\n';
- report+='Build 3K.1.2\n';
+ report+='Build 3K.2\n';
  report+='Total bones: '+
   Object.keys(bones).length+'\n\n';
 
@@ -889,7 +1050,7 @@ function scanLegBones(){
  $('debug').textContent=
   'Upper-body LOCKED · '+
   weaponDefinition.name+
-  ' · Lower-body diagnostic READY';
+  ' · Leg calibration READY';
 }
 
 $('scanLegs').onclick=()=>{
@@ -1007,7 +1168,7 @@ $('toggleUI').onclick=()=>{
 function backup(){
 
  return JSON.stringify({
-  build:'3K.1.2',
+  build:'3K.2',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -1168,11 +1329,9 @@ new GLTFLoader().load(
   $('debug').textContent=
    'Upper-body stance LOCKED · '+
    weaponDefinition.name+
-   ' · Lower-body diagnostic';
+   ' · Leg calibration READY';
 
   updatePose();
-
-  // Run initial bone scan after loading.
   scanLegBones();
  },
 
@@ -1202,49 +1361,4 @@ function animate(){
   if(breathing){
 
    const spine=bone(
-    'spine_02'
-   );
-
-   if(spine){
-
-    const phase=Math.sin(
-     clock.getElapsedTime()*
-     Math.PI*2/4.2
-    );
-
-    spine.rotateX(
-     phase*.018*.55
-    );
-
-    world();
-    updateSword();
-   }
-  }
- }
-
- controls.update();
-
- renderer.render(
-  scene,
-  camera
- );
-}
-
-animate();
-
-addEventListener('resize',()=>{
-
- camera.aspect=
-  innerWidth/innerHeight;
-
- camera.updateProjectionMatrix();
-
- renderer.setSize(
-  innerWidth,
-  innerHeight
- );
-});
-
-</script>
-</body>
-</html>
+    'spine_02
