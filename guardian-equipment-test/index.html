@@ -4,19 +4,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian Test 3J.2</title>
+<title>LIFE RPG — Guardian Test 3J.3</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
 #scene{position:fixed;inset:0}
-#top{position:fixed;top:8px;left:8px;right:8px;background:#111b2bea;border:1px solid #aa8d57;border-radius:10px;padding:9px 92px 9px 9px;pointer-events:none}
-h3{margin:0 0 4px;color:#e9c67d;font-size:15px}
+#top{position:fixed;top:8px;left:8px;right:8px;background:#111b2bea;border:1px solid #aa8d57;border-radius:10px;padding:10px 90px 10px 10px;pointer-events:none}
+h3{margin:0 0 5px;color:#e9c67d;font-size:16px}
 #status,#debug{font-size:11px;line-height:1.5}
 #debug{color:#b6cbd7}
-#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:43vh;overflow:auto;background:#101a2bea;border:1px solid #aa8d57;border-radius:12px;padding:10px}
-button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:8px;margin:3px;font:inherit}
+#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:45vh;overflow:auto;background:#101a2bea;border:1px solid #aa8d57;border-radius:12px;padding:10px}
+button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:9px;margin:3px;font:inherit}
 button.active{background:#765d30}
-.setting{display:grid;grid-template-columns:115px minmax(0,1fr) 38px;gap:7px;align-items:center;margin:10px 0}
+.setting{display:grid;grid-template-columns:110px minmax(0,1fr) 35px;gap:7px;align-items:center;margin:10px 0}
 input[type=range]{width:100%;accent-color:#d6ad64}
 small{color:#b6c4d0}
 #values{font-size:11px;color:#d8c9a9;margin-top:8px;white-space:pre-wrap}
@@ -35,9 +35,9 @@ body.ui-hidden #toggleUI{opacity:.38;font-size:11px;padding:6px 9px}
 <div id="scene"></div>
 <button id="toggleUI">Hide UI</button>
 <div id="top">
-<h3>LIFE RPG — Guardian 3J.2</h3>
+<h3>LIFE RPG — Guardian 3J.3</h3>
 <div id="status">Loading Guardian...</div>
-<div id="debug">Extended reach and finger calibration</div>
+<div id="debug">Longsword integration</div>
 </div>
 <div id="panel">
 <div>
@@ -45,6 +45,7 @@ body.ui-hidden #toggleUI{opacity:.38;font-size:11px;padding:6px 9px}
 <button id="left">Left Arm</button>
 <button id="right">Right Arm</button>
 <button id="both" class="active">Both Arms</button>
+<button id="swordToggle" class="active">Sword ON</button>
 <button id="markers">Markers ON</button>
 <button id="breath">Breathing OFF</button>
 <button id="resetCamera">Reset Camera</button>
@@ -54,12 +55,14 @@ body.ui-hidden #toggleUI{opacity:.38;font-size:11px;padding:6px 9px}
 <button id="editLeft" class="active">Edit Left</button>
 <button id="editRight">Edit Right</button>
 </div>
-<small>Independent calibration — finger grip enabled</small>
+<small>Independent arm and hand calibration</small>
 <div id="sliders"></div>
+<hr style="border:0;border-top:1px solid #8a764d55">
+<h3>Longsword Calibration</h3>
+<div id="swordSliders"></div>
 <div>
 <button id="resetArm">Reset Selected Arm</button>
 <button id="resetBoth">Reset Both Arms</button>
-<button id="copyArm">Copy to Other Arm</button>
 <button id="save">Save Calibration</button>
 </div>
 <div id="values"></div>
@@ -89,7 +92,7 @@ $('scene').appendChild(renderer.domElement);
 const controls=new OrbitControls(camera,renderer.domElement);
 controls.target.set(0,1.25,0);
 controls.enableDamping=true;
-controls.minDistance=2.5;
+controls.minDistance=2;
 controls.maxDistance=30;
 controls.update();
 
@@ -111,6 +114,7 @@ let viewMode='both';
 let editSide='l';
 let showMarkers=true;
 let breathing=false;
+let swordVisible=true;
 let rigReady=false;
 
 const bones={};
@@ -120,20 +124,23 @@ const fingers={l:[],r:[]};
 const thumbs={l:[],r:[]};
 
 const defaults={
- raise:16,
- spread:-3,
- bend:60,
- across:0,
- twist:0,
- wristX:0,
- wristY:0,
- fingerCurl:0,
- thumbGrip:0
+ raise:16,spread:-3,bend:60,across:0,
+ twist:0,wristX:0,wristY:0,
+ fingerCurl:0,thumbGrip:0
 };
 
 const settings={
  l:{...defaults},
  r:{...defaults}
+};
+
+const swordSettings={
+ bladeLength:120,
+ handleLength:45,
+ bladeAngle:-40,
+ gripOffsetX:0,
+ gripOffsetY:0,
+ gripOffsetZ:0
 };
 
 const config=[
@@ -148,38 +155,63 @@ const config=[
  ['thumbGrip','Thumb Grip',0,100]
 ];
 
-const inputs={};
+const swordConfig=[
+ ['bladeLength','Blade Length',70,160],
+ ['handleLength','Handle Length',25,75],
+ ['bladeAngle','Blade Angle',-90,90],
+ ['gripOffsetX','Grip X',-50,50],
+ ['gripOffsetY','Grip Y',-50,50],
+ ['gripOffsetZ','Grip Z',-50,50]
+];
 
-for(const [key,label,min,max] of config){
- const row=document.createElement('div');
- row.className='setting';
- const title=document.createElement('span');
- title.textContent=label;
- const input=document.createElement('input');
- input.type='range';
- input.min=min;input.max=max;input.step=1;
- const value=document.createElement('span');
-
- input.oninput=()=>{
-  settings[editSide][key]=Number(input.value);
-  value.textContent=input.value;
-  updatePose();
- };
-
- row.append(title,input,value);
- $('sliders').appendChild(row);
- inputs[key]={input,value};
+function createSliders(container,items,obj,callback){
+ const inputs={};
+ for(const [key,label,min,max] of items){
+  const row=document.createElement('div');
+  row.className='setting';
+  const title=document.createElement('span');
+  title.textContent=label;
+  const input=document.createElement('input');
+  input.type='range';
+  input.min=min;input.max=max;input.step=1;
+  const value=document.createElement('span');
+  input.oninput=()=>{
+   obj[key]=Number(input.value);
+   value.textContent=input.value;
+   callback();
+  };
+  row.append(title,input,value);
+  container.appendChild(row);
+  inputs[key]={input,value};
+ }
+ return inputs;
 }
 
-function refreshInputs(message){
+const armInputs=createSliders(
+ $('sliders'),config,settings.l,updatePose
+);
+const swordInputs=createSliders(
+ $('swordSliders'),swordConfig,swordSettings,updatePose
+);
+
+for(const [key] of config){
+ armInputs[key].input.oninput=()=>{
+  settings[editSide][key]=Number(armInputs[key].input.value);
+  armInputs[key].value.textContent=armInputs[key].input.value;
+  updatePose();
+ };
+}
+
+function refreshInputs(){
  for(const [key] of config){
   const n=settings[editSide][key];
-  inputs[key].input.value=n;
-  inputs[key].value.textContent=n;
+  armInputs[key].input.value=n;
+  armInputs[key].value.textContent=n;
  }
- $('values').textContent=message||
-  'Editing '+(editSide==='l'?'LEFT':'RIGHT')+
-  ' arm independently';
+ for(const [key] of swordConfig){
+  swordInputs[key].input.value=swordSettings[key];
+  swordInputs[key].value.textContent=swordSettings[key];
+ }
 }
 
 function bone(name){return bones[name]||null}
@@ -192,16 +224,12 @@ function capture(){
   const name=o.name.toLowerCase();
   bones[name]=o;
   originals.set(o,o.quaternion.clone());
-
-  const sideMatch=name.match(/(?:_|\.)(l|r)$/);
-  if(!sideMatch)return;
-  const side=sideMatch[1];
-
-  if(/thumb/.test(name)){
-   thumbs[side].push(o);
-  }else if(/finger|index|middle|ring|pinky|little/.test(name)){
+  const match=name.match(/(?:_|\.)(l|r)$/);
+  if(!match)return;
+  const side=match[1];
+  if(/thumb/.test(name))thumbs[side].push(o);
+  else if(/finger|index|middle|ring|pinky|little/.test(name))
    fingers[side].push(o);
-  }
  });
 }
 
@@ -210,25 +238,20 @@ function restore(){
  world();
 }
 
-// Preserved from our previous calibration reference.
-// The approved Natural Guardian values remain locked.
 function natural(){
  const l=bone('upperarm_l');
  const r=bone('upperarm_r');
  if(l)l.rotateZ(-1.35);
  if(r)r.rotateZ(1.35);
-
  for(const side of ['l','r']){
   const fore=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
   if(fore)fore.rotateX(.46*.18);
   if(hand)hand.rotateX(.19*.14);
  }
-
  for(const [name,b] of Object.entries(bones)){
-  if(/finger|thumb|index|middle|ring|pinky/.test(name)){
+  if(/finger|thumb|index|middle|ring|pinky/.test(name))
    b.rotateX(.66*.35);
-  }
  }
  world();
 }
@@ -236,12 +259,9 @@ function natural(){
 function rotateWorld(joint,axis,angle){
  if(!joint||axis.lengthSq()<1e-10||!angle)return;
  world();
-
  const parentQ=joint.parent.getWorldQuaternion(new THREE.Quaternion());
  const localAxis=axis.clone()
-  .applyQuaternion(parentQ.clone().invert())
-  .normalize();
-
+  .applyQuaternion(parentQ.clone().invert()).normalize();
  joint.quaternion.premultiply(
   new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
  );
@@ -258,24 +278,20 @@ function perpendicular(direction,target){
 function axisToward(direction,target){
  const toward=perpendicular(direction,target);
  return toward?
-  new THREE.Vector3().crossVectors(direction,toward).normalize():
-  null;
+  new THREE.Vector3().crossVectors(direction,toward).normalize():null;
 }
 
 function calibrate(){
- restore();
- natural();
-
+ restore();natural();
  for(const side of ['l','r']){
   const upper=bone('upperarm_'+side);
   const lower=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
   if(!upper||!lower||!hand)continue;
-
-  const upperDir=pos(lower).sub(pos(upper)).normalize();
+  const dir=pos(lower).sub(pos(upper)).normalize();
   chains[side]={
    upper,lower,hand,
-   raiseAxis:axisToward(upperDir,V(0,0,1))
+   raiseAxis:axisToward(dir,V(0,0,1))
   };
  }
  rigReady=!!chains.l&&!!chains.r;
@@ -283,6 +299,7 @@ function calibrate(){
 
 const diagnostic=new THREE.Group();
 scene.add(diagnostic);
+const displays={};
 
 function sphere(color,r=.035){
  const m=new THREE.Mesh(
@@ -293,7 +310,6 @@ function sphere(color,r=.035){
  return m;
 }
 
-const displays={};
 for(const side of ['l','r']){
  const shoulder=sphere(0xffdf50,.038);
  const elbow=sphere(side==='l'?0x39ff79:0xff55cc,.042);
@@ -315,15 +331,12 @@ for(const side of ['l','r']){
 function updateDiagnostics(){
  if(!guardian||!rigReady)return;
  world();
-
  for(const side of ['l','r']){
   const c=chains[side],d=displays[side];
   const a=pos(c.upper),b=pos(c.lower),h=pos(c.hand);
-
   d.shoulder.position.copy(a);
   d.elbow.position.copy(b);
   d.wrist.position.copy(h);
-
   const arr=d.line.geometry.attributes.position.array;
   arr.set([a.x,a.y,a.z,b.x,b.y,b.z,h.x,h.y,h.z]);
   d.line.geometry.attributes.position.needsUpdate=true;
@@ -332,32 +345,24 @@ function updateDiagnostics(){
  diagnostic.visible=showMarkers;
 }
 
-// Finger articulation uses individual rig bones.
-// Rotation direction remains experimental until
-// verified against the actual model.
 function applyFingers(side){
  const s=settings[side];
-
- for(const finger of fingers[side]){
-  finger.rotateX(s.fingerCurl/100*.95);
- }
-
- for(const thumb of thumbs[side]){
-  thumb.rotateX(s.thumbGrip/100*.60);
-  thumb.rotateZ((side==='l'?-1:1)*s.thumbGrip/100*.20);
+ for(const f of fingers[side])
+  f.rotateX(s.fingerCurl/100*.95);
+ for(const t of thumbs[side]){
+  t.rotateX(s.thumbGrip/100*.60);
+  t.rotateZ((side==='l'?-1:1)*s.thumbGrip/100*.20);
  }
 }
 
 function applyArm(side){
  const c=chains[side];
  if(!c)return;
-
  const s=settings[side];
  const sign=side==='l'?-1:1;
 
- if(c.raiseAxis){
+ if(c.raiseAxis)
   rotateWorld(c.upper,c.raiseAxis,s.raise*RAD);
- }
 
  rotateWorld(c.upper,V(0,0,1),sign*s.spread*RAD);
 
@@ -367,16 +372,9 @@ function applyArm(side){
  let fore=wrist.sub(elbow).normalize();
 
  const bendAxis=axisToward(fore,V(0,0,1));
- if(bendAxis){
-  rotateWorld(c.lower,bendAxis,s.bend*RAD);
- }
+ if(bendAxis)rotateWorld(c.lower,bendAxis,s.bend*RAD);
 
- // Extended cross-body range.
- // Still uses shoulder contribution to avoid
- // forcing an impossible lateral elbow hinge.
- rotateWorld(c.upper,V(0,1,0),
-  sign*s.across*RAD*.55
- );
+ rotateWorld(c.upper,V(0,1,0),sign*s.across*RAD*.55);
 
  world();
  elbow=pos(c.lower);
@@ -385,18 +383,117 @@ function applyArm(side){
  rotateWorld(c.lower,fore,s.twist*RAD);
 
  world();
- const hand=c.hand;
- const parentQ=hand.parent.getWorldQuaternion(
+ const parentQ=c.hand.parent.getWorldQuaternion(
   new THREE.Quaternion()
  );
-
- const wristX=V(1,0,0).applyQuaternion(parentQ);
- const wristY=V(0,1,0).applyQuaternion(parentQ);
-
- rotateWorld(hand,wristX,s.wristX*RAD);
- rotateWorld(hand,wristY,s.wristY*RAD);
+ rotateWorld(c.hand,V(1,0,0).applyQuaternion(parentQ),
+  s.wristX*RAD);
+ rotateWorld(c.hand,V(0,1,0).applyQuaternion(parentQ),
+  s.wristY*RAD);
 
  applyFingers(side);
+}
+
+// Longsword geometry: local +Y is blade direction.
+const sword=new THREE.Group();
+scene.add(sword);
+
+const steel=new THREE.MeshStandardMaterial({
+ color:0xbcc7d1,metalness:.8,roughness:.27
+});
+const edge=new THREE.MeshStandardMaterial({
+ color:0xe0e7ee,metalness:.85,roughness:.2
+});
+const darkSteel=new THREE.MeshStandardMaterial({
+ color:0x606d79,metalness:.7,roughness:.35
+});
+const leather=new THREE.MeshStandardMaterial({
+ color:0x4d2e20,roughness:.9
+});
+const gold=new THREE.MeshStandardMaterial({
+ color:0xb99a59,metalness:.7,roughness:.3
+});
+
+function cylinder(r1,r2,h,mat){
+ return new THREE.Mesh(
+  new THREE.CylinderGeometry(r1,r2,h,12),mat
+ );
+}
+
+function buildSword(){
+ while(sword.children.length){
+  const child=sword.children[0];
+  sword.remove(child);
+  child.geometry?.dispose();
+ }
+ const bladeLength=swordSettings.bladeLength/100;
+ const handleLength=swordSettings.handleLength/100;
+
+ const grip=cylinder(.045,.045,handleLength,leather);
+ grip.position.y=-handleLength/2;
+ sword.add(grip);
+
+ const pommel=new THREE.Mesh(
+  new THREE.SphereGeometry(.065,16,12),gold
+ );
+ pommel.position.y=-handleLength;
+ sword.add(pommel);
+
+ const guard=cylinder(.035,.035,.65,darkSteel);
+ guard.rotation.z=Math.PI/2;
+ sword.add(guard);
+
+ const guardEnds=[-.325,.325];
+ for(const x of guardEnds){
+  const end=new THREE.Mesh(
+   new THREE.SphereGeometry(.045,12,8),gold
+  );
+  end.position.x=x;
+  sword.add(end);
+ }
+
+ const blade=new THREE.Mesh(
+  new THREE.BoxGeometry(.12,bladeLength,.025),steel
+ );
+ blade.position.y=bladeLength/2;
+ sword.add(blade);
+
+ const ridge=new THREE.Mesh(
+  new THREE.BoxGeometry(.025,bladeLength,.035),edge
+ );
+ ridge.position.y=bladeLength/2;
+ sword.add(ridge);
+
+ const tip=new THREE.Mesh(
+  new THREE.ConeGeometry(.065,.22,4),steel
+ );
+ tip.position.y=bladeLength+.11;
+ tip.rotation.y=Math.PI/4;
+ sword.add(tip);
+}
+
+function updateSword(){
+ if(!guardian||!rigReady)return;
+ sword.visible=swordVisible&&viewMode!=='natural';
+ if(!sword.visible)return;
+
+ buildSword();
+ world();
+
+ // Anchor to lower hand (currently left hand).
+ const hand=chains.l.hand;
+ const p=pos(hand);
+ const q=hand.getWorldQuaternion(new THREE.Quaternion());
+
+ sword.position.copy(p);
+ sword.position.add(V(
+  swordSettings.gripOffsetX/100,
+  swordSettings.gripOffsetY/100,
+  swordSettings.gripOffsetZ/100
+ ));
+
+ sword.quaternion.copy(q);
+ sword.rotateZ(swordSettings.bladeAngle*RAD);
 }
 
 function updatePose(){
@@ -410,24 +507,23 @@ function updatePose(){
  }
 
  updateDiagnostics();
+ updateSword();
 
  if(rigReady){
-  const L=chains.l,R=chains.r;
-  const handDistance=pos(L.hand).distanceTo(pos(R.hand));
+  const distance=pos(chains.l.hand).distanceTo(
+   pos(chains.r.hand)
+  );
   $('debug').textContent=
    'Independent grip · Wrist separation: '+
-   handDistance.toFixed(3)+
-   ' · Finger bones L/R: '+
-   (fingers.l.length+thumbs.l.length)+' / '+
-   (fingers.r.length+thumbs.r.length);
+   distance.toFixed(3)+
+   ' · Sword anchored to left hand';
  }
 }
 
 function selectMode(next){
  viewMode=next;
- for(const id of ['natural','left','right','both']){
+ for(const id of ['natural','left','right','both'])
   $(id).classList.toggle('active',id===next);
- }
  updatePose();
 }
 
@@ -438,41 +534,36 @@ function selectEdit(side){
  refreshInputs();
 }
 
-for(const id of ['natural','left','right','both']){
+for(const id of ['natural','left','right','both'])
  $(id).onclick=()=>selectMode(id);
-}
+
 $('editLeft').onclick=()=>selectEdit('l');
 $('editRight').onclick=()=>selectEdit('r');
 
 $('resetArm').onclick=()=>{
  settings[editSide]={...defaults};
- refreshInputs();
- updatePose();
+ refreshInputs();updatePose();
 };
-
 $('resetBoth').onclick=()=>{
  settings.l={...defaults};
  settings.r={...defaults};
- refreshInputs();
- updatePose();
+ refreshInputs();updatePose();
 };
-
-$('copyArm').onclick=()=>{
- const other=editSide==='l'?'r':'l';
- settings[other]={...settings[editSide]};
- updatePose();
-};
-
 $('save').onclick=()=>{
  try{
-  localStorage.setItem(
-   'lifeRPG_3J2_armCalibration',
-   JSON.stringify(settings)
-  );
-  refreshInputs('Calibration saved locally');
+  localStorage.setItem('lifeRPG_3J3_calibration',
+   JSON.stringify({settings,swordSettings}));
+  $('values').textContent='Calibration saved locally';
  }catch(e){
-  refreshInputs('Local save unavailable');
+  $('values').textContent='Save unavailable';
  }
+};
+
+$('swordToggle').onclick=()=>{
+ swordVisible=!swordVisible;
+ $('swordToggle').textContent=swordVisible?'Sword ON':'Sword OFF';
+ $('swordToggle').classList.toggle('active',swordVisible);
+ updatePose();
 };
 
 $('markers').onclick=()=>{
@@ -498,17 +589,27 @@ $('toggleUI').onclick=()=>{
 };
 
 try{
- const saved=JSON.parse(
+ const old=JSON.parse(
   localStorage.getItem('lifeRPG_3J2_armCalibration')||'null'
  );
- if(saved?.l&&saved?.r){
+ const saved=JSON.parse(
+  localStorage.getItem('lifeRPG_3J3_calibration')||'null'
+ );
+ const armData=saved?.settings||old;
+ if(armData){
   for(const side of ['l','r']){
    for(const [key,,min,max] of config){
-    const n=Number(saved[side][key]);
-    if(Number.isFinite(n)){
+    const n=Number(armData[side]?.[key]);
+    if(Number.isFinite(n))
      settings[side][key]=THREE.MathUtils.clamp(n,min,max);
-    }
    }
+  }
+ }
+ if(saved?.swordSettings){
+  for(const [key,,min,max] of swordConfig){
+   const n=Number(saved.swordSettings[key]);
+   if(Number.isFinite(n))
+    swordSettings[key]=THREE.MathUtils.clamp(n,min,max);
   }
  }
 }catch(e){}
@@ -535,7 +636,7 @@ new GLTFLoader().load(
 
   $('status').textContent=
    'Guardian loaded · '+Object.keys(bones).length+
-   ' bones · Test 3J.2 '+(rigReady?'READY':'INCOMPLETE');
+   ' bones · Test 3J.3 '+(rigReady?'READY':'INCOMPLETE');
 
   updatePose();
  },
@@ -557,10 +658,13 @@ function animate(){
   if(breathing){
    const spine=bone('spine_02');
    if(spine){
-    const phase=Math.sin(clock.getElapsedTime()*Math.PI*2/4.2);
+    const phase=Math.sin(
+     clock.getElapsedTime()*Math.PI*2/4.2
+    );
     spine.rotateX(phase*.018*.55);
     world();
     updateDiagnostics();
+    updateSword();
    }
   }
  }
