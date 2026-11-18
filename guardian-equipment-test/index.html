@@ -3,34 +3,175 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian 3K.5B</title>
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>LIFE RPG — Guardian 3K.5C.1</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
+
+body{
+ margin:0;
+ background:#101722;
+ color:#f3e4c5;
+ font:13px system-ui,sans-serif;
+ overflow:hidden;
+}
+
 #scene{position:fixed;inset:0}
-#top{position:fixed;top:8px;left:8px;right:8px;background:#111b2bea;border:1px solid #aa8d57;border-radius:10px;padding:10px 85px 10px 10px;pointer-events:none}
-h3{margin:0 0 5px;color:#e9c67d;font-size:15px}
-#status,#debug{font-size:11px;line-height:1.5}
+
+#top{
+ position:fixed;
+ top:8px;
+ left:8px;
+ right:8px;
+ background:#111b2bea;
+ border:1px solid #aa8d57;
+ border-radius:10px;
+ padding:10px 85px 10px 10px;
+ pointer-events:none;
+}
+
+h3{
+ margin:0 0 5px;
+ color:#e9c67d;
+ font-size:15px;
+}
+
+#status,#debug{
+ font-size:11px;
+ line-height:1.5;
+}
+
 #debug{color:#b6cbd7}
-#panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:43vh;overflow:auto;background:#101a2bf2;border:1px solid #aa8d57;border-radius:12px;padding:10px}
-button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:9px;margin:3px;font:inherit}
+
+#panel{
+ position:fixed;
+ bottom:8px;
+ left:8px;
+ right:8px;
+ max-height:43vh;
+ overflow:auto;
+ background:#101a2bf2;
+ border:1px solid #aa8d57;
+ border-radius:12px;
+ padding:10px;
+}
+
+button{
+ background:#29394d;
+ color:#fff;
+ border:1px solid #b99a59;
+ border-radius:7px;
+ padding:9px;
+ margin:3px;
+ font:inherit;
+}
+
 button.active{background:#765d30}
 button:disabled{opacity:.45}
-.setting{display:grid;grid-template-columns:115px minmax(0,1fr) 45px;gap:7px;align-items:center;margin:10px 0}
-input[type=range]{width:100%;accent-color:#d6ad64}
+
+.setting{
+ display:grid;
+ grid-template-columns:115px minmax(0,1fr) 45px;
+ gap:7px;
+ align-items:center;
+ margin:10px 0;
+}
+
+input[type=range]{
+ width:100%;
+ accent-color:#d6ad64;
+}
+
 input[type=range]:disabled{opacity:.45}
+
 small{color:#b6c4d0}
-#toggleUI{position:fixed;top:12px;right:12px;z-index:1000;background:#233041e8}
-body.ui-hidden #top,body.ui-hidden #panel{display:none}
-body.ui-hidden #toggleUI{opacity:.38;font-size:11px;padding:6px 9px}
-hr{border:0;border-top:1px solid #8a764d55;margin:10px 0}
-#legDiagnostic{margin-top:10px;padding:10px;border:1px solid #aa8d57;border-radius:8px;background:#182638}
-#legReport{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;line-height:1.6;color:#c9d8e0;margin-top:8px}
-#legStatus{color:#e9c67d;font-size:12px}
-#errorBox{display:none;position:fixed;top:100px;left:8px;right:8px;z-index:999;background:#501d24;color:#fff;border:1px solid #ff8d8d;border-radius:8px;padding:10px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:28vh;overflow:auto}
-#calibrationStatus,#values,#bowStatus{color:#c9d8e0;font-size:11px;margin-top:6px;white-space:pre-wrap}
-.lockedNotice{padding:9px;border:1px solid #b99a59;border-radius:7px;background:#263225;color:#e9c67d;margin:8px 0}
+
+#toggleUI{
+ position:fixed;
+ top:12px;
+ right:12px;
+ z-index:1000;
+ background:#233041e8;
+}
+
+body.ui-hidden #top,
+body.ui-hidden #panel{
+ display:none;
+}
+
+body.ui-hidden #toggleUI{
+ opacity:.38;
+ font-size:11px;
+ padding:6px 9px;
+}
+
+hr{
+ border:0;
+ border-top:1px solid #8a764d55;
+ margin:10px 0;
+}
+
+#legDiagnostic{
+ margin-top:10px;
+ padding:10px;
+ border:1px solid #aa8d57;
+ border-radius:8px;
+ background:#182638;
+}
+
+#legReport{
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+ font-size:11px;
+ line-height:1.6;
+ color:#c9d8e0;
+ margin-top:8px;
+}
+
+#legStatus{
+ color:#e9c67d;
+ font-size:12px;
+}
+
+#errorBox{
+ display:none;
+ position:fixed;
+ top:100px;
+ left:8px;
+ right:8px;
+ z-index:999;
+ background:#501d24;
+ color:#fff;
+ border:1px solid #ff8d8d;
+ border-radius:8px;
+ padding:10px;
+ font-size:12px;
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+ max-height:28vh;
+ overflow:auto;
+}
+
+#calibrationStatus,
+#values,
+#bowStatus{
+ color:#c9d8e0;
+ font-size:11px;
+ margin-top:6px;
+ white-space:pre-wrap;
+}
+
+.lockedNotice{
+ padding:9px;
+ border:1px solid #b99a59;
+ border-radius:7px;
+ background:#263225;
+ color:#e9c67d;
+ margin:8px 0;
+}
 </style>
 
 <script>
@@ -38,120 +179,226 @@ window.addEventListener('error',e=>{
  const b=document.getElementById('errorBox');
  if(b){
   b.style.display='block';
-  b.textContent='JavaScript error: '+e.message+'\n'+(e.filename||'')+':'+(e.lineno||'');
+  b.textContent=
+   'JavaScript error: '+e.message+
+   '\n'+(e.filename||'')+
+   ':'+(e.lineno||'');
  }
 });
+
 window.addEventListener('unhandledrejection',e=>{
  const b=document.getElementById('errorBox');
  if(b){
   b.style.display='block';
-  b.textContent='Promise error: '+String(e.reason);
+  b.textContent=
+   'Promise error: '+String(e.reason);
  }
 });
 </script>
 
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+ }
+}
 </script>
 </head>
+
 <body>
 
 <div id="scene"></div>
 <div id="errorBox"></div>
+
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3K.5B</h3>
-<div id="status">Loading Guardian...</div>
-<div id="debug">Three stances LOCKED · Bow TESTING</div>
+ <h3>LIFE RPG — Guardian 3K.5C.1</h3>
+ <div id="status">Loading Guardian...</div>
+ <div id="debug">
+  Guardian Ready Stance · Bow Size Testing
+ </div>
 </div>
 
 <div id="panel">
+
 <div>
-<button id="natural">Natural Stance</button>
-<button id="stance">Longsword Stance</button>
-<button id="shieldStance">Sword & Shield</button>
-<button id="bowStance" class="active">Bow Stance</button>
-<button id="swordToggle" class="active">Equipment ON</button>
-<button id="breath">Breathing OFF</button>
-<button id="resetCamera">Reset Camera</button>
+ <button id="natural">Natural Stance</button>
+ <button id="stance">Longsword Stance</button>
+ <button id="shieldStance">Sword & Shield</button>
+ <button id="bowStance" class="active">Bow Stance</button>
+ <button id="swordToggle" class="active">Equipment ON</button>
+ <button id="breath">Breathing OFF</button>
+ <button id="resetCamera">Reset Camera</button>
 </div>
 
 <hr>
-<h3>Build 3K.5B — Archer Development</h3>
+
+<h3>Build 3K.5C.1 — Bow Size Calibration</h3>
+
 <div class="lockedNotice">
-Natural, Longsword and Sword & Shield remain LOCKED.
-<br>
-Only the Bow stance has adjustable body controls.
+ Guardian Ready Stance preserved.
+ Natural, Longsword and Sword & Shield remain locked.
+ Only the bow's size is being calibrated.
 </div>
 
 <div id="bowSection">
-<h3>Left Arm — Bow Hand</h3>
-<div id="bowLeftSliders"></div>
+
+<h3>Bow Size — Adjustable</h3>
+<small>
+ Scale the independent bow model around its grip.
+ Guardian proportions and stance are unchanged.
+</small>
+
+<div class="setting">
+ <span>Bow Size</span>
+ <input
+  id="bowSizeSlider"
+  type="range"
+  min="0.5"
+  max="3"
+  step="0.05"
+  value="1"
+ >
+ <span id="bowSizeValue">1.00×</span>
+</div>
+
+<div id="bowMeasurements"></div>
+
+<button id="resetBowSize">Reset Bow Size</button>
 
 <hr>
+
+<h3>Left Arm — Bow Holding Hand</h3>
+<div id="bowLeftArmSliders"></div>
+
+<hr>
+
 <h3>Right Arm — Drawing Hand</h3>
-<div id="bowRightSliders"></div>
+<div id="bowRightArmSliders"></div>
 
 <hr>
+
 <h3>Bow Attachment — Adjustable</h3>
 <div id="bowAttachmentSliders"></div>
 
 <hr>
+
 <h3>Bow Leg Stance — Adjustable</h3>
 <div id="bowLegSliders"></div>
 
 <button id="saveBowPose">Save Bow Pose</button>
 <button id="copyBowPose">Copy Bow Backup</button>
-<button id="resetBowPose">Reset Bow Test</button>
+<button id="resetBowPose">Reset Bow Pose</button>
+
 <div id="bowStatus"></div>
+
 </div>
 
 <div id="armSection" style="display:none">
+
 <hr>
 <h3>Sword & Shield — Locked</h3>
-<h3>Left Arm</h3>
+
+<div class="lockedNotice">
+ Approved arm and leg stance preserved.
+ Existing sword and shield attachments retained.
+</div>
+
+<h3>Left Arm — Shield</h3>
 <div id="leftArmSliders"></div>
-<h3>Right Arm</h3>
+
+<hr>
+
+<h3>Right Arm — Sword</h3>
 <div id="rightArmSliders"></div>
+
+<hr>
+
 <h3>Sword Attachment</h3>
 <div id="armingAttachmentSliders"></div>
+
+<hr>
+
 <h3>Shield Attachment</h3>
 <div id="shieldAttachmentSliders"></div>
-<button id="copyShieldPose">Copy Locked Shield Backup</button>
+
+<button id="copyShieldPose">
+ Copy Shield Backup
+</button>
+
 </div>
 
 <hr>
-<h3>Lower Body</h3>
+
 <div id="calibrationStatus"></div>
 
-<hr>
 <h3>Lower-Body Skeleton Detection</h3>
+
 <div id="legDiagnostic">
-<div id="legStatus">Waiting for skeleton...</div>
-<button id="scanLegs">Scan Leg Bones</button>
-<button id="copyLegReport">Copy Bone Report</button>
-<div id="legReport"></div>
+ <div id="legStatus">
+  Waiting for skeleton...
+ </div>
+
+ <button id="scanLegs">
+  Scan Leg Bones
+ </button>
+
+ <button id="copyLegReport">
+  Copy Bone Report
+ </button>
+
+ <div id="legReport"></div>
 </div>
 
 <hr>
+
 <h3>Longsword Dimensions</h3>
-<small>Existing independent weapon model. Original dimension controls retained.</small>
+
+<small>
+ Existing independent weapon model.
+ Values preserved.
+</small>
+
 <div id="sliders"></div>
+
 <button id="save">Save Sword Dimensions</button>
 <button id="copy">Copy Sword Backup</button>
 <button id="reset">Reset Sword</button>
+
 <div id="values"></div>
+
 </div>
 
 <script type="module">
+
+// END OF PART 1
+// PART 2 CONTINUES DIRECTLY HERE
+  
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {weaponDefinition,createGuardianLongsword} from './weapons/guardian-longsword.js';
-import {armingSwordDefinition,createGuardianArmingSword} from './weapons/guardian-arming-sword.js';
-import {shieldDefinition,createGuardianShield} from './weapons/guardian-shield.js';
-import {bowDefinition,createGuardianBow} from './weapons/guardian-bow.js';
+
+import {
+ weaponDefinition,
+ createGuardianLongsword
+} from './weapons/guardian-longsword.js';
+
+import {
+ armingSwordDefinition,
+ createGuardianArmingSword
+} from './weapons/guardian-arming-sword.js';
+
+import {
+ shieldDefinition,
+ createGuardianShield
+} from './weapons/guardian-shield.js';
+
+import {
+ bowDefinition,
+ createGuardianBow
+} from './weapons/guardian-bow.js';
 
 const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
 const RAD=Math.PI/180;
@@ -164,10 +411,14 @@ function reportError(error){
  box.textContent=String(error?.stack||error);
 }
 
+// SCENE — ORIGINAL SETTINGS PRESERVED.
+
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x101722);
 
-const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.05,100);
+const camera=new THREE.PerspectiveCamera(
+ 40,innerWidth/innerHeight,.05,100
+);
 camera.position.set(0,1.45,9);
 
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -183,12 +434,16 @@ controls.minDistance=2;
 controls.maxDistance=30;
 controls.update();
 
-scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394457,2.3));
+scene.add(
+ new THREE.HemisphereLight(0xeaf2ff,0x394457,2.3)
+);
+
 const sun=new THREE.DirectionalLight(0xffe4bc,2.5);
 sun.position.set(3,7,6);
 scene.add(sun);
 
-// APPROVED FLOOR — UNCHANGED.
+// ORIGINAL FLOOR — UNCHANGED.
+
 const floor=new THREE.Mesh(
  new THREE.CircleGeometry(3.4,64),
  new THREE.MeshStandardMaterial({color:0x273445})
@@ -197,9 +452,19 @@ floor.rotation.x=-Math.PI/2;
 floor.position.y=-.025;
 scene.add(floor);
 
-let guardian=null,sword=null,armingSword=null,shield=null,bow=null;
-let mode='bow',swordVisible=true,breathing=false;
-let rigReady=false,latestLegReport='';
+// GUARDIAN AND INDEPENDENT WEAPON ASSETS.
+
+let guardian=null;
+let sword=null;
+let armingSword=null;
+let shield=null;
+let bow=null;
+
+let mode='bow';
+let swordVisible=true;
+let breathing=false;
+let rigReady=false;
+let latestLegReport='';
 
 const bones={};
 const originals=new Map();
@@ -207,92 +472,197 @@ const chains={};
 const fingers={l:[],r:[]};
 const thumbs={l:[],r:[]};
 
-// LOCKED LONGSWORD STANCE.
+// APPROVED LONGSWORD GRIP — UNCHANGED.
+
 const lockedGrip={
- l:{raise:16,spread:-21,bend:59,across:90,twist:0,wristX:0,wristY:-28,fingerCurl:84,thumbGrip:0},
- r:{raise:16,spread:-22,bend:71,across:72,twist:0,wristX:11,wristY:45,fingerCurl:100,thumbGrip:0}
+ l:{
+  raise:16,spread:-21,bend:59,across:90,
+  twist:0,wristX:0,wristY:-28,
+  fingerCurl:84,thumbGrip:0
+ },
+ r:{
+  raise:16,spread:-22,bend:71,across:72,
+  twist:0,wristX:11,wristY:45,
+  fingerCurl:100,thumbGrip:0
+ }
 };
 
-// LOCKED SWORD & SHIELD STANCE.
+// APPROVED SWORD & SHIELD GRIP — UNCHANGED.
+
 const shieldGrip={
- l:{raise:35,spread:-35,bend:60,across:43,twist:3,wristX:-3,wristY:-42,fingerCurl:100,thumbGrip:0},
- r:{raise:30,spread:-12,bend:51,across:18,twist:0,wristX:22,wristY:35,fingerCurl:100,thumbGrip:9}
+ l:{
+  raise:35,spread:-35,bend:60,across:43,
+  twist:3,wristX:-3,wristY:-42,
+  fingerCurl:100,thumbGrip:0
+ },
+ r:{
+  raise:30,spread:-12,bend:51,across:18,
+  twist:0,wristX:22,wristY:35,
+  fingerCurl:100,thumbGrip:9
+ }
 };
 
-// NEW BOW STANCE — INITIAL TEST VALUES.
+// BOW GRIP — YOUR LATEST CALIBRATION.
+// THESE ARE STARTING VALUES, NOT RESET BY SIZE.
+
 const initialBowGrip={
- l:{raise:45,spread:-15,bend:15,across:35,twist:0,wristX:0,wristY:-10,fingerCurl:80,thumbGrip:25},
- r:{raise:50,spread:20,bend:95,across:55,twist:0,wristX:0,wristY:20,fingerCurl:65,thumbGrip:30}
+ l:{
+  raise:21,spread:-23,bend:8,across:25,
+  twist:-10,wristX:27,wristY:-47,
+  fingerCurl:100,thumbGrip:0
+ },
+ r:{
+  raise:-14,spread:0,bend:95,across:55,
+  twist:0,wristX:0,wristY:20,
+  fingerCurl:65,thumbGrip:16
+ }
 };
-const bowGrip=JSON.parse(JSON.stringify(initialBowGrip));
+
+const bowGrip={
+ l:{...initialBowGrip.l},
+ r:{...initialBowGrip.r}
+};
 
 const armConfig=[
- ['raise','Arm Raise',-90,120,1],
- ['spread','Arm Spread',-120,120,1],
- ['bend','Elbow Bend',-10,150,1],
- ['across','Arm Across',-150,150,1],
- ['twist','Forearm Twist',-180,180,1],
- ['wristX','Wrist X',-120,120,1],
- ['wristY','Wrist Y',-120,120,1],
+ ['raise','Arm Raise',-60,90,1],
+ ['spread','Arm Spread',-90,90,1],
+ ['bend','Elbow Bend',-10,140,1],
+ ['across','Arm Across',-120,120,1],
+ ['twist','Forearm Twist',-90,90,1],
+ ['wristX','Wrist X',-90,90,1],
+ ['wristY','Wrist Y',-90,90,1],
  ['fingerCurl','Finger Curl',0,100,1],
  ['thumbGrip','Thumb Grip',0,100,1]
 ];
+
+// LOCKED SWORD ATTACHMENT.
 
 const armingAttachment={
  position:[-0.17,0.47,0.07],
  rotation:[-1,82,82]
 };
 
-// APPROVED SHIELD VALUES — LOCKED.
+// APPROVED SHIELD ALIGNMENT.
+
 const shieldAttachment={
  position:[0.09,2.12,0.03],
  rotation:[64,-170,-50]
 };
 
+// BOW ATTACHMENT — YOUR CALIBRATED VALUES.
+
+const initialBowAttachment={
+ position:[0.24,0.58,0.12],
+ rotation:[-117,-135,164]
+};
+
+const bowAttachment={
+ position:[...initialBowAttachment.position],
+ rotation:[...initialBowAttachment.rotation]
+};
+
+// LOCKED LEG STANCES.
+
 const longswordLegs={
- leftThigh:10,leftSpread:-10,leftKnee:-10,leftAnkle:-10,
- rightThigh:10,rightSpread:10,rightKnee:10,rightAnkle:0
+ leftThigh:10,leftSpread:-10,
+ leftKnee:-10,leftAnkle:-10,
+ rightThigh:10,rightSpread:10,
+ rightKnee:10,rightAnkle:0
 };
 
 const shieldLegs={
- leftThigh:-5,leftSpread:-3,leftKnee:4,leftAnkle:0,
- rightThigh:-5,rightSpread:3,rightKnee:5,rightAnkle:0
+ leftThigh:-5,leftSpread:-3,
+ leftKnee:4,leftAnkle:0,
+ rightThigh:-5,rightSpread:3,
+ rightKnee:5,rightAnkle:0
 };
 
+// YOUR LATEST BOW LEG CALIBRATION.
+
 const initialBowLegs={
- leftThigh:5,leftSpread:-8,leftKnee:5,leftAnkle:0,
- rightThigh:-5,rightSpread:8,rightKnee:8,rightAnkle:0
+ leftThigh:2,leftSpread:-8,
+ leftKnee:15,leftAnkle:-12,
+ rightThigh:-14,rightSpread:8,
+ rightKnee:14,rightAnkle:0
 };
+
 const bowLegs={...initialBowLegs};
 
 let leftThighAngle=bowLegs.leftThigh;
 let leftSpreadAngle=bowLegs.leftSpread;
 let leftKneeAngle=bowLegs.leftKnee;
 let leftAnkleAngle=bowLegs.leftAnkle;
+
 let rightThighAngle=bowLegs.rightThigh;
 let rightSpreadAngle=bowLegs.rightSpread;
 let rightKneeAngle=bowLegs.rightKnee;
 let rightAnkleAngle=bowLegs.rightAnkle;
 
-const initialBowAttachment={
- position:[0,0,0],
- rotation:[0,0,0]
-};
-const bowAttachment={
- position:[...initialBowAttachment.position],
- rotation:[...initialBowAttachment.rotation]
+// NEW — BOW SIZE CALIBRATION.
+
+const BOW_SIZE_MIN=0.5;
+const BOW_SIZE_MAX=3.0;
+const BOW_SIZE_DEFAULT=1.0;
+
+let bowSize=BOW_SIZE_DEFAULT;
+
+function setBowSize(value){
+ const n=Number(value);
+ if(!Number.isFinite(n))return;
+
+ bowSize=THREE.MathUtils.clamp(
+  n,BOW_SIZE_MIN,BOW_SIZE_MAX
+ );
+
+ if(bow){
+  // Bow origin is the centre of the grip.
+  // Scale all bow components together.
+  bow.scale.setScalar(bowSize);
+ }
+
+ $('bowSizeSlider').value=bowSize;
+ $('bowSizeValue').textContent=
+  bowSize.toFixed(2)+'×';
+
+ updateBowMeasurements();
+ updateEquipment();
+}
+
+function updateBowMeasurements(){
+ const baseHeight=Number(
+  bow?.userData?.dimensions?.height ??
+  bowDefinition.dimensions.height
+ );
+
+ const scaledHeight=baseHeight*bowSize;
+
+ $('bowMeasurements').textContent=
+  'Bow model height: '+
+  scaledHeight.toFixed(2)+
+  ' units · Scale: '+
+  bowSize.toFixed(2)+'×';
+}
+
+$('bowSizeSlider').oninput=()=>{
+ setBowSize($('bowSizeSlider').value);
 };
 
-// EXISTING LONGSWORD DIMENSIONS.
+$('resetBowSize').onclick=()=>{
+ setBowSize(BOW_SIZE_DEFAULT);
+ $('bowStatus').textContent=
+  'Bow size reset to 1.00×. Other pose values unchanged.';
+};
+
+// ORIGINAL LONGSWORD DIMENSIONS.
+
 const defaults={...weaponDefinition.dimensions};
 const dimensions={...defaults};
+
 const attachment={
  bladeAngle:weaponDefinition.attachment.bladeAngle,
  gripOffset:[...weaponDefinition.attachment.gripOffset]
 };
 
-// END OF PART 1 — PART 2 CONTINUES HERE
- 
 const config=[
  ['bladeLength','Blade Length',.7,4,.01],
  ['bladeWidth','Blade Width',.04,.3,.005],
@@ -317,27 +687,35 @@ const attachmentConfig=[
 ];
 
 const legConfig=[
- ['leftThigh','Left Thigh',-45,45,1],
- ['leftSpread','Left Hip Spread',-45,45,1],
- ['leftKnee','Left Knee',-45,65,1],
- ['leftAnkle','Left Ankle',-45,45,1],
- ['rightThigh','Right Thigh',-45,45,1],
- ['rightSpread','Right Hip Spread',-45,45,1],
- ['rightKnee','Right Knee',-45,65,1],
- ['rightAnkle','Right Ankle',-45,45,1]
+ ['leftThigh','Left Thigh',-20,20,1],
+ ['leftSpread','Left Hip Spread',-20,20,1],
+ ['leftKnee','Left Knee',-25,25,1],
+ ['leftAnkle','Left Ankle',-30,30,1],
+ ['rightThigh','Right Thigh',-20,20,1],
+ ['rightSpread','Right Hip Spread',-20,20,1],
+ ['rightKnee','Right Knee',-25,25,1],
+ ['rightAnkle','Right Ankle',-30,30,1]
 ];
 
 const sliders={};
 const armSliders={l:{},r:{}};
 const bowArmSliders={l:{},r:{}};
-const equipmentSliders={sword:{},shield:{},bow:{}};
+const equipmentSliders={
+ sword:{},shield:{},bow:{}
+};
 const bowLegSliders={};
+
+// ASSET REBUILDING.
 
 function disposeAsset(object){
  if(!object)return;
+
  scene.remove(object);
+
  object.traverse(o=>{
-  if(o.isMesh)o.geometry.dispose();
+  if(o.isMesh){
+   o.geometry?.dispose();
+  }
  });
 }
 
@@ -351,17 +729,26 @@ function rebuildSword(){
 function rebuildShieldEquipment(){
  disposeAsset(armingSword);
  disposeAsset(shield);
+
  armingSword=createGuardianArmingSword();
  shield=createGuardianShield();
+
  scene.add(armingSword);
  scene.add(shield);
+
  updateEquipment();
 }
 
 function rebuildBow(){
  disposeAsset(bow);
+
  bow=createGuardianBow();
  scene.add(bow);
+
+ // Apply the selected size to the new asset.
+ bow.scale.setScalar(bowSize);
+
+ updateBowMeasurements();
  updateEquipment();
 }
 
@@ -373,79 +760,115 @@ function pos(b){
  return b.getWorldPosition(V());
 }
 
+// EQUIPMENT PLACEMENT.
+// LOCKED WEAPON PATHS PRESERVED.
+
 function updateEquipment(){
- if(sword)sword.visible=
-  swordVisible&&mode==='stance'&&rigReady;
+ if(sword){
+  sword.visible=
+   swordVisible&&mode==='stance'&&rigReady;
+ }
 
- if(armingSword)armingSword.visible=
-  swordVisible&&mode==='shield'&&rigReady;
+ if(armingSword){
+  armingSword.visible=
+   swordVisible&&mode==='shield'&&rigReady;
+ }
 
- if(shield)shield.visible=
-  swordVisible&&mode==='shield'&&rigReady;
+ if(shield){
+  shield.visible=
+   swordVisible&&mode==='shield'&&rigReady;
+ }
 
- if(bow)bow.visible=
-  swordVisible&&mode==='bow'&&rigReady;
+ if(bow){
+  bow.visible=
+   swordVisible&&mode==='bow'&&rigReady;
+ }
 
  if(!guardian||!rigReady)return;
 
  world();
 
- // APPROVED LONGSWORD — UNCHANGED.
+ // APPROVED TWO-HANDED LONGSWORD.
+
  if(sword?.visible){
   const left=pos(chains.l.hand);
   const right=pos(chains.r.hand);
   const midpoint=left.add(right).multiplyScalar(.5);
-  sword.position.copy(midpoint).add(V(...attachment.gripOffset));
-  sword.rotation.set(0,0,attachment.bladeAngle*RAD);
+
+  sword.position.copy(midpoint).add(
+   V(...attachment.gripOffset)
+  );
+
+  sword.rotation.set(
+   0,0,attachment.bladeAngle*RAD
+  );
  }
 
- // APPROVED ARMING SWORD — UNCHANGED.
+ // APPROVED ONE-HANDED SWORD.
+
  if(armingSword?.visible){
   const hand=chains.r.hand;
   const p=pos(hand);
-  const q=hand.getWorldQuaternion(new THREE.Quaternion());
+  const q=hand.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
 
   armingSword.position.copy(p).add(
    V(...armingAttachment.position).applyQuaternion(q)
   );
+
   armingSword.quaternion.copy(q);
   armingSword.rotateX(armingAttachment.rotation[0]*RAD);
   armingSword.rotateY(armingAttachment.rotation[1]*RAD);
   armingSword.rotateZ(armingAttachment.rotation[2]*RAD);
  }
 
- // APPROVED SHIELD — LOCKED.
+ // APPROVED SHIELD.
+
  if(shield?.visible){
   const forearm=chains.l.lower;
   const p=pos(forearm);
-  const q=forearm.getWorldQuaternion(new THREE.Quaternion());
+  const q=forearm.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
 
   shield.position.copy(p).add(
    V(...shieldAttachment.position).applyQuaternion(q)
   );
+
   shield.quaternion.copy(q);
   shield.rotateX(shieldAttachment.rotation[0]*RAD);
   shield.rotateY(shieldAttachment.rotation[1]*RAD);
   shield.rotateZ(shieldAttachment.rotation[2]*RAD);
  }
 
- // NEW GUARDIAN LONGBOW — ADJUSTABLE.
+ // BOW — INDEPENDENT MODEL WITH LIVE SCALING.
+
  if(bow?.visible){
   const hand=chains.l.hand;
   const p=pos(hand);
-  const q=hand.getWorldQuaternion(new THREE.Quaternion());
+  const q=hand.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
 
   bow.position.copy(p).add(
    V(...bowAttachment.position).applyQuaternion(q)
   );
+
   bow.quaternion.copy(q);
   bow.rotateX(bowAttachment.rotation[0]*RAD);
   bow.rotateY(bowAttachment.rotation[1]*RAD);
   bow.rotateZ(bowAttachment.rotation[2]*RAD);
+
+  bow.scale.setScalar(bowSize);
  }
 }
 
-function createSlider(container,label,min,max,step,value,onChange){
+// SLIDER FACTORY.
+
+function createSlider(
+ container,label,min,max,step,value,onChange
+){
  const row=document.createElement('div');
  row.className='setting';
 
@@ -460,7 +883,10 @@ function createSlider(container,label,min,max,step,value,onChange){
  input.value=value;
 
  const display=document.createElement('span');
- const format=n=>Number(n).toFixed(step>=1?0:3);
+
+ const format=n=>
+  Number(n).toFixed(step>=1?0:3);
+
  display.textContent=format(value);
 
  input.oninput=()=>{
@@ -475,13 +901,17 @@ function createSlider(container,label,min,max,step,value,onChange){
  return {input,display,format};
 }
 
-// SWORD & SHIELD ARM CONTROLS — LOCKED.
+// LOCKED SWORD & SHIELD ARM CONTROLS.
+
 for(const side of ['l','r']){
- const target=side==='l'?'leftArmSliders':'rightArmSliders';
+ const target=side==='l'
+  ?'leftArmSliders'
+  :'rightArmSliders';
 
  for(const [key,label,min,max,step] of armConfig){
   const control=createSlider(
-   target,label,min,max,step,shieldGrip[side][key],()=>{}
+   target,label,min,max,step,
+   shieldGrip[side][key],()=>{}
   );
 
   control.input.disabled=true;
@@ -490,54 +920,63 @@ for(const side of ['l','r']){
 }
 
 // BOW ARM CONTROLS — ADJUSTABLE.
+
 for(const side of ['l','r']){
- const target=side==='l'?'bowLeftSliders':'bowRightSliders';
+ const target=side==='l'
+  ?'bowLeftArmSliders'
+  :'bowRightArmSliders';
 
  for(const [key,label,min,max,step] of armConfig){
   bowArmSliders[side][key]=createSlider(
-   target,label,min,max,step,bowGrip[side][key],
+   target,label,min,max,step,
+   bowGrip[side][key],
    n=>{
     bowGrip[side][key]=n;
-    if(mode==='bow')updatePose();
+    updatePose();
    }
   );
  }
 }
 
-// LOCKED EQUIPMENT ATTACHMENTS.
+// EQUIPMENT ATTACHMENT CONTROLS.
+
 for(const [kind,target,values] of [
  ['sword','armingAttachmentSliders',armingAttachment],
- ['shield','shieldAttachmentSliders',shieldAttachment]
+ ['shield','shieldAttachmentSliders',shieldAttachment],
+ ['bow','bowAttachmentSliders',bowAttachment]
 ]){
- for(const [property,index,label,min,max,step] of attachmentConfig){
+ for(const [
+  property,index,label,min,max,step
+ ] of attachmentConfig){
+
+  const key=property+index;
+
   const control=createSlider(
-   target,label,min,max,step,values[property][index],()=>{}
+   target,label,min,max,step,
+   values[property][index],
+   n=>{
+    if(kind!=='bow')return;
+
+    values[property][index]=n;
+    updateEquipment();
+   }
   );
 
-  control.input.disabled=true;
-  equipmentSliders[kind][property+index]=control;
+  if(kind!=='bow'){
+   control.input.disabled=true;
+  }
+
+  equipmentSliders[kind][key]=control;
  }
 }
 
-// BOW ATTACHMENT — ADJUSTABLE.
-for(const [property,index,label,min,max,step] of attachmentConfig){
- const control=createSlider(
-  'bowAttachmentSliders',
-  label,min,max,step,
-  bowAttachment[property][index],
-  n=>{
-   bowAttachment[property][index]=n;
-   updateEquipment();
-  }
- );
-
- equipmentSliders.bow[property+index]=control;
-}
-
 // BOW LEG CONTROLS — ADJUSTABLE.
+
 for(const [key,label,min,max,step] of legConfig){
  bowLegSliders[key]=createSlider(
-  'bowLegSliders',label,min,max,step,bowLegs[key],
+  'bowLegSliders',
+  label,min,max,step,
+  bowLegs[key],
   n=>{
    bowLegs[key]=n;
 
@@ -549,21 +988,28 @@ for(const [key,label,min,max,step] of legConfig){
  );
 }
 
-// ORIGINAL LONGSWORD DIMENSION CONTROLS.
+// ORIGINAL LONGSWORD CONTROLS.
+
 for(const [key,label,min,max,step] of config){
  sliders[key]=createSlider(
   'sliders',label,min,max,step,
+
   key==='bladeAngle'?attachment.bladeAngle:
   key==='gripX'?attachment.gripOffset[0]:
   key==='gripY'?attachment.gripOffset[1]:
   key==='gripZ'?attachment.gripOffset[2]:
   dimensions[key],
+
   n=>{
-   if(key==='bladeAngle')attachment.bladeAngle=n;
-   else if(key==='gripX')attachment.gripOffset[0]=n;
-   else if(key==='gripY')attachment.gripOffset[1]=n;
-   else if(key==='gripZ')attachment.gripOffset[2]=n;
-   else{
+   if(key==='bladeAngle'){
+    attachment.bladeAngle=n;
+   }else if(key==='gripX'){
+    attachment.gripOffset[0]=n;
+   }else if(key==='gripY'){
+    attachment.gripOffset[1]=n;
+   }else if(key==='gripZ'){
+    attachment.gripOffset[2]=n;
+   }else{
     dimensions[key]=n;
     rebuildSword();
    }
@@ -572,6 +1018,8 @@ for(const [key,label,min,max,step] of config){
   }
  );
 }
+
+// REFRESH CONTROLS.
 
 function refreshSlider(control,value){
  control.input.value=value;
@@ -622,7 +1070,15 @@ function refreshAllSliders(){
 
   refreshSlider(sliders[key],value);
  }
+
+ $('bowSizeSlider').value=bowSize;
+ $('bowSizeValue').textContent=
+  bowSize.toFixed(2)+'×';
+
+ updateBowMeasurements();
 }
+
+// GUARDIAN SKELETON CAPTURE.
 
 function capture(){
  guardian.traverse(o=>{
@@ -639,7 +1095,9 @@ function capture(){
 
   if(/thumb/.test(name)){
    thumbs[side].push(o);
-  }else if(/finger|index|middle|ring|pinky|little/.test(name)){
+  }else if(
+   /finger|index|middle|ring|pinky|little/.test(name)
+  ){
    fingers[side].push(o);
   }
  });
@@ -655,6 +1113,8 @@ function restore(){
  }
  world();
 }
+
+// ORIGINAL NATURAL GUARDIAN STANCE.
 
 function natural(){
  const l=bone('upperarm_l');
@@ -694,7 +1154,9 @@ function rotateWorld(joint,axis,angle){
   .normalize();
 
  joint.quaternion.premultiply(
-  new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
+  new THREE.Quaternion().setFromAxisAngle(
+   localAxis,angle
+  )
  );
 
  world();
@@ -705,14 +1167,18 @@ function perpendicular(direction,target){
   direction,-target.dot(direction)
  );
 
- return v.lengthSq()>1e-9?v.normalize():null;
+ return v.lengthSq()>1e-9
+  ?v.normalize()
+  :null;
 }
 
 function axisToward(direction,target){
  const toward=perpendicular(direction,target);
 
  return toward
-  ?new THREE.Vector3().crossVectors(direction,toward).normalize()
+  ?new THREE.Vector3()
+    .crossVectors(direction,toward)
+    .normalize()
   :null;
 }
 
@@ -727,7 +1193,9 @@ function calibrate(){
 
   if(!upper||!lower||!hand)continue;
 
-  const dir=pos(lower).sub(pos(upper)).normalize();
+  const dir=pos(lower)
+   .sub(pos(upper))
+   .normalize();
 
   chains[side]={
    upper,lower,hand,
@@ -740,13 +1208,19 @@ function calibrate(){
 
 function applyFingers(side,settings){
  for(const f of fingers[side]){
-  f.rotateX(settings.fingerCurl/100*.95);
+  f.rotateX(
+   settings.fingerCurl/100*.95
+  );
  }
 
  for(const t of thumbs[side]){
-  t.rotateX(settings.thumbGrip/100*.60);
+  t.rotateX(
+   settings.thumbGrip/100*.60
+  );
+
   t.rotateZ(
-   (side==='l'?-1:1)*settings.thumbGrip/100*.20
+   (side==='l'?-1:1)*
+   settings.thumbGrip/100*.20
   );
  }
 }
@@ -759,29 +1233,47 @@ function applyArm(side,settings){
  const sign=side==='l'?-1:1;
 
  if(c.raiseAxis){
-  rotateWorld(c.upper,c.raiseAxis,s.raise*RAD);
+  rotateWorld(
+   c.upper,c.raiseAxis,s.raise*RAD
+  );
  }
 
- rotateWorld(c.upper,V(0,0,1),sign*s.spread*RAD);
+ rotateWorld(
+  c.upper,V(0,0,1),
+  sign*s.spread*RAD
+ );
+
  world();
 
  let elbow=pos(c.lower);
  let wrist=pos(c.hand);
  let fore=wrist.sub(elbow).normalize();
- const bendAxis=axisToward(fore,V(0,0,1));
+
+ const bendAxis=axisToward(
+  fore,V(0,0,1)
+ );
 
  if(bendAxis){
-  rotateWorld(c.lower,bendAxis,s.bend*RAD);
+  rotateWorld(
+   c.lower,bendAxis,s.bend*RAD
+  );
  }
 
- rotateWorld(c.upper,V(0,1,0),sign*s.across*RAD*.55);
+ rotateWorld(
+  c.upper,V(0,1,0),
+  sign*s.across*RAD*.55
+ );
+
  world();
 
  elbow=pos(c.lower);
  wrist=pos(c.hand);
  fore=wrist.sub(elbow).normalize();
 
- rotateWorld(c.lower,fore,s.twist*RAD);
+ rotateWorld(
+  c.lower,fore,s.twist*RAD
+ );
+
  world();
 
  const parentQ=c.hand.parent.getWorldQuaternion(
@@ -803,7 +1295,8 @@ function applyArm(side,settings){
  applyFingers(side,s);
 }
 
-// END OF PART 2 — PART 3 CONTINUES HERE
+// END OF PART 2
+// PART 3 CONTINUES DIRECTLY HERE
  
 function applyLeftLeg(){
  if(mode==='natural')return;
@@ -882,13 +1375,17 @@ function setLegValues(values){
 }
 
 function syncLegUI(){
+ const locked=mode!=='bow';
+
  $('calibrationStatus').textContent=
-  (mode==='bow'?'BOW STANCE — TESTING':'APPROVED STANCE — LOCKED')+
+  (locked
+   ?'APPROVED STANCE — LOCKED'
+   :'BOW READY STANCE — CALIBRATION')+
   '\nLeft: '+leftThighAngle+'°, '+
   leftSpreadAngle+'°, '+
   leftKneeAngle+'°, '+
-  leftAnkleAngle+'°\n'+
-  'Right: '+rightThighAngle+'°, '+
+  leftAnkleAngle+'°'+
+  '\nRight: '+rightThighAngle+'°, '+
   rightSpreadAngle+'°, '+
   rightKneeAngle+'°, '+
   rightAnkleAngle+'°';
@@ -897,10 +1394,21 @@ function syncLegUI(){
 function setMode(next){
  mode=next;
 
- $('natural').classList.toggle('active',mode==='natural');
- $('stance').classList.toggle('active',mode==='stance');
- $('shieldStance').classList.toggle('active',mode==='shield');
- $('bowStance').classList.toggle('active',mode==='bow');
+ $('natural').classList.toggle(
+  'active',mode==='natural'
+ );
+
+ $('stance').classList.toggle(
+  'active',mode==='stance'
+ );
+
+ $('shieldStance').classList.toggle(
+  'active',mode==='shield'
+ );
+
+ $('bowStance').classList.toggle(
+  'active',mode==='bow'
+ );
 
  if(mode==='stance'){
   setLegValues(longswordLegs);
@@ -923,7 +1431,7 @@ function setMode(next){
    ?'Approved Longsword Stance — LOCKED':
   mode==='shield'
    ?'Sword & Shield — LOCKED':
-   'Traditional Guardian Longbow — DEVELOPMENT';
+   'Guardian Recurve Bow — Size Calibration';
 
  updatePose();
 }
@@ -932,6 +1440,8 @@ $('natural').onclick=()=>setMode('natural');
 $('stance').onclick=()=>setMode('stance');
 $('shieldStance').onclick=()=>setMode('shield');
 $('bowStance').onclick=()=>setMode('bow');
+
+// LOWER-BODY SKELETON DIAGNOSTIC.
 
 function scanLegBones(){
  if(!guardian){
@@ -955,7 +1465,7 @@ function scanLegBones(){
 
  let report=
   'GUARDIAN LOWER-BODY SKELETON\n'+
-  'Build 3K.5B\n'+
+  'Build 3K.5C.1\n'+
   'Total bones: '+Object.keys(bones).length+'\n\n';
 
  for(const b of candidates){
@@ -979,10 +1489,12 @@ function scanLegBones(){
  }
 
  latestLegReport=report;
+
  $('legReport').textContent=report;
 
  $('legStatus').textContent=
-  candidates.length+' lower-body candidate bones detected';
+  candidates.length+
+  ' lower-body candidate bones detected';
 }
 
 $('scanLegs').onclick=scanLegBones;
@@ -998,7 +1510,9 @@ $('copyLegReport').onclick=async()=>{
  }
 };
 
-// LOCKED SWORD & SHIELD BACKUP.
+// SWORD & SHIELD BACKUP.
+// LOCKED VALUES ARE NOT MODIFIED.
+
 function shieldPoseBackup(){
  return JSON.stringify({
   build:'3K.4K-LOCKED',
@@ -1016,20 +1530,25 @@ $('copyShieldPose').onclick=async()=>{
 
  try{
   await navigator.clipboard.writeText(data);
-  $('values').textContent='Locked shield backup copied.';
+  $('values').textContent=
+   'Locked Sword & Shield backup copied.';
  }catch(e){
   $('values').textContent=data;
  }
 };
 
-// BOW POSE BACKUP.
+// BOW BACKUP — NOW INCLUDES SIZE.
+
 function bowPoseBackup(){
  return JSON.stringify({
-  build:'3K.5B',
+  build:'3K.5C.1',
   bowId:bowDefinition.id,
   grip:bowGrip,
   legs:bowLegs,
-  bowAttachment:bowAttachment
+  bowAttachment:bowAttachment,
+  bowSize:bowSize,
+  bowDimensions:bow?.userData?.dimensions||
+   bowDefinition.dimensions
  },null,2);
 }
 
@@ -1037,7 +1556,8 @@ function showBowMessage(message){
  $('bowStatus').textContent=message;
 }
 
-// SAVE BOW POSE.
+// SAVE COMPLETE BOW CALIBRATION.
+
 $('saveBowPose').onclick=()=>{
  try{
   localStorage.setItem(
@@ -1045,28 +1565,40 @@ $('saveBowPose').onclick=()=>{
    bowPoseBackup()
   );
 
-  showBowMessage('Bow pose saved successfully.');
+  showBowMessage(
+   'Bow calibration saved · Size: '+
+   bowSize.toFixed(2)+'×'
+  );
  }catch(e){
   reportError(e);
  }
 };
 
-// COPY BOW BACKUP.
+// COPY COMPLETE BOW BACKUP.
+
 $('copyBowPose').onclick=async()=>{
  const data=bowPoseBackup();
 
  try{
   await navigator.clipboard.writeText(data);
-  showBowMessage('Bow pose backup copied.');
+  showBowMessage(
+   'Bow backup copied · Size: '+
+   bowSize.toFixed(2)+'×'
+  );
  }catch(e){
   $('bowStatus').textContent=data;
  }
 };
 
-// RESET BOW ONLY.
+// RESET BOW POSE.
+// DOES NOT MODIFY LOCKED STANCES.
+
 $('resetBowPose').onclick=()=>{
  for(const side of ['l','r']){
-  Object.assign(bowGrip[side],initialBowGrip[side]);
+  Object.assign(
+   bowGrip[side],
+   initialBowGrip[side]
+  );
  }
 
  Object.assign(bowLegs,initialBowLegs);
@@ -1074,9 +1606,12 @@ $('resetBowPose').onclick=()=>{
  bowAttachment.position=[
   ...initialBowAttachment.position
  ];
+
  bowAttachment.rotation=[
   ...initialBowAttachment.rotation
  ];
+
+ setBowSize(BOW_SIZE_DEFAULT);
 
  refreshAllSliders();
 
@@ -1085,23 +1620,33 @@ $('resetBowPose').onclick=()=>{
   updatePose();
  }
 
- showBowMessage('Bow test restored to initial values.');
+ showBowMessage(
+  'Bow pose and size reset to calibration baseline.'
+ );
 };
 
-// LOAD SAVED BOW SETTINGS.
+// LOAD EXISTING BOW CALIBRATION.
+// COMPATIBLE WITH EARLIER 3K.5B SAVES.
+
 try{
  const saved=JSON.parse(
-  localStorage.getItem('lifeRPG_guardianBowPose_v1')||'null'
+  localStorage.getItem(
+   'lifeRPG_guardianBowPose_v1'
+  )||'null'
  );
 
  if(saved?.bowId===bowDefinition.id){
+
   for(const side of ['l','r']){
    for(const key of Object.keys(bowGrip[side])){
     const raw=saved.grip?.[side]?.[key];
 
     if(raw!==undefined&&raw!==null){
      const n=Number(raw);
-     if(Number.isFinite(n))bowGrip[side][key]=n;
+
+     if(Number.isFinite(n)){
+      bowGrip[side][key]=n;
+     }
     }
    }
   }
@@ -1111,19 +1656,43 @@ try{
 
    if(raw!==undefined&&raw!==null){
     const n=Number(raw);
-    if(Number.isFinite(n))bowLegs[key]=n;
+
+    if(Number.isFinite(n)){
+     bowLegs[key]=n;
+    }
    }
   }
 
   for(const property of ['position','rotation']){
-   const values=saved.bowAttachment?.[property];
+   const values=
+    saved.bowAttachment?.[property];
 
-   if(Array.isArray(values)&&values.length===3){
+   if(
+    Array.isArray(values)&&
+    values.length===3
+   ){
     const numbers=values.map(Number);
 
     if(numbers.every(Number.isFinite)){
      bowAttachment[property]=numbers;
     }
+   }
+  }
+
+  // Earlier backups have no bowSize field.
+  // Those correctly default to 1.00×.
+  if(
+   saved.bowSize!==undefined&&
+   saved.bowSize!==null
+  ){
+   const savedSize=Number(saved.bowSize);
+
+   if(Number.isFinite(savedSize)){
+    bowSize=THREE.MathUtils.clamp(
+     savedSize,
+     BOW_SIZE_MIN,
+     BOW_SIZE_MAX
+    );
    }
   }
  }
@@ -1132,9 +1701,10 @@ try{
 }
 
 // ORIGINAL LONGSWORD BACKUP SYSTEM.
+
 function backup(){
  return JSON.stringify({
-  build:'3K.5B',
+  build:'3K.5C.1',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -1148,7 +1718,8 @@ $('save').onclick=()=>{
    backup()
   );
 
-  $('values').textContent='Longsword dimensions saved.';
+  $('values').textContent=
+   'Longsword dimensions saved.';
  }catch(e){
   reportError(e);
  }
@@ -1159,7 +1730,8 @@ $('copy').onclick=async()=>{
 
  try{
   await navigator.clipboard.writeText(data);
-  $('values').textContent='Longsword backup copied.';
+  $('values').textContent=
+   'Longsword backup copied.';
  }catch(e){
   $('values').textContent=data;
  }
@@ -1181,7 +1753,9 @@ $('reset').onclick=()=>{
 
 try{
  const saved=JSON.parse(
-  localStorage.getItem('lifeRPG_guardianLongsword_v1')||'null'
+  localStorage.getItem(
+   'lifeRPG_guardianLongsword_v1'
+  )||'null'
  );
 
  if(saved?.weaponId===weaponDefinition.id){
@@ -1190,24 +1764,35 @@ try{
 
    if(raw!==undefined&&raw!==null){
     const n=Number(raw);
-    if(Number.isFinite(n))dimensions[key]=n;
+
+    if(Number.isFinite(n)){
+     dimensions[key]=n;
+    }
    }
   }
 
-  const rawAngle=saved.attachment?.bladeAngle;
+  const rawAngle=
+   saved.attachment?.bladeAngle;
 
-  if(rawAngle!==undefined&&rawAngle!==null){
+  if(
+   rawAngle!==undefined&&
+   rawAngle!==null
+  ){
    const angle=Number(rawAngle);
+
    if(Number.isFinite(angle)){
     attachment.bladeAngle=angle;
    }
   }
 
   if(
-   Array.isArray(saved.attachment?.gripOffset)&&
+   Array.isArray(
+    saved.attachment?.gripOffset
+   )&&
    saved.attachment.gripOffset.length===3
   ){
-   const offsets=saved.attachment.gripOffset.map(Number);
+   const offsets=
+    saved.attachment.gripOffset.map(Number);
 
    if(offsets.every(Number.isFinite)){
     attachment.gripOffset=offsets;
@@ -1218,7 +1803,11 @@ try{
  reportError(e);
 }
 
+// REFRESH ALL CONTROLS AFTER LOADING.
+
 refreshAllSliders();
+
+// BUILD ALL INDEPENDENT WEAPON ASSETS.
 
 try{
  rebuildSword();
@@ -1228,11 +1817,15 @@ try{
  reportError(e);
 }
 
+// EQUIPMENT VISIBILITY.
+
 $('swordToggle').onclick=()=>{
  swordVisible=!swordVisible;
 
  $('swordToggle').textContent=
-  swordVisible?'Equipment ON':'Equipment OFF';
+  swordVisible
+   ?'Equipment ON'
+   :'Equipment OFF';
 
  $('swordToggle').classList.toggle(
   'active',swordVisible
@@ -1241,12 +1834,18 @@ $('swordToggle').onclick=()=>{
  updateEquipment();
 };
 
+// BREATHING TOGGLE.
+
 $('breath').onclick=()=>{
  breathing=!breathing;
 
  $('breath').textContent=
-  breathing?'Breathing ON':'Breathing OFF';
+  breathing
+   ?'Breathing ON'
+   :'Breathing OFF';
 };
+
+// ORIGINAL CAMERA RESET.
 
 $('resetCamera').onclick=()=>{
  camera.position.set(0,1.45,9);
@@ -1254,21 +1853,28 @@ $('resetCamera').onclick=()=>{
  controls.update();
 };
 
+// SHOW/HIDE INTERFACE.
+
 $('toggleUI').onclick=()=>{
- const hidden=document.body.classList.toggle(
-  'ui-hidden'
- );
+ const hidden=
+  document.body.classList.toggle(
+   'ui-hidden'
+  );
 
  $('toggleUI').textContent=
   hidden?'Show UI':'Hide UI';
 };
 
+// START IN BOW MODE.
+
 setMode('bow');
 
-$('status').textContent='Loading Guardian model...';
+$('status').textContent=
+ 'Loading Guardian model...';
 
 // ORIGINAL GUARDIAN MODEL.
-// PROPORTIONS AND POSITIONING UNCHANGED.
+// SCALE AND POSITIONING UNCHANGED.
+
 new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
 
@@ -1276,14 +1882,18 @@ new GLTFLoader().load(
   try{
    guardian=gltf.scene;
 
-   const box=new THREE.Box3().setFromObject(guardian);
+   const box=
+    new THREE.Box3().setFromObject(guardian);
+
    const size=box.getSize(V());
    const center=box.getCenter(V());
 
    guardian.position.sub(center);
+
    guardian.scale.setScalar(
     2.5/Math.max(size.y,.001)
    );
+
    guardian.position.y+=1.25;
 
    scene.add(guardian);
@@ -1298,8 +1908,8 @@ new GLTFLoader().load(
     ' bones · READY';
 
    $('debug').textContent=
-    'Build 3K.5B · Guardian Longbow · '+
-    bowDefinition.name;
+    'Build 3K.5C.1 · Guardian Recurve Bow · '+
+    'Size '+bowSize.toFixed(2)+'×';
 
    refreshAllSliders();
    setMode('bow');
@@ -1310,8 +1920,11 @@ new GLTFLoader().load(
     $('legStatus').textContent=
      'Warning: Right foot bone not found.';
    }
+
   }catch(e){
-   $('status').textContent='Guardian setup error.';
+   $('status').textContent=
+    'Guardian setup error.';
+
    reportError(e);
   }
  },
@@ -1319,16 +1932,27 @@ new GLTFLoader().load(
  undefined,
 
  error=>{
-  $('status').textContent='Guardian loading failed.';
+  $('status').textContent=
+   'Guardian loading failed.';
+
   reportError(error);
  }
 );
 
+// RESPONSIVE VIEWPORT.
+
 window.addEventListener('resize',()=>{
- camera.aspect=innerWidth/innerHeight;
+ camera.aspect=
+  innerWidth/innerHeight;
+
  camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
+
+ renderer.setSize(
+  innerWidth,innerHeight
+ );
 });
+
+// ANIMATION LOOP.
 
 const clock=new THREE.Clock();
 
@@ -1341,10 +1965,14 @@ function animate(){
   updatePose();
 
   if(breathing){
-   const chest=bone('spine_03')||bone('spine_02');
+   const chest=
+    bone('spine_03')||
+    bone('spine_02');
 
    if(chest){
-    chest.rotateX(Math.sin(elapsed*1.6)*.004);
+    chest.rotateX(
+     Math.sin(elapsed*1.6)*.004
+    );
    }
   }
 
@@ -1356,6 +1984,8 @@ function animate(){
 }
 
 animate();
+
 </script>
 </body>
 </html>
+ 
