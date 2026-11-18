@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>LIFE RPG — Guardian 3K.2.6.3</title>
-
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
@@ -39,7 +38,6 @@ window.addEventListener('error',e=>{
   b.textContent='JavaScript error: '+e.message+'\n'+(e.filename||'')+':'+(e.lineno||'');
  }
 });
-
 window.addEventListener('unhandledrejection',e=>{
  const b=document.getElementById('errorBox');
  if(b){
@@ -53,12 +51,10 @@ window.addEventListener('unhandledrejection',e=>{
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
 </head>
-
 <body>
 
 <div id="scene"></div>
 <div id="errorBox"></div>
-
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
@@ -68,7 +64,6 @@ window.addEventListener('unhandledrejection',e=>{
 </div>
 
 <div id="panel">
-
 <div>
 <button id="natural">Natural Stance</button>
 <button id="stance" class="active">Longsword Stance</button>
@@ -78,57 +73,45 @@ window.addEventListener('unhandledrejection',e=>{
 </div>
 
 <hr>
-
-<h3>Test 3K.2.6.3 — Right Thigh Calibration</h3>
-<small>One new right-leg control. Upper body and longsword remain locked.</small>
+<h3>Right Thigh Calibration</h3>
+<small>Upper-body stance and longsword remain locked.</small>
 
 <h3 style="margin-top:12px">Left Leg — Provisional</h3>
-
 <div class="setting">
 <span>Left Thigh</span>
 <input id="leftThighSlider" type="range" min="-20" max="20" step="1" value="10">
 <span id="leftThighValue">10°</span>
 </div>
-
 <div class="setting">
 <span>Left Hip Spread</span>
 <input id="leftSpreadSlider" type="range" min="-20" max="20" step="1" value="-10">
 <span id="leftSpreadValue">-10°</span>
 </div>
-
 <div class="setting">
 <span>Left Knee Bend</span>
 <input id="leftKneeSlider" type="range" min="-25" max="25" step="1" value="-10">
 <span id="leftKneeValue">-10°</span>
 </div>
-
 <div class="setting">
 <span>Left Ankle</span>
-<input id="leftAnkleSlider" type="range" min="-30" max="30" step="1" value="0">
-<span id="leftAnkleValue">0°</span>
+<input id="leftAnkleSlider" type="range" min="-30" max="30" step="1" value="-10">
+<span id="leftAnkleValue">-10°</span>
 </div>
 
 <hr>
-
 <h3>Right Leg — Calibration</h3>
-
 <div class="setting">
 <span>Right Thigh</span>
 <input id="rightThighSlider" type="range" min="-20" max="20" step="1" value="0">
 <span id="rightThighValue">0°</span>
 </div>
-
 <button id="resetLeg">Reset Left Leg</button>
 <button id="testPose">Restore Test Pose</button>
 <button id="resetRight">Reset Right Thigh</button>
-
 <div id="calibrationStatus"></div>
 
 <hr>
-
 <h3>Lower-Body Skeleton Detection</h3>
-<small>Diagnostic only. Scanning does not change the pose.</small>
-
 <div id="legDiagnostic">
 <div id="legStatus">Waiting for skeleton...</div>
 <button id="scanLegs">Scan Leg Bones</button>
@@ -137,24 +120,16 @@ window.addEventListener('unhandledrejection',e=>{
 </div>
 
 <hr>
-
 <h3>Longsword Dimensions</h3>
-<small>Independent weapon model. Upper-body stance is locked.</small>
-
+<small>Independent weapon model.</small>
 <div id="sliders"></div>
-
-<div>
 <button id="save">Save Sword Dimensions</button>
 <button id="copy">Copy Sword Backup</button>
 <button id="reset">Reset Sword</button>
-</div>
-
 <div id="values"></div>
-
 </div>
 
 <script type="module">
-
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -173,7 +148,6 @@ function reportError(error){
 
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x101722);
-
 const camera=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.05,100);
 camera.position.set(0,1.45,9);
 
@@ -191,7 +165,6 @@ controls.maxDistance=30;
 controls.update();
 
 scene.add(new THREE.HemisphereLight(0xeaf2ff,0x394457,2.3));
-
 const sun=new THREE.DirectionalLight(0xffe4bc,2.5);
 sun.position.set(3,7,6);
 scene.add(sun);
@@ -204,20 +177,14 @@ floor.rotation.x=-Math.PI/2;
 floor.position.y=-.025;
 scene.add(floor);
 
-let guardian=null;
-let sword=null;
-let mode='stance';
-let swordVisible=true;
-let breathing=false;
-let rigReady=false;
-let latestLegReport='';
+let guardian=null,sword=null;
+let mode='stance',swordVisible=true,breathing=false;
+let rigReady=false,latestLegReport='';
 
 let leftThighAngle=10;
 let leftSpreadAngle=-10;
 let leftKneeAngle=-10;
-let leftAnkleAngle=0;
-
-// NEW — Right thigh only
+let leftAnkleAngle=-10;
 let rightThighAngle=0;
 
 const bones={};
@@ -226,7 +193,6 @@ const chains={};
 const fingers={l:[],r:[]};
 const thumbs={l:[],r:[]};
 
-// APPROVED LOCKED UPPER-BODY VALUES
 const lockedGrip={
  l:{raise:16,spread:-21,bend:59,across:90,twist:0,wristX:0,wristY:-28,fingerCurl:84,thumbGrip:0},
  r:{raise:16,spread:-22,bend:71,across:72,twist:0,wristX:11,wristY:45,fingerCurl:100,thumbGrip:0}
@@ -234,7 +200,6 @@ const lockedGrip={
 
 const defaults={...weaponDefinition.dimensions};
 const dimensions={...defaults};
-
 const attachment={
  bladeAngle:weaponDefinition.attachment.bladeAngle,
  gripOffset:[...weaponDefinition.attachment.gripOffset]
@@ -270,16 +235,12 @@ function rebuildSword(){
 
 function updateSword(){
  if(!sword)return;
-
  sword.visible=swordVisible&&mode==='stance'&&rigReady;
  if(!sword.visible)return;
-
  world();
-
  const left=pos(chains.l.hand);
  const right=pos(chains.r.hand);
  const midpoint=left.add(right).multiplyScalar(.5);
-
  sword.position.copy(midpoint).add(V(...attachment.gripOffset));
  sword.rotation.set(0,0,attachment.bladeAngle*RAD);
 }
@@ -287,22 +248,18 @@ function updateSword(){
 for(const [key,label,min,max,step] of config){
  const row=document.createElement('div');
  row.className='setting';
-
  const title=document.createElement('span');
  title.textContent=label;
-
  const input=document.createElement('input');
  input.type='range';
  input.min=min;
  input.max=max;
  input.step=step;
-
  const value=document.createElement('span');
 
  input.oninput=()=>{
   try{
    const n=Number(input.value);
-
    if(key==='bladeAngle')attachment.bladeAngle=n;
    else if(key==='gripX')attachment.gripOffset[0]=n;
    else if(key==='gripY')attachment.gripOffset[1]=n;
@@ -311,30 +268,24 @@ for(const [key,label,min,max,step] of config){
     dimensions[key]=n;
     rebuildSword();
    }
-
    value.textContent=n.toFixed(step>=1?0:3);
    updateSword();
-  }catch(e){
-   reportError(e);
-  }
+  }catch(e){reportError(e);}
  };
 
  row.append(title,input,value);
  $('sliders').appendChild(row);
-
  sliders[key]={input,value,step};
 }
 
 function refresh(){
  for(const [key,obj] of Object.entries(sliders)){
   let n;
-
   if(key==='bladeAngle')n=attachment.bladeAngle;
   else if(key==='gripX')n=attachment.gripOffset[0];
   else if(key==='gripY')n=attachment.gripOffset[1];
   else if(key==='gripZ')n=attachment.gripOffset[2];
   else n=dimensions[key];
-
   obj.input.value=n;
   obj.value.textContent=Number(n).toFixed(obj.step>=1?0:3);
  }
@@ -343,54 +294,37 @@ function refresh(){
 function capture(){
  guardian.traverse(o=>{
   if(!o.isBone)return;
-
   const name=o.name.toLowerCase();
   bones[name]=o;
   originals.set(o,o.quaternion.clone());
-
   const match=name.match(/(?:_|\.)(l|r)$/);
   if(!match)return;
-
   const side=match[1];
-
-  if(/thumb/.test(name)){
-   thumbs[side].push(o);
-  }else if(/finger|index|middle|ring|pinky|little/.test(name)){
+  if(/thumb/.test(name))thumbs[side].push(o);
+  else if(/finger|index|middle|ring|pinky|little/.test(name)){
    fingers[side].push(o);
   }
  });
 }
 
-function bone(name){
- return bones[name]||null;
-}
-
-function world(){
- guardian.updateMatrixWorld(true);
-}
-
-function pos(b){
- return b.getWorldPosition(V());
-}
+function bone(name){return bones[name]||null;}
+function world(){guardian.updateMatrixWorld(true);}
+function pos(b){return b.getWorldPosition(V());}
 
 function restore(){
- for(const [b,q] of originals){
-  b.quaternion.copy(q);
- }
+ for(const [b,q] of originals)b.quaternion.copy(q);
  world();
 }
 
 function natural(){
  const l=bone('upperarm_l');
  const r=bone('upperarm_r');
-
  if(l)l.rotateZ(-1.35);
  if(r)r.rotateZ(1.35);
 
  for(const side of ['l','r']){
   const fore=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
-
   if(fore)fore.rotateX(.46*.18);
   if(hand)hand.rotateX(.19*.14);
  }
@@ -400,22 +334,17 @@ function natural(){
    b.rotateX(.66*.35);
   }
  }
-
  world();
 }
 
 function rotateWorld(joint,axis,angle){
  if(!joint||!angle||axis.lengthSq()<1e-10)return;
-
  world();
-
  const parentQ=joint.parent.getWorldQuaternion(new THREE.Quaternion());
  const localAxis=axis.clone().applyQuaternion(parentQ.invert()).normalize();
-
  joint.quaternion.premultiply(
   new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
  );
-
  world();
 }
 
@@ -423,13 +352,11 @@ function perpendicular(direction,target){
  const v=target.clone().addScaledVector(
   direction,-target.dot(direction)
  );
-
  return v.lengthSq()>1e-9?v.normalize():null;
 }
 
 function axisToward(direction,target){
  const toward=perpendicular(direction,target);
-
  return toward
   ?new THREE.Vector3().crossVectors(direction,toward).normalize()
   :null;
@@ -443,72 +370,55 @@ function calibrate(){
   const upper=bone('upperarm_'+side);
   const lower=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
-
   if(!upper||!lower||!hand)continue;
 
   const dir=pos(lower).sub(pos(upper)).normalize();
-
   chains[side]={
-   upper,
-   lower,
-   hand,
+   upper,lower,hand,
    raiseAxis:axisToward(dir,V(0,0,1))
   };
  }
-
  rigReady=!!chains.l&&!!chains.r;
 }
 
 function applyFingers(side){
  const s=lockedGrip[side];
-
  for(const f of fingers[side]){
   f.rotateX(s.fingerCurl/100*.95);
  }
-
  for(const t of thumbs[side]){
   t.rotateX(s.thumbGrip/100*.60);
-  t.rotateZ(
-   (side==='l'?-1:1)*s.thumbGrip/100*.20
-  );
+  t.rotateZ((side==='l'?-1:1)*s.thumbGrip/100*.20);
  }
 }
 
 function applyArm(side){
  const c=chains[side];
  if(!c)return;
-
  const s=lockedGrip[side];
  const sign=side==='l'?-1:1;
 
  if(c.raiseAxis){
   rotateWorld(c.upper,c.raiseAxis,s.raise*RAD);
  }
-
  rotateWorld(c.upper,V(0,0,1),sign*s.spread*RAD);
-
  world();
 
  let elbow=pos(c.lower);
  let wrist=pos(c.hand);
  let fore=wrist.sub(elbow).normalize();
-
  const bendAxis=axisToward(fore,V(0,0,1));
 
  if(bendAxis){
   rotateWorld(c.lower,bendAxis,s.bend*RAD);
  }
-
  rotateWorld(c.upper,V(0,1,0),sign*s.across*RAD*.55);
-
  world();
 
  elbow=pos(c.lower);
  wrist=pos(c.hand);
  fore=wrist.sub(elbow).normalize();
-
  rotateWorld(c.lower,fore,s.twist*RAD);
-
  world();
 
  const parentQ=c.hand.parent.getWorldQuaternion(
@@ -520,50 +430,34 @@ function applyArm(side){
   V(1,0,0).applyQuaternion(parentQ),
   s.wristX*RAD
  );
-
  rotateWorld(
   c.hand,
   V(0,1,0).applyQuaternion(parentQ),
   s.wristY*RAD
  );
-
  applyFingers(side);
 }
 
-// LEFT LEG — WORKING 3K.2.5
+// PART 2 CONTINUES IMMEDIATELY BELOW THIS LINE
+ 
 function applyLeftLeg(){
  if(mode!=='stance')return;
-
  const thigh=bone('thigh_l');
  if(!thigh)return;
 
- if(leftThighAngle){
-  thigh.rotateX(leftThighAngle*RAD);
- }
-
- if(leftSpreadAngle){
-  thigh.rotateZ(leftSpreadAngle*RAD);
- }
+ if(leftThighAngle)thigh.rotateX(leftThighAngle*RAD);
+ if(leftSpreadAngle)thigh.rotateZ(leftSpreadAngle*RAD);
 
  const calf=bone('calf_l');
-
- if(calf&&leftKneeAngle){
-  calf.rotateX(leftKneeAngle*RAD);
- }
+ if(calf&&leftKneeAngle)calf.rotateX(leftKneeAngle*RAD);
 
  const foot=bone('foot_l');
-
- if(foot&&leftAnkleAngle){
-  foot.rotateX(leftAnkleAngle*RAD);
- }
+ if(foot&&leftAnkleAngle)foot.rotateX(leftAnkleAngle*RAD);
 }
 
-// RIGHT THIGH — NEW 3K.2.6.3
 function applyRightThigh(){
  if(mode!=='stance')return;
-
  const thigh=bone('thigh_r');
-
  if(thigh&&rightThighAngle){
   thigh.rotateX(rightThighAngle*RAD);
  }
@@ -571,7 +465,6 @@ function applyRightThigh(){
 
 function updatePose(){
  if(!guardian)return;
-
  restore();
  natural();
 
@@ -581,7 +474,6 @@ function updatePose(){
   applyLeftLeg();
   applyRightThigh();
  }
-
  updateSword();
 }
 
@@ -598,7 +490,6 @@ function syncLegUI(){
   $(id+'Slider').value=get();
   $(id+'Value').textContent=get()+'°';
  }
-
  $('calibrationStatus').textContent=
   'Left Thigh: '+leftThighAngle+
   '° · Spread: '+leftSpreadAngle+
@@ -619,7 +510,6 @@ $('resetLeg').onclick=()=>{
  leftSpreadAngle=0;
  leftKneeAngle=0;
  leftAnkleAngle=0;
-
  syncLegUI();
  updatePose();
 };
@@ -628,9 +518,8 @@ $('testPose').onclick=()=>{
  leftThighAngle=10;
  leftSpreadAngle=-10;
  leftKneeAngle=-10;
- leftAnkleAngle=0;
+ leftAnkleAngle=-10;
  rightThighAngle=0;
-
  syncLegUI();
  updatePose();
 };
@@ -668,7 +557,6 @@ function scanLegBones(){
 
  for(const b of candidates){
   const p=pos(b);
-
   report+='BONE: '+b.name+
    '\nPARENT: '+(b.parent?.name||'none')+
    '\nWORLD: '+p.x.toFixed(3)+', '+
@@ -677,7 +565,6 @@ function scanLegBones(){
 
  if(!candidates.length){
   report+='No matching lower-body names found.\nFull bone list:\n';
-
   for(const b of Object.values(bones)){
    report+=b.name+'\n';
   }
@@ -693,7 +580,6 @@ $('scanLegs').onclick=scanLegBones;
 
 $('copyLegReport').onclick=async()=>{
  if(!latestLegReport)scanLegBones();
-
  try{
   await navigator.clipboard.writeText(latestLegReport);
   $('legStatus').textContent='Bone report copied.';
@@ -718,10 +604,8 @@ $('stance').onclick=()=>{
 
 $('swordToggle').onclick=()=>{
  swordVisible=!swordVisible;
-
  $('swordToggle').textContent=swordVisible?'Sword ON':'Sword OFF';
  $('swordToggle').classList.toggle('active',swordVisible);
-
  updateSword();
 };
 
@@ -756,16 +640,12 @@ $('save').onclick=()=>{
    'lifeRPG_guardianLongsword_v1',
    backup()
   );
-
   $('values').textContent='Sword dimensions saved.';
- }catch(e){
-  reportError(e);
- }
+ }catch(e){reportError(e);}
 };
 
 $('copy').onclick=async()=>{
  const data=backup();
-
  try{
   await navigator.clipboard.writeText(data);
   $('values').textContent='Sword configuration copied.';
@@ -776,14 +656,8 @@ $('copy').onclick=async()=>{
 
 $('reset').onclick=()=>{
  Object.assign(dimensions,defaults);
-
- attachment.bladeAngle=
-  weaponDefinition.attachment.bladeAngle;
-
- attachment.gripOffset=[
-  ...weaponDefinition.attachment.gripOffset
- ];
-
+ attachment.bladeAngle=weaponDefinition.attachment.bladeAngle;
+ attachment.gripOffset=[...weaponDefinition.attachment.gripOffset];
  refresh();
  rebuildSword();
 };
@@ -796,14 +670,10 @@ try{
  if(saved?.weaponId===weaponDefinition.id){
   for(const key of Object.keys(defaults)){
    const n=Number(saved.dimensions?.[key]);
-
-   if(Number.isFinite(n)){
-    dimensions[key]=n;
-   }
+   if(Number.isFinite(n))dimensions[key]=n;
   }
 
   const angle=Number(saved.attachment?.bladeAngle);
-
   if(Number.isFinite(angle)){
    attachment.bladeAngle=angle;
   }
@@ -813,23 +683,18 @@ try{
    saved.attachment.gripOffset.length===3
   ){
    const offsets=saved.attachment.gripOffset.map(Number);
-
    if(offsets.every(Number.isFinite)){
     attachment.gripOffset=offsets;
    }
   }
  }
-}catch(e){
- reportError(e);
-}
+}catch(e){reportError(e);}
 
 refresh();
 
 try{
  rebuildSword();
-}catch(e){
- reportError(e);
-}
+}catch(e){reportError(e);}
 
 $('status').textContent='Loading Guardian model...';
 
@@ -871,8 +736,7 @@ new GLTFLoader().load(
    syncLegUI();
 
    if(!bone('thigh_r')){
-    $('legStatus').textContent=
-     'Right thigh bone not found.';
+    $('legStatus').textContent='Right thigh bone not found.';
    }
 
   }catch(e){
@@ -884,4 +748,54 @@ new GLTFLoader().load(
  undefined,
 
  error=>{
-  $('status').textConten
+  $('status').textContent='Guardian model failed to load.';
+  reportError(error);
+ }
+);
+
+const clock=new THREE.Clock();
+let animationFailed=false;
+
+function animate(){
+ requestAnimationFrame(animate);
+
+ if(!animationFailed){
+  try{
+   if(guardian){
+    updatePose();
+
+    if(breathing){
+     const spine=bone('spine_02');
+     if(spine){
+      const phase=Math.sin(
+       clock.getElapsedTime()*Math.PI*2/4.2
+      );
+      spine.rotateX(phase*.018*.55);
+      world();
+      updateSword();
+     }
+    }
+   }
+
+   controls.update();
+   renderer.render(scene,camera);
+
+  }catch(e){
+   animationFailed=true;
+   reportError(e);
+  }
+ }
+}
+
+animate();
+
+addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+
+</script>
+</body>
+</html>
+ 
