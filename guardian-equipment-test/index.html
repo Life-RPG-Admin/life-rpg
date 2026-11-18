@@ -6,7 +6,7 @@
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian 3K.5D.1</title>
+<title>LIFE RPG — Guardian 3K.5E</title>
 
 <style>
 *{box-sizing:border-box}
@@ -158,7 +158,8 @@ hr{
 #calibrationStatus,
 #values,
 #bowStatus,
-#stringStatus{
+#stringStatus,
+#arrowStatus{
  color:#c9d8e0;
  font-size:11px;
  margin-top:6px;
@@ -224,10 +225,10 @@ window.addEventListener('unhandledrejection',e=>{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
- <h3>LIFE RPG — Guardian 3K.5D.1</h3>
+ <h3>LIFE RPG — Guardian 3K.5E</h3>
  <div id="status">Loading Guardian...</div>
  <div id="debug">
-  Guardian Ready Stance · Dynamic Bowstring Test
+  Guardian Lowered Draw · Arrow Alignment Test
  </div>
 </div>
 
@@ -245,21 +246,83 @@ window.addEventListener('unhandledrejection',e=>{
 
 <hr>
 
-<h3>Build 3K.5D.1 — Dynamic Bowstring</h3>
+<h3>Build 3K.5E — Independent Arrow Alignment</h3>
 
 <div class="lockedNotice">
- Approved Guardian Ready Stance preserved.
- Natural, Longsword and Sword & Shield remain locked.
- Bow size approved at 2.05×.
+ Approved lowered bow-draw stance preserved.
+ Bow size locked at 2.05×.
+ Dynamic string calibration retained.
+ Other weapon systems remain unchanged.
 </div>
 
 <div id="bowSection">
 
-<h3>Bow Size — Approved</h3>
+<h3>Arrow Cosmetic — Test 2</h3>
+
+<div class="testNotice">
+ The arrow is a separate cosmetic model.
+ Its nock follows the drawn string connection,
+ while its shaft points toward the bow.
+ Adjust alignment without changing the
+ approved Guardian pose.
+</div>
+
+<button id="arrowToggle" class="active">
+ Arrow ON
+</button>
+
+<h3>Arrow Alignment — Adjustable</h3>
+
 <small>
- Bow scale is fixed at 2.05× for this test.
- Guardian proportions remain unchanged.
+ Offsets move the arrow's nock relative to
+ the drawing-hand string connection.
+ Rotation adjustments refine the arrow's
+ direction independently of the bow.
 </small>
+
+<div id="arrowPositionSliders"></div>
+
+<hr>
+
+<h3>Arrow Rotation — Adjustable</h3>
+<div id="arrowRotationSliders"></div>
+
+<hr>
+
+<h3>Arrow Length — Adjustable</h3>
+
+<div class="setting">
+ <span>Arrow Length</span>
+ <input
+  id="arrowLengthSlider"
+  type="range"
+  min="0.8"
+  max="3.5"
+  step="0.05"
+  value="2.25"
+ >
+ <span id="arrowLengthValue">2.25</span>
+</div>
+
+<button id="resetArrow">
+ Reset Arrow Alignment
+</button>
+
+<button id="saveArrow">
+ Save Arrow Calibration
+</button>
+
+<button id="copyArrow">
+ Copy Arrow Backup
+</button>
+
+<div id="arrowStatus">
+ Waiting for Guardian arrow model...
+</div>
+
+<hr>
+
+<h3>Bow Size — Approved</h3>
 
 <div class="setting">
  <span>Bow Size</span>
@@ -286,9 +349,9 @@ window.addEventListener('unhandledrejection',e=>{
 <h3>Dynamic Bowstring — Drawing Hand</h3>
 
 <div class="testNotice">
- The bowstring follows the right drawing hand.
- Adjust the connection point toward the fingers
- without changing the bow's size or geometry.
+ Existing dynamic bowstring preserved.
+ Current string offsets are loaded from
+ your saved 3K.5D.1 calibration.
 </div>
 
 <div class="setting">
@@ -299,9 +362,9 @@ window.addEventListener('unhandledrejection',e=>{
   min="-0.5"
   max="0.5"
   step="0.01"
-  value="0"
+  value="-0.26"
  >
- <span id="stringOffsetXValue">0.00</span>
+ <span id="stringOffsetXValue">-0.26</span>
 </div>
 
 <div class="setting">
@@ -312,9 +375,9 @@ window.addEventListener('unhandledrejection',e=>{
   min="-0.5"
   max="0.5"
   step="0.01"
-  value="0"
+  value="0.5"
  >
- <span id="stringOffsetYValue">0.00</span>
+ <span id="stringOffsetYValue">0.50</span>
 </div>
 
 <div class="setting">
@@ -325,13 +388,13 @@ window.addEventListener('unhandledrejection',e=>{
   min="-0.5"
   max="0.5"
   step="0.01"
-  value="0"
+  value="0.11"
  >
- <span id="stringOffsetZValue">0.00</span>
+ <span id="stringOffsetZValue">0.11</span>
 </div>
 
 <div id="stringStatus">
- Waiting for Guardian drawing hand...
+ Waiting for drawing hand...
 </div>
 
 <button id="resetStringOffset">
@@ -443,9 +506,10 @@ window.addEventListener('unhandledrejection',e=>{
 
 <script type="module">
 
-// --------------------------------------------------
-// BUILD 3K.5D.1 — ORIGINAL MODULE IMPORTS
-// --------------------------------------------------
+// ==================================================
+// BUILD 3K.5E — TEST 2
+// ORIGINAL WORKING WEAPON IMPORTS
+// ==================================================
 
 import * as THREE from 'three';
 
@@ -457,15 +521,14 @@ import {
  OrbitControls
 } from 'three/addons/controls/OrbitControls.js';
 
-// ORIGINAL WORKING LONGSWORD EXPORTS.
-// DO NOT CHANGE THESE.
+// LOCKED LONGSWORD MODULE — ORIGINAL EXPORTS.
 
 import {
  weaponDefinition,
  createGuardianLongsword
 } from './weapons/guardian-longsword.js';
 
-// ORIGINAL SWORD & SHIELD EXPORTS.
+// LOCKED SWORD & SHIELD MODULES.
 
 import {
  armingSwordDefinition,
@@ -477,19 +540,26 @@ import {
  createGuardianShield
 } from './weapons/guardian-shield.js';
 
-// BOW MODULE WITH DYNAMIC STRING SUPPORT.
+// APPROVED DYNAMIC BOW MODULE.
 
 import {
  bowDefinition,
  createGuardianBow
 } from './weapons/guardian-bow.js';
 
+// NEW INDEPENDENT ARROW COSMETIC.
+
+import {
+ arrowDefinition,
+ createGuardianArrow
+} from './weapons/guardian-arrow.js';
+
 // END OF PART 1
 // PART 2 CONTINUES DIRECTLY HERE
  
 // ==================================================
-// LIFE RPG — BUILD 3K.5D.1
-// PART 2 OF 3
+// LIFE RPG — BUILD 3K.5E
+// TEST 2 — PART 2 OF 3 — CORRECTED
 // ==================================================
 
 const V=(x=0,y=0,z=0)=>new THREE.Vector3(x,y,z);
@@ -544,13 +614,17 @@ floor.rotation.x=-Math.PI/2;
 floor.position.y=-.025;
 scene.add(floor);
 
-// GUARDIAN AND INDEPENDENT WEAPON ASSETS.
+// INDEPENDENT EQUIPMENT ASSETS.
 
 let guardian=null;
 let sword=null;
 let armingSword=null;
 let shield=null;
 let bow=null;
+
+// NEW — INDEPENDENT ARROW.
+let arrow=null;
+let arrowVisible=true;
 
 let mode='bow';
 let swordVisible=true;
@@ -589,12 +663,12 @@ const shieldGrip={
  },
  r:{
   raise:30,spread:-12,bend:51,across:18,
-  twist:0,wristX:22,wristY:35,
+  twist:0,wristX:0,wristY:45,
   fingerCurl:100,thumbGrip:9
  }
 };
 
-// APPROVED BOW GRIP — 3K.5C.1 BACKUP.
+// APPROVED LOWERED BOW-DRAW GRIP.
 
 const initialBowGrip={
  l:{
@@ -603,7 +677,7 @@ const initialBowGrip={
   fingerCurl:95,thumbGrip:0
  },
  r:{
-  raise:-14,spread:0,bend:95,across:55,
+  raise:0,spread:-36,bend:69,across:120,
   twist:0,wristX:0,wristY:20,
   fingerCurl:65,thumbGrip:16
  }
@@ -626,14 +700,12 @@ const armConfig=[
  ['thumbGrip','Thumb Grip',0,100,1]
 ];
 
-// LOCKED SWORD ATTACHMENT — UNCHANGED.
+// LOCKED SWORD & SHIELD ATTACHMENTS.
 
 const armingAttachment={
  position:[-0.17,0.47,0.07],
  rotation:[-1,82,82]
 };
-
-// LOCKED SHIELD ATTACHMENT — UNCHANGED.
 
 const shieldAttachment={
  position:[0.09,2.12,0.03],
@@ -652,7 +724,7 @@ const bowAttachment={
  rotation:[...initialBowAttachment.rotation]
 };
 
-// LOCKED LEG STANCES — UNCHANGED.
+// APPROVED LEG STANCES.
 
 const longswordLegs={
  leftThigh:10,leftSpread:-10,
@@ -667,8 +739,6 @@ const shieldLegs={
  rightThigh:-5,rightSpread:3,
  rightKnee:5,rightAnkle:0
 };
-
-// APPROVED BOW LEG CALIBRATION.
 
 const initialBowLegs={
  leftThigh:2,leftSpread:-8,
@@ -689,7 +759,7 @@ let rightSpreadAngle=bowLegs.rightSpread;
 let rightKneeAngle=bowLegs.rightKnee;
 let rightAnkleAngle=bowLegs.rightAnkle;
 
-// BOW SIZE — APPROVED AND FIXED.
+// APPROVED BOW SIZE — LOCKED.
 
 const BOW_SIZE_MIN=2.05;
 const BOW_SIZE_MAX=2.05;
@@ -697,7 +767,7 @@ const BOW_SIZE_DEFAULT=2.05;
 
 let bowSize=BOW_SIZE_DEFAULT;
 
-function setBowSize(value){
+function setBowSize(){
  bowSize=2.05;
 
  if(bow){
@@ -723,37 +793,21 @@ function updateBowMeasurements(){
   ' units · Scale: 2.05×';
 }
 
-$('bowSizeSlider').oninput=()=>{
- setBowSize(2.05);
-};
+$('bowSizeSlider').oninput=()=>setBowSize();
+$('resetBowSize').onclick=()=>setBowSize();
 
-$('resetBowSize').onclick=()=>{
- setBowSize(2.05);
-};
-
-// NEW — DRAWING-HAND STRING OFFSETS.
+// APPROVED STRING CONNECTION.
 
 const stringConnection={
- x:0,
- y:0,
- z:0
+ x:-0.26,
+ y:0.50,
+ z:0.11
 };
 
-function updateDynamicBowstring(){
- if(!bow?.connectStringToWorldPoint)return;
+// WORLD POSITION OF THE STRING DRAW POINT.
 
- if(
-  mode!=='bow'||
-  !bow.visible||
-  !rigReady||
-  !chains.r?.hand
- ){
-  bow.resetString?.();
-  return;
- }
-
- // The offset follows the right-hand bone's
- // orientation, not the camera or bow rotation.
+function getStringDrawPoint(){
+ if(!rigReady||!chains.r?.hand)return null;
 
  const hand=chains.r.hand;
  const p=hand.getWorldPosition(V());
@@ -762,17 +816,115 @@ function updateDynamicBowstring(){
   new THREE.Quaternion()
  );
 
- const offset=V(
-  stringConnection.x,
-  stringConnection.y,
-  stringConnection.z
- ).applyQuaternion(q);
+ p.add(
+  V(
+   stringConnection.x,
+   stringConnection.y,
+   stringConnection.z
+  ).applyQuaternion(q)
+ );
 
- p.add(offset);
+ return p;
+}
 
- // The independent bow module converts
- // this world-space point into bow-local space.
- bow.connectStringToWorldPoint(p);
+// DYNAMIC STRING — PRESERVED.
+
+function updateDynamicBowstring(){
+ if(!bow?.connectStringToWorldPoint)return;
+
+ if(
+  mode!=='bow'||
+  !bow.visible||
+  !rigReady
+ ){
+  bow.resetString?.();
+  return;
+ }
+
+ const point=getStringDrawPoint();
+ if(point){
+  bow.connectStringToWorldPoint(point);
+ }
+}
+
+// NEW — INDEPENDENT ARROW CALIBRATION.
+
+const ARROW_LENGTH_DEFAULT=2.25;
+
+const initialArrowAlignment={
+ position:[0,0,0],
+ rotation:[0,0,0],
+ length:ARROW_LENGTH_DEFAULT
+};
+
+const arrowAlignment={
+ position:[...initialArrowAlignment.position],
+ rotation:[...initialArrowAlignment.rotation],
+ length:initialArrowAlignment.length
+};
+
+const arrowPositionConfig=[
+ ['X',0,-1,1,0.01],
+ ['Y',1,-1,1,0.01],
+ ['Z',2,-1,1,0.01]
+];
+
+const arrowRotationConfig=[
+ ['X',0,-180,180,1],
+ ['Y',1,-180,180,1],
+ ['Z',2,-180,180,1]
+];
+
+const arrowPositionSliders={};
+const arrowRotationSliders={};
+
+// POSITION ARROW ALONG THE DRAWN STRING.
+
+function updateArrowAttachment(){
+ if(!arrow)return;
+
+ arrow.visible=
+  arrowVisible&&
+  swordVisible&&
+  mode==='bow'&&
+  rigReady;
+
+ if(!arrow.visible)return;
+
+ const drawPoint=getStringDrawPoint();
+ if(!drawPoint)return;
+
+ world();
+
+ arrow.position.copy(drawPoint).add(
+  V(...arrowAlignment.position)
+ );
+
+ // Initial direction from nock to bow grip.
+
+ const target=bow.getWorldPosition(V());
+
+ const direction=target.clone()
+  .sub(arrow.position);
+
+ if(direction.lengthSq()<1e-8)return;
+
+ direction.normalize();
+
+ arrow.quaternion.setFromUnitVectors(
+  V(0,1,0),
+  direction
+ );
+
+ arrow.rotateX(
+  arrowAlignment.rotation[0]*RAD
+ );
+ arrow.rotateY(
+  arrowAlignment.rotation[1]*RAD
+ );
+ arrow.rotateZ(
+  arrowAlignment.rotation[2]*RAD
+ );
 }
 
 // ORIGINAL LONGSWORD DIMENSIONS — UNCHANGED.
@@ -808,6 +960,8 @@ const attachmentConfig=[
  ['rotation',2,'Rotation Z',-180,180,1]
 ];
 
+// CORRECTED RIGHT ANKLE ENTRY.
+
 const legConfig=[
  ['leftThigh','Left Thigh',-20,20,1],
  ['leftSpread','Left Hip Spread',-20,20,1],
@@ -819,6 +973,8 @@ const legConfig=[
  ['rightAnkle','Right Ankle',-30,30,1]
 ];
 
+// SLIDER REGISTRIES.
+
 const sliders={};
 const armSliders={l:{},r:{}};
 const bowArmSliders={l:{},r:{}};
@@ -829,7 +985,7 @@ const equipmentSliders={
 
 const bowLegSliders={};
 
-// ASSET REBUILDING — ORIGINAL PATHS.
+// ASSET MANAGEMENT.
 
 function disposeAsset(object){
  if(!object)return;
@@ -875,6 +1031,20 @@ function rebuildBow(){
  updateEquipment();
 }
 
+// NEW — REBUILD INDEPENDENT ARROW.
+
+function rebuildArrow(){
+ disposeAsset(arrow);
+
+ arrow=createGuardianArrow({
+  ...arrowDefinition.dimensions,
+  length:arrowAlignment.length
+ });
+
+ scene.add(arrow);
+ updateEquipment();
+}
+
 function world(){
  if(guardian)guardian.updateMatrixWorld(true);
 }
@@ -884,7 +1054,7 @@ function pos(b){
 }
 
 // EQUIPMENT PLACEMENT.
-// ALL THREE LOCKED WEAPON PATHS PRESERVED.
+// ORIGINAL LOCKED WEAPON PATHS PRESERVED.
 
 function updateEquipment(){
  if(sword){
@@ -907,11 +1077,19 @@ function updateEquipment(){
    swordVisible&&mode==='bow'&&rigReady;
  }
 
+ if(arrow){
+  arrow.visible=
+   arrowVisible&&
+   swordVisible&&
+   mode==='bow'&&
+   rigReady;
+ }
+
  if(!guardian||!rigReady)return;
 
  world();
 
- // APPROVED TWO-HANDED LONGSWORD — UNCHANGED.
+ // LOCKED LONGSWORD — ORIGINAL ATTACHMENT.
 
  if(sword?.visible){
   const left=pos(chains.l.hand);
@@ -927,7 +1105,7 @@ function updateEquipment(){
   );
  }
 
- // APPROVED ONE-HANDED SWORD — UNCHANGED.
+ // LOCKED ARMING SWORD — ORIGINAL ATTACHMENT.
 
  if(armingSword?.visible){
   const hand=chains.r.hand;
@@ -946,7 +1124,7 @@ function updateEquipment(){
   armingSword.rotateZ(armingAttachment.rotation[2]*RAD);
  }
 
- // APPROVED SHIELD — UNCHANGED.
+ // LOCKED SHIELD — ORIGINAL ATTACHMENT.
 
  if(shield?.visible){
   const forearm=chains.l.lower;
@@ -965,7 +1143,7 @@ function updateEquipment(){
   shield.rotateZ(shieldAttachment.rotation[2]*RAD);
  }
 
- // BOW — ORIGINAL ATTACHMENT AND SCALE.
+ // APPROVED BOW — ORIGINAL ATTACHMENT.
 
  if(bow?.visible){
   const hand=chains.l.hand;
@@ -984,15 +1162,19 @@ function updateEquipment(){
   bow.rotateZ(bowAttachment.rotation[2]*RAD);
 
   bow.scale.setScalar(bowSize);
-
-  // NEW: The bow is positioned before the
-  // drawing hand updates the string.
   bow.updateMatrixWorld(true);
+
   updateDynamicBowstring();
+ }
+
+ // NEW ARROW ATTACHMENT — ISOLATED.
+
+ if(arrow?.visible){
+  updateArrowAttachment();
  }
 }
 
-// SLIDER FACTORY — ORIGINAL.
+// ORIGINAL SLIDER FACTORY.
 
 function createSlider(
  container,label,min,max,step,value,onChange
@@ -1047,7 +1229,7 @@ for(const side of ['l','r']){
  }
 }
 
-// BOW ARM CONTROLS — ADJUSTABLE.
+// ADJUSTABLE BOW ARM CONTROLS.
 
 for(const side of ['l','r']){
  const target=side==='l'
@@ -1066,7 +1248,7 @@ for(const side of ['l','r']){
  }
 }
 
-// EQUIPMENT ATTACHMENT CONTROLS.
+// ORIGINAL EQUIPMENT ATTACHMENT CONTROLS.
 
 for(const [kind,target,values] of [
  ['sword','armingAttachmentSliders',armingAttachment],
@@ -1098,7 +1280,7 @@ for(const [kind,target,values] of [
  }
 }
 
-// BOW LEG CONTROLS — ADJUSTABLE.
+// BOW LEG CONTROLS — ORIGINAL.
 
 for(const [key,label,min,max,step] of legConfig){
  bowLegSliders[key]=createSlider(
@@ -1116,7 +1298,7 @@ for(const [key,label,min,max,step] of legConfig){
  );
 }
 
-// ORIGINAL LONGSWORD CONTROLS — UNCHANGED.
+// LONGSWORD CONTROLS — ORIGINAL.
 
 for(const [key,label,min,max,step] of config){
  sliders[key]=createSlider(
@@ -1147,12 +1329,59 @@ for(const [key,label,min,max,step] of config){
  );
 }
 
+// NEW — ARROW POSITION SLIDERS.
+
+for(const [axis,index,min,max,step] of
+ arrowPositionConfig){
+
+ arrowPositionSliders[axis]=createSlider(
+  'arrowPositionSliders',
+  'Nock Offset '+axis,
+  min,max,step,
+  arrowAlignment.position[index],
+  n=>{
+   arrowAlignment.position[index]=n;
+   updateEquipment();
+  }
+ );
+}
+
+// NEW — ARROW ROTATION SLIDERS.
+
+for(const [axis,index,min,max,step] of
+ arrowRotationConfig){
+
+ arrowRotationSliders[axis]=createSlider(
+  'arrowRotationSliders',
+  'Arrow Rotation '+axis,
+  min,max,step,
+  arrowAlignment.rotation[index],
+  n=>{
+   arrowAlignment.rotation[index]=n;
+   updateEquipment();
+  }
+ );
+}
+
+// ARROW LENGTH CONTROL.
+
+$('arrowLengthSlider').oninput=()=>{
+ arrowAlignment.length=Number(
+  $('arrowLengthSlider').value
+ );
+
+ $('arrowLengthValue').textContent=
+  arrowAlignment.length.toFixed(2);
+
+ rebuildArrow();
+};
+
 // END OF PART 2
 // PART 3 CONTINUES DIRECTLY HERE
  
 // ==================================================
-// LIFE RPG — BUILD 3K.5D.1
-// PART 3 OF 3
+// LIFE RPG — BUILD 3K.5E
+// TEST 2 — PART 3 OF 3
 // ==================================================
 
 // ORIGINAL SLIDER SYNCHRONIZATION.
@@ -1212,6 +1441,45 @@ function refreshAllSliders(){
   bowSize.toFixed(2)+'×';
 
  updateBowMeasurements();
+}
+
+// NEW — ARROW CONTROL SYNCHRONIZATION.
+
+function refreshArrowSliders(){
+ for(const [axis,index] of arrowPositionConfig){
+  refreshSlider(
+   arrowPositionSliders[axis],
+   arrowAlignment.position[index]
+  );
+ }
+
+ for(const [axis,index] of arrowRotationConfig){
+  refreshSlider(
+   arrowRotationSliders[axis],
+   arrowAlignment.rotation[index]
+  );
+ }
+
+ $('arrowLengthSlider').value=
+  arrowAlignment.length;
+
+ $('arrowLengthValue').textContent=
+  arrowAlignment.length.toFixed(2);
+}
+
+function updateArrowStatus(){
+ $('arrowStatus').textContent=
+  'Arrow: '+(arrow?'MODEL READY':'WAITING')+
+  '\nCosmetic ID: '+arrowDefinition.id+
+  '\nLength: '+arrowAlignment.length.toFixed(2)+
+  '\nNock offset: '+
+  arrowAlignment.position.map(
+   n=>n.toFixed(2)
+  ).join(', ')+
+  '\nRotation: '+
+  arrowAlignment.rotation.map(
+   n=>n.toFixed(0)+'°'
+  ).join(', ');
 }
 
 // ORIGINAL GUARDIAN SKELETON CAPTURE.
@@ -1566,7 +1834,7 @@ function setMode(next){
    ?'Approved Longsword Stance — LOCKED':
   mode==='shield'
    ?'Sword & Shield — LOCKED':
-   'Guardian Recurve Bow — Dynamic String';
+   'Guardian Recurve Bow — Arrow Alignment';
 
  updatePose();
 }
@@ -1576,7 +1844,7 @@ $('stance').onclick=()=>setMode('stance');
 $('shieldStance').onclick=()=>setMode('shield');
 $('bowStance').onclick=()=>setMode('bow');
 
-// DYNAMIC STRING OFFSET CONTROLS.
+// STRING OFFSET CONTROLS — ORIGINAL BEHAVIOUR.
 
 const stringInputs={
  x:$('stringOffsetX'),
@@ -1644,73 +1912,116 @@ $('resetStringOffset').onclick=()=>{
   'String offsets reset. Bow pose unchanged.';
 };
 
-// ORIGINAL LOWER-BODY DIAGNOSTICS.
+// NEW — ARROW VISIBILITY.
 
-function scanLegBones(){
- if(!guardian){
-  $('legStatus').textContent='Guardian not loaded yet.';
-  return;
- }
+$('arrowToggle').onclick=()=>{
+ arrowVisible=!arrowVisible;
 
- world();
+ $('arrowToggle').textContent=
+  arrowVisible?'Arrow ON':'Arrow OFF';
 
- const patterns={
-  pelvis:/pelvis|hips|root/i,
-  thigh:/thigh|upper.?leg/i,
-  shin:/calf|shin|lower.?leg/i,
-  foot:/foot|ankle/i,
-  toe:/toe/i
- };
-
- const candidates=Object.values(bones).filter(b=>
-  Object.values(patterns).some(p=>p.test(b.name))
+ $('arrowToggle').classList.toggle(
+  'active',arrowVisible
  );
 
- let report=
-  'GUARDIAN LOWER-BODY SKELETON\n'+
-  'Build 3K.5D.1\n'+
-  'Total bones: '+Object.keys(bones).length+'\n\n';
+ updateEquipment();
+};
 
- for(const b of candidates){
-  const p=pos(b);
+// NEW — ARROW BACKUP.
 
-  report+=
-   'BONE: '+b.name+'\n'+
-   'PARENT: '+(b.parent?.name||'none')+'\n'+
-   'WORLD: '+
-   p.x.toFixed(3)+', '+
-   p.y.toFixed(3)+', '+
-   p.z.toFixed(3)+'\n\n';
- }
-
- if(!candidates.length){
-  report+='No matching lower-body bones.\n';
-
-  for(const b of Object.values(bones)){
-   report+=b.name+'\n';
-  }
- }
-
- latestLegReport=report;
- $('legReport').textContent=report;
-
- $('legStatus').textContent=
-  candidates.length+
-  ' lower-body candidate bones detected';
+function arrowBackup(){
+ return JSON.stringify({
+  build:'3K.5E',
+  arrowId:arrowDefinition.id,
+  cosmeticSetId:arrowDefinition.setId,
+  length:arrowAlignment.length,
+  position:[...arrowAlignment.position],
+  rotation:[...arrowAlignment.rotation]
+ },null,2);
 }
 
-$('scanLegs').onclick=scanLegBones;
-
-$('copyLegReport').onclick=async()=>{
- if(!latestLegReport)scanLegBones();
-
+$('saveArrow').onclick=()=>{
  try{
-  await navigator.clipboard.writeText(latestLegReport);
-  $('legStatus').textContent='Bone report copied.';
+  localStorage.setItem(
+   'lifeRPG_guardianArrow_v1',
+   arrowBackup()
+  );
+
+  $('arrowStatus').textContent=
+   'Arrow calibration saved.';
  }catch(e){
-  $('legReport').textContent=latestLegReport;
+  reportError(e);
  }
 };
+
+$('copyArrow').onclick=async()=>{
+ const data=arrowBackup();
+
+ try{
+  await navigator.clipboard.writeText(data);
+
+  $('arrowStatus').textContent=
+   'Arrow backup copied.';
+ }catch(e){
+  $('arrowStatus').textContent=data;
+ }
+};
+
+$('resetArrow').onclick=()=>{
+ arrowAlignment.position=[
+  ...initialArrowAlignment.position
+ ];
+
+ arrowAlignment.rotation=[
+  ...initialArrowAlignment.rotation
+ ];
+
+ arrowAlignment.length=
+  initialArrowAlignment.length;
+
+ refreshArrowSliders();
+ rebuildArrow();
+ updateArrowStatus();
+};
+
+// LOAD SAVED ARROW CALIBRATION.
+
+try{
+ const saved=JSON.parse(
+  localStorage.getItem(
+   'lifeRPG_guardianArrow_v1'
+  )||'null'
+ );
+
+ if(saved?.arrowId===arrowDefinition.id){
+  const length=Number(saved.length);
+
+  if(
+   Number.isFinite(length)&&
+   length>=0.8&&
+   length<=3.5
+  ){
+   arrowAlignment.length=length;
+  }
+
+  for(const property of ['position','rotation']){
+   const values=saved[property];
+
+   if(
+    Array.isArray(values)&&
+    values.length===3
+   ){
+    const numbers=values.map(Number);
+
+    if(numbers.every(Number.isFinite)){
+     arrowAlignment[property]=numbers;
+    }
+   }
+  }
+ }
+}catch(e){
+ reportError(e);
+}
 
 // LOCKED SWORD & SHIELD BACKUP.
 
@@ -1738,11 +2049,11 @@ $('copyShieldPose').onclick=async()=>{
  }
 };
 
-// BOW BACKUP — NOW INCLUDES STRING CONNECTION.
+// BOW BACKUP — PRESERVED.
 
 function bowPoseBackup(){
  return JSON.stringify({
-  build:'3K.5D.1',
+  build:'3K.5E',
   bowId:bowDefinition.id,
   grip:bowGrip,
   legs:bowLegs,
@@ -1762,8 +2073,6 @@ function showBowMessage(message){
  $('bowStatus').textContent=message;
 }
 
-// SAVE COMPLETE BOW CALIBRATION.
-
 $('saveBowPose').onclick=()=>{
  try{
   localStorage.setItem(
@@ -1779,8 +2088,6 @@ $('saveBowPose').onclick=()=>{
  }
 };
 
-// COPY COMPLETE BOW BACKUP.
-
 $('copyBowPose').onclick=async()=>{
  const data=bowPoseBackup();
 
@@ -1794,7 +2101,7 @@ $('copyBowPose').onclick=async()=>{
  }
 };
 
-// RESET BOW POSE — LOCKED STANCES UNTOUCHED.
+// RESET ONLY BOW VALUES.
 
 $('resetBowPose').onclick=()=>{
  for(const side of ['l','r']){
@@ -1814,11 +2121,11 @@ $('resetBowPose').onclick=()=>{
   ...initialBowAttachment.rotation
  ];
 
- stringConnection.x=0;
- stringConnection.y=0;
- stringConnection.z=0;
+ stringConnection.x=-0.26;
+ stringConnection.y=0.50;
+ stringConnection.z=0.11;
 
- setBowSize(2.05);
+ setBowSize();
  refreshAllSliders();
  syncStringUI();
 
@@ -1828,12 +2135,11 @@ $('resetBowPose').onclick=()=>{
  }
 
  showBowMessage(
-  'Approved bow pose restored · Size 2.05×.'
+  'Approved lowered bow-draw pose restored.'
  );
 };
 
-// LOAD EXISTING BOW CALIBRATION.
-// COMPATIBLE WITH 3K.5C.1 BACKUPS.
+// LOAD SAVED BOW CALIBRATION.
 
 try{
  const saved=JSON.parse(
@@ -1843,7 +2149,6 @@ try{
  );
 
  if(saved?.bowId===bowDefinition.id){
-
   for(const side of ['l','r']){
    for(const key of Object.keys(bowGrip[side])){
     const raw=saved.grip?.[side]?.[key];
@@ -1886,7 +2191,6 @@ try{
    }
   }
 
-  // Approved bow size remains fixed.
   bowSize=2.05;
 
   if(saved.stringConnection){
@@ -1898,9 +2202,7 @@ try{
 
      if(Number.isFinite(n)){
       stringConnection[axis]=
-       THREE.MathUtils.clamp(
-        n,-0.5,0.5
-       );
+       THREE.MathUtils.clamp(n,-0.5,0.5);
      }
     }
    }
@@ -1914,7 +2216,7 @@ try{
 
 function backup(){
  return JSON.stringify({
-  build:'3K.5D.1',
+  build:'3K.5E',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -2013,17 +2315,20 @@ try{
  reportError(e);
 }
 
-// INITIALIZE CALIBRATION CONTROLS.
+// INITIALIZE CONTROLS.
 
 refreshAllSliders();
+refreshArrowSliders();
 syncStringUI();
 
-// BUILD INDEPENDENT WEAPON ASSETS.
+// BUILD INDEPENDENT EQUIPMENT.
 
 try{
  rebuildSword();
  rebuildShieldEquipment();
  rebuildBow();
+ rebuildArrow();
+ updateArrowStatus();
 }catch(e){
  reportError(e);
 }
@@ -2076,7 +2381,7 @@ $('toggleUI').onclick=()=>{
   hidden?'Show UI':'Hide UI';
 };
 
-// START IN BOW MODE.
+// START IN APPROVED BOW MODE.
 
 setMode('bow');
 
@@ -2084,7 +2389,7 @@ $('status').textContent=
  'Loading Guardian model...';
 
 // ORIGINAL GUARDIAN MODEL.
-// SCALE AND POSITIONING UNCHANGED.
+// SCALE AND POSITION UNCHANGED.
 
 new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
@@ -2119,14 +2424,15 @@ new GLTFLoader().load(
     ' bones · READY';
 
    $('debug').textContent=
-    'Build 3K.5D.1 · Guardian Recurve Bow · '+
-    'Size 2.05× · Dynamic String';
+    'Build 3K.5E · Lowered Bow Draw · Arrow Test';
 
    refreshAllSliders();
+   refreshArrowSliders();
    syncStringUI();
    setMode('bow');
    scanLegBones();
    syncLegUI();
+   updateArrowStatus();
 
    if(!bone('foot_r')){
     $('legStatus').textContent=
@@ -2198,7 +2504,7 @@ function animate(){
 animate();
 
 // ==================================================
-// END — LIFE RPG BUILD 3K.5D.1
+// END — LIFE RPG BUILD 3K.5E TEST 2
 // ==================================================
 
 </script>
