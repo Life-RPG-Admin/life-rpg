@@ -4,7 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian 3K.4C</title>
+<title>LIFE RPG — Guardian 3K.4H</title>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
@@ -16,8 +17,10 @@ h3{margin:0 0 5px;color:#e9c67d;font-size:15px}
 #panel{position:fixed;bottom:8px;left:8px;right:8px;max-height:43vh;overflow:auto;background:#101a2bf2;border:1px solid #aa8d57;border-radius:12px;padding:10px}
 button{background:#29394d;color:#fff;border:1px solid #b99a59;border-radius:7px;padding:9px;margin:3px;font:inherit}
 button.active{background:#765d30}
+button:disabled{opacity:.45}
 .setting{display:grid;grid-template-columns:115px minmax(0,1fr) 45px;gap:7px;align-items:center;margin:10px 0}
 input[type=range]{width:100%;accent-color:#d6ad64}
+input[type=range]:disabled{opacity:.45}
 small{color:#b6c4d0}
 #toggleUI{position:fixed;top:12px;right:12px;z-index:1000;background:#233041e8}
 body.ui-hidden #top,body.ui-hidden #panel{display:none}
@@ -28,6 +31,7 @@ hr{border:0;border-top:1px solid #8a764d55;margin:10px 0}
 #legStatus{color:#e9c67d;font-size:12px}
 #errorBox{display:none;position:fixed;top:100px;left:8px;right:8px;z-index:999;background:#501d24;color:#fff;border:1px solid #ff8d8d;border-radius:8px;padding:10px;font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:28vh;overflow:auto}
 #calibrationStatus,#values{color:#c9d8e0;font-size:11px;margin-top:6px;white-space:pre-wrap}
+.lockedNotice{padding:9px;border:1px solid #b99a59;border-radius:7px;background:#263225;color:#e9c67d;margin:8px 0}
 </style>
 
 <script>
@@ -51,6 +55,7 @@ window.addEventListener('unhandledrejection',e=>{
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
 </head>
+
 <body>
 
 <div id="scene"></div>
@@ -58,9 +63,9 @@ window.addEventListener('unhandledrejection',e=>{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3K.4C</h3>
+<h3>LIFE RPG — Guardian 3K.4H</h3>
 <div id="status">Loading Guardian...</div>
-<div id="debug">Longsword LOCKED · Sword & Shield calibration</div>
+<div id="debug">Longsword LOCKED · Sword & Shield LOCKED</div>
 </div>
 
 <div id="panel">
@@ -74,50 +79,50 @@ window.addEventListener('unhandledrejection',e=>{
 </div>
 
 <hr>
-<h3>Build 3K.4C — Sword & Shield</h3>
-<small>
-Reusable stance controls. Longsword values remain locked.
-Floor and Guardian proportions remain unchanged.
-</small>
+<h3>Build 3K.4H — Sword & Shield</h3>
+<div class="lockedNotice">
+APPROVED STANCE LOCKED
+<br>
+Arms, legs and sword attachment are frozen.
+<br>
+Only shield attachment can be adjusted.
+</div>
 
 <div id="armSection">
-<h3 style="margin-top:12px">Left Arm — Shield</h3>
+<h3 style="margin-top:12px">Left Arm — Shield (Locked)</h3>
 <div id="leftArmSliders"></div>
 
 <hr>
-<h3>Right Arm — Sword</h3>
+<h3>Right Arm — Sword (Locked)</h3>
 <div id="rightArmSliders"></div>
 
 <hr>
-<h3>Sword Attachment</h3>
+<h3>Sword Attachment (Locked)</h3>
 <div id="armingAttachmentSliders"></div>
 
 <hr>
-<h3>Shield Attachment</h3>
+<h3>Shield Attachment (Adjustable)</h3>
 <div id="shieldAttachmentSliders"></div>
 
-<button id="saveShieldPose">Save Sword & Shield Pose</button>
-<button id="resetShieldPose">Reset Sword & Shield Pose</button>
+<button id="saveShieldPose">Save Shield Alignment</button>
+<button id="resetShieldPose">Reset Shield Alignment</button>
 <button id="copyShieldPose">Copy Pose Backup</button>
 </div>
 
 <hr>
-<h3>Left Leg</h3>
-<div class="setting"><span>Left Thigh</span><input id="leftThighSlider" type="range" min="-20" max="20" step="1" value="10"><span id="leftThighValue">10°</span></div>
-<div class="setting"><span>Left Hip Spread</span><input id="leftSpreadSlider" type="range" min="-20" max="20" step="1" value="-10"><span id="leftSpreadValue">-10°</span></div>
-<div class="setting"><span>Left Knee Bend</span><input id="leftKneeSlider" type="range" min="-25" max="25" step="1" value="-10"><span id="leftKneeValue">-10°</span></div>
-<div class="setting"><span>Left Ankle</span><input id="leftAnkleSlider" type="range" min="-30" max="30" step="1" value="-10"><span id="leftAnkleValue">-10°</span></div>
+<h3>Left Leg — Locked</h3>
+<div class="setting"><span>Left Thigh</span><input id="leftThighSlider" type="range" min="-20" max="20" step="1" value="-5" disabled><span id="leftThighValue">-5°</span></div>
+<div class="setting"><span>Left Hip Spread</span><input id="leftSpreadSlider" type="range" min="-20" max="20" step="1" value="-3" disabled><span id="leftSpreadValue">-3°</span></div>
+<div class="setting"><span>Left Knee Bend</span><input id="leftKneeSlider" type="range" min="-25" max="25" step="1" value="4" disabled><span id="leftKneeValue">4°</span></div>
+<div class="setting"><span>Left Ankle</span><input id="leftAnkleSlider" type="range" min="-30" max="30" step="1" value="0" disabled><span id="leftAnkleValue">0°</span></div>
 
 <hr>
-<h3>Right Leg</h3>
-<div class="setting"><span>Right Thigh</span><input id="rightThighSlider" type="range" min="-20" max="20" step="1" value="10"><span id="rightThighValue">10°</span></div>
-<div class="setting"><span>Right Hip Spread</span><input id="rightSpreadSlider" type="range" min="-20" max="20" step="1" value="10"><span id="rightSpreadValue">10°</span></div>
-<div class="setting"><span>Right Knee Bend</span><input id="rightKneeSlider" type="range" min="-25" max="25" step="1" value="10"><span id="rightKneeValue">10°</span></div>
-<div class="setting"><span>Right Ankle</span><input id="rightAnkleSlider" type="range" min="-30" max="30" step="1" value="0"><span id="rightAnkleValue">0°</span></div>
+<h3>Right Leg — Locked</h3>
+<div class="setting"><span>Right Thigh</span><input id="rightThighSlider" type="range" min="-20" max="20" step="1" value="-5" disabled><span id="rightThighValue">-5°</span></div>
+<div class="setting"><span>Right Hip Spread</span><input id="rightSpreadSlider" type="range" min="-20" max="20" step="1" value="3" disabled><span id="rightSpreadValue">3°</span></div>
+<div class="setting"><span>Right Knee Bend</span><input id="rightKneeSlider" type="range" min="-25" max="25" step="1" value="5" disabled><span id="rightKneeValue">5°</span></div>
+<div class="setting"><span>Right Ankle</span><input id="rightAnkleSlider" type="range" min="-30" max="30" step="1" value="0" disabled><span id="rightAnkleValue">0°</span></div>
 
-<button id="resetLeg">Reset Left Leg</button>
-<button id="testPose">Restore Test Pose</button>
-<button id="resetRight">Reset Right Leg</button>
 <div id="calibrationStatus"></div>
 
 <hr>
@@ -181,7 +186,7 @@ const sun=new THREE.DirectionalLight(0xffe4bc,2.5);
 sun.position.set(3,7,6);
 scene.add(sun);
 
-// ORIGINAL FLOOR — DO NOT ADJUST UNTIL FINAL STANCE TESTS.
+// ORIGINAL FLOOR — UNCHANGED.
 const floor=new THREE.Mesh(
  new THREE.CircleGeometry(3.4,64),
  new THREE.MeshStandardMaterial({color:0x273445})
@@ -200,16 +205,36 @@ const chains={};
 const fingers={l:[],r:[]};
 const thumbs={l:[],r:[]};
 
-// ORIGINAL APPROVED LONGSWORD GRIP — LOCKED.
+// ORIGINAL APPROVED LONGSWORD GRIP — UNCHANGED.
 const lockedGrip={
  l:{raise:16,spread:-21,bend:59,across:90,twist:0,wristX:0,wristY:-28,fingerCurl:84,thumbGrip:0},
  r:{raise:16,spread:-22,bend:71,across:72,twist:0,wristX:11,wristY:45,fingerCurl:100,thumbGrip:0}
 };
 
-// INDEPENDENT SWORD & SHIELD GRIP.
+// APPROVED SWORD & SHIELD GRIP — HARD-CODED.
 const shieldGrip={
- l:{raise:12,spread:-18,bend:48,across:25,twist:0,wristX:0,wristY:0,fingerCurl:65,thumbGrip:30},
- r:{raise:10,spread:-15,bend:42,across:18,twist:0,wristX:8,wristY:0,fingerCurl:90,thumbGrip:25}
+ l:{
+  raise:35,
+  spread:-35,
+  bend:60,
+  across:43,
+  twist:3,
+  wristX:-3,
+  wristY:-42,
+  fingerCurl:100,
+  thumbGrip:0
+ },
+ r:{
+  raise:30,
+  spread:-12,
+  bend:51,
+  across:18,
+  twist:0,
+  wristX:22,
+  wristY:35,
+  fingerCurl:100,
+  thumbGrip:9
+ }
 };
 
 const armConfig=[
@@ -224,27 +249,43 @@ const armConfig=[
  ['thumbGrip','Thumb Grip',0,100,1]
 ];
 
+// APPROVED SWORD ATTACHMENT — HARD-CODED.
 const armingAttachment={
- position:[0,0,0],
- rotation:[0,0,0]
+ position:[-0.17,0.47,0.07],
+ rotation:[-1,82,82]
 };
 
+// SHIELD ATTACHMENT REMAINS ADJUSTABLE.
 const shieldAttachment={
  position:[0,0,0],
  rotation:[0,0,0]
 };
-
-let leftThighAngle=10,leftSpreadAngle=-10;
-let leftKneeAngle=-10,leftAnkleAngle=-10;
-let rightThighAngle=10,rightSpreadAngle=10;
-let rightKneeAngle=10,rightAnkleAngle=0;
 
 const longswordLegs={
  leftThigh:10,leftSpread:-10,leftKnee:-10,leftAnkle:-10,
  rightThigh:10,rightSpread:10,rightKnee:10,rightAnkle:0
 };
 
-const shieldLegs={...longswordLegs};
+// APPROVED SWORD & SHIELD LEGS — HARD-CODED.
+const shieldLegs={
+ leftThigh:-5,
+ leftSpread:-3,
+ leftKnee:4,
+ leftAnkle:0,
+ rightThigh:-5,
+ rightSpread:3,
+ rightKnee:5,
+ rightAnkle:0
+};
+
+let leftThighAngle=shieldLegs.leftThigh;
+let leftSpreadAngle=shieldLegs.leftSpread;
+let leftKneeAngle=shieldLegs.leftKnee;
+let leftAnkleAngle=shieldLegs.leftAnkle;
+let rightThighAngle=shieldLegs.rightThigh;
+let rightSpreadAngle=shieldLegs.rightSpread;
+let rightKneeAngle=shieldLegs.rightKnee;
+let rightAnkleAngle=shieldLegs.rightAnkle;
 
 const defaults={...weaponDefinition.dimensions};
 const dimensions={...defaults};
@@ -387,17 +428,18 @@ function createSlider(container,label,min,max,step,value,onChange){
  return {input,display,format};
 }
 
+// ARM CONTROLS — DISPLAY ONLY.
 for(const side of ['l','r']){
  const target=side==='l'?'leftArmSliders':'rightArmSliders';
 
  for(const [key,label,min,max,step] of armConfig){
-  armSliders[side][key]=createSlider(
+  const control=createSlider(
    target,label,min,max,step,shieldGrip[side][key],
-   n=>{
-    shieldGrip[side][key]=n;
-    updatePose();
-   }
+   ()=>{}
   );
+
+  control.input.disabled=true;
+  armSliders[side][key]=control;
  }
 }
 
@@ -416,13 +458,19 @@ for(const [kind,target,values] of [
 ]){
  for(const [property,index,label,min,max,step] of attachmentConfig){
   const key=property+index;
-  equipmentSliders[kind][key]=createSlider(
+
+  const control=createSlider(
    target,label,min,max,step,values[property][index],
    n=>{
+    if(kind==='sword')return;
     values[property][index]=n;
     updateEquipment();
    }
   );
+
+  if(kind==='sword')control.input.disabled=true;
+
+  equipmentSliders[kind][key]=control;
  }
 }
 
@@ -664,7 +712,7 @@ function applyArm(side,settings){
 }
 
 // PART 2 CONTINUES DIRECTLY BELOW THIS LINE
-                       
+                    
 function applyLeftLeg(){
  if(mode==='natural')return;
 
@@ -724,15 +772,17 @@ function updatePose(){
  updateEquipment();
 }
 
+// LOCKED LEG VALUES.
+// These values are displayed but cannot be edited.
 const legControls=[
- ['leftThigh',()=>leftThighAngle,n=>leftThighAngle=n],
- ['leftSpread',()=>leftSpreadAngle,n=>leftSpreadAngle=n],
- ['leftKnee',()=>leftKneeAngle,n=>leftKneeAngle=n],
- ['leftAnkle',()=>leftAnkleAngle,n=>leftAnkleAngle=n],
- ['rightThigh',()=>rightThighAngle,n=>rightThighAngle=n],
- ['rightSpread',()=>rightSpreadAngle,n=>rightSpreadAngle=n],
- ['rightKnee',()=>rightKneeAngle,n=>rightKneeAngle=n],
- ['rightAnkle',()=>rightAnkleAngle,n=>rightAnkleAngle=n]
+ ['leftThigh',()=>leftThighAngle],
+ ['leftSpread',()=>leftSpreadAngle],
+ ['leftKnee',()=>leftKneeAngle],
+ ['leftAnkle',()=>leftAnkleAngle],
+ ['rightThigh',()=>rightThighAngle],
+ ['rightSpread',()=>rightSpreadAngle],
+ ['rightKnee',()=>rightKneeAngle],
+ ['rightAnkle',()=>rightAnkleAngle]
 ];
 
 function captureLegValues(){
@@ -762,15 +812,6 @@ function setLegValues(values){
  syncLegUI();
 }
 
-function rememberCurrentLegs(){
- if(mode==='shield'){
-  Object.assign(shieldLegs,captureLegValues());
- }else if(mode==='stance'){
-  // The approved longsword leg preset stays locked.
-  // Do not overwrite longswordLegs here.
- }
-}
-
 function syncLegUI(){
  for(const [id,get] of legControls){
   $(id+'Slider').value=get();
@@ -778,87 +819,39 @@ function syncLegUI(){
  }
 
  $('calibrationStatus').textContent=
-  'Left Thigh: '+leftThighAngle+'° · '+
-  'Left Spread: '+leftSpreadAngle+'° · '+
-  'Left Knee: '+leftKneeAngle+'° · '+
-  'Left Ankle: '+leftAnkleAngle+'° · '+
-  'Right Thigh: '+rightThighAngle+'° · '+
-  'Right Spread: '+rightSpreadAngle+'° · '+
-  'Right Knee: '+rightKneeAngle+'° · '+
-  'Right Ankle: '+rightAnkleAngle+'°';
+  'LOCKED STANCE\n'+
+  'Left: '+leftThighAngle+'°, '+
+  leftSpreadAngle+'°, '+
+  leftKneeAngle+'°, '+
+  leftAnkleAngle+'°\n'+
+  'Right: '+rightThighAngle+'°, '+
+  rightSpreadAngle+'°, '+
+  rightKneeAngle+'°, '+
+  rightAnkleAngle+'°';
 }
 
-for(const [id,get,set] of legControls){
- $(id+'Slider').oninput=()=>{
-  try{
-   if(mode==='stance'){
-    // Prevent changes to the locked longsword preset.
-    setLegValues(longswordLegs);
-    return;
-   }
-
-   if(mode==='natural'){
-    return;
-   }
-
-   set(Number($(id+'Slider').value));
-   rememberCurrentLegs();
-   syncLegUI();
-   updatePose();
-  }catch(e){
-   reportError(e);
-  }
- };
+for(const [id] of legControls){
+ $(id+'Slider').disabled=true;
 }
 
-$('resetLeg').onclick=()=>{
- if(mode!=='shield')return;
-
- leftThighAngle=0;
- leftSpreadAngle=0;
- leftKneeAngle=0;
- leftAnkleAngle=0;
-
- rememberCurrentLegs();
- syncLegUI();
- updatePose();
-};
-
-$('resetRight').onclick=()=>{
- if(mode!=='shield')return;
-
- rightThighAngle=0;
- rightSpreadAngle=0;
- rightKneeAngle=0;
- rightAnkleAngle=0;
-
- rememberCurrentLegs();
- syncLegUI();
- updatePose();
-};
-
-$('testPose').onclick=()=>{
- if(mode!=='shield')return;
-
- setLegValues(longswordLegs);
- rememberCurrentLegs();
- updatePose();
-};
-
+// Only switch between approved stance presets.
+// Neither preset is modified.
 function setMode(next){
- if(mode==='shield'){
-  rememberCurrentLegs();
- }
-
  mode=next;
 
- $('natural').classList.toggle('active',mode==='natural');
- $('stance').classList.toggle('active',mode==='stance');
- $('shieldStance').classList.toggle('active',mode==='shield');
+ $('natural').classList.toggle(
+  'active',mode==='natural'
+ );
+ $('stance').classList.toggle(
+  'active',mode==='stance'
+ );
+ $('shieldStance').classList.toggle(
+  'active',mode==='shield'
+ );
 
  if(mode==='stance'){
   setLegValues(longswordLegs);
- }else if(mode==='shield'){
+ }else{
   setLegValues(shieldLegs);
  }
 
@@ -866,9 +859,11 @@ function setMode(next){
   mode==='shield'?'block':'none';
 
  $('debug').textContent=
-  mode==='natural'?'Natural Guardian Stance':
-  mode==='stance'?'Approved Longsword Stance — LOCKED':
-  'Sword & Shield — Adjustable Calibration';
+  mode==='natural'
+   ?'Natural Guardian Stance':
+  mode==='stance'
+   ?'Approved Longsword Stance — LOCKED':
+   'Approved Sword & Shield Stance — LOCKED';
 
  updatePose();
 }
@@ -877,6 +872,8 @@ $('natural').onclick=()=>setMode('natural');
 $('stance').onclick=()=>setMode('stance');
 $('shieldStance').onclick=()=>setMode('shield');
 
+// LOWER-BODY SKELETON DIAGNOSTICS.
+// Original detection logic preserved.
 function scanLegBones(){
  if(!guardian){
   $('legStatus').textContent='Guardian not loaded yet.';
@@ -899,7 +896,7 @@ function scanLegBones(){
 
  let report=
   'GUARDIAN LOWER-BODY SKELETON\n'+
-  'Build 3K.4C\n'+
+  'Build 3K.4H\n'+
   'Total bones: '+Object.keys(bones).length+'\n\n';
 
  for(const b of candidates){
@@ -941,9 +938,12 @@ $('copyLegReport').onclick=async()=>{
  }
 };
 
+// SWORD & SHIELD BACKUP.
+// Arms, legs and sword attachment are fixed.
+// Only shield attachment can be calibrated.
 function shieldPoseBackup(){
  return JSON.stringify({
-  build:'3K.4C',
+  build:'3K.4H',
   swordId:armingSwordDefinition.id,
   shieldId:shieldDefinition.id,
   grip:shieldGrip,
@@ -953,99 +953,66 @@ function shieldPoseBackup(){
  },null,2);
 }
 
+// SAVE SHIELD ALIGNMENT ONLY.
 $('saveShieldPose').onclick=()=>{
  try{
-  rememberCurrentLegs();
-
   localStorage.setItem(
    'lifeRPG_guardianShieldPose_v1',
    shieldPoseBackup()
   );
 
   $('values').textContent=
-   'Sword & Shield pose saved successfully.';
+   'Shield alignment saved. Approved stance remains locked.';
  }catch(e){
   reportError(e);
  }
 };
 
+// COPY COMPLETE BACKUP.
 $('copyShieldPose').onclick=async()=>{
  const data=shieldPoseBackup();
 
  try{
   await navigator.clipboard.writeText(data);
-  $('values').textContent='Pose backup copied.';
+  $('values').textContent=
+   'Locked stance and shield backup copied.';
  }catch(e){
   $('values').textContent=data;
  }
 };
 
-const initialShieldGrip=JSON.parse(JSON.stringify(shieldGrip));
-
+// RESET SHIELD ATTACHMENT ONLY.
+// Does not modify the Guardian pose.
 $('resetShieldPose').onclick=()=>{
- for(const side of ['l','r']){
-  Object.assign(shieldGrip[side],initialShieldGrip[side]);
- }
-
- Object.assign(shieldLegs,longswordLegs);
-
- armingAttachment.position=[0,0,0];
- armingAttachment.rotation=[0,0,0];
-
  shieldAttachment.position=[0,0,0];
  shieldAttachment.rotation=[0,0,0];
 
- if(mode==='shield'){
-  setLegValues(shieldLegs);
- }
-
  refreshAllSliders();
- updatePose();
+ updateEquipment();
 
- $('values').textContent='Sword & Shield pose reset.';
+ $('values').textContent=
+  'Shield alignment reset. Guardian stance unchanged.';
 };
 
+// LOAD PREVIOUSLY SAVED SHIELD ALIGNMENT.
+// Saved arm, leg and sword values are deliberately ignored.
 try{
  const saved=JSON.parse(
   localStorage.getItem('lifeRPG_guardianShieldPose_v1')||'null'
  );
 
- if(
-  saved?.swordId===armingSwordDefinition.id&&
-  saved?.shieldId===shieldDefinition.id
- ){
-  for(const side of ['l','r']){
-   for(const key of Object.keys(shieldGrip[side])){
-    const n=Number(saved.grip?.[side]?.[key]);
+ if(saved?.shieldId===shieldDefinition.id){
+  const source=saved.shieldAttachment;
 
-    if(Number.isFinite(n)){
-     shieldGrip[side][key]=n;
-    }
-   }
-  }
+  for(const property of ['position','rotation']){
+   if(
+    Array.isArray(source?.[property])&&
+    source[property].length===3
+   ){
+    const values=source[property].map(Number);
 
-  for(const key of Object.keys(shieldLegs)){
-   const n=Number(saved.legs?.[key]);
-
-   if(Number.isFinite(n)){
-    shieldLegs[key]=n;
-   }
-  }
-
-  for(const [target,source] of [
-   [armingAttachment,saved.swordAttachment],
-   [shieldAttachment,saved.shieldAttachment]
-  ]){
-   for(const property of ['position','rotation']){
-    if(
-     Array.isArray(source?.[property])&&
-     source[property].length===3
-    ){
-     const values=source[property].map(Number);
-
-     if(values.every(Number.isFinite)){
-      target[property]=values;
-     }
+    if(values.every(Number.isFinite)){
+     shieldAttachment[property]=values;
     }
    }
   }
@@ -1054,9 +1021,10 @@ try{
  reportError(e);
 }
 
+// ORIGINAL LONGSWORD BACKUP SYSTEM.
 function backup(){
  return JSON.stringify({
-  build:'3K.4C',
+  build:'3K.4H',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -1145,16 +1113,21 @@ try{
  reportError(e);
 }
 
+// ORIGINAL EQUIPMENT VISIBILITY.
 $('swordToggle').onclick=()=>{
  swordVisible=!swordVisible;
 
  $('swordToggle').textContent=
   swordVisible?'Equipment ON':'Equipment OFF';
 
- $('swordToggle').classList.toggle('active',swordVisible);
+ $('swordToggle').classList.toggle(
+  'active',swordVisible
+ );
+
  updateEquipment();
 };
 
+// ORIGINAL BREATHING TOGGLE.
 $('breath').onclick=()=>{
  breathing=!breathing;
 
@@ -1162,23 +1135,30 @@ $('breath').onclick=()=>{
   breathing?'Breathing ON':'Breathing OFF';
 };
 
+// ORIGINAL CAMERA SETTINGS.
 $('resetCamera').onclick=()=>{
  camera.position.set(0,1.45,9);
  controls.target.set(0,1.25,0);
  controls.update();
 };
 
+// ORIGINAL UI VISIBILITY.
 $('toggleUI').onclick=()=>{
- const hidden=document.body.classList.toggle('ui-hidden');
+ const hidden=document.body.classList.toggle(
+  'ui-hidden'
+ );
 
  $('toggleUI').textContent=
   hidden?'Show UI':'Hide UI';
 };
 
+// ACTIVATE LOCKED SWORD & SHIELD STANCE.
 setMode('shield');
 
 $('status').textContent='Loading Guardian model...';
 
+// ORIGINAL GUARDIAN MODEL.
+// No changes to proportions or positioning.
 new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
 
@@ -1208,7 +1188,7 @@ new GLTFLoader().load(
     ' bones · READY';
 
    $('debug').textContent=
-    'Sword & Shield Calibration · '+
+    'Sword & Shield Stance LOCKED · '+
     armingSwordDefinition.name+
     ' + '+shieldDefinition.name;
 
@@ -1234,12 +1214,14 @@ new GLTFLoader().load(
  }
 );
 
+// ORIGINAL RESIZE HANDLING.
 window.addEventListener('resize',()=>{
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
  renderer.setSize(innerWidth,innerHeight);
 });
 
+// ORIGINAL ANIMATION LOOP.
 const clock=new THREE.Clock();
 
 function animate(){
