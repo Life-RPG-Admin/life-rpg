@@ -1,15 +1,14 @@
 
 import * as THREE from 'three';
 
-// LIFE RPG — Build 3K.4E
-// Guardian Heater Shield
-// Independent reusable equipment asset.
-// No changes to Guardian body, pose, floor or longsword.
+// LIFE RPG — Build 3K.4K
+// Independent Guardian Heater Shield
+// Vertical rear handle prototype.
 
 export const shieldDefinition = {
   id: 'guardian-shield-001',
   name: 'Guardian Heater Shield',
-  version: '3K.4E',
+  version: '3K.4K',
   arm: 'left',
 
   dimensions: {
@@ -39,59 +38,59 @@ export function createGuardianShield(
 
   const faceMaterial = new THREE.MeshStandardMaterial({
     color: 0x263b57,
-    metalness: 0.35,
-    roughness: 0.55,
-    side: THREE.DoubleSide
+    metalness: 0.24,
+    roughness: 0.66
   });
 
   const rimMaterial = new THREE.MeshStandardMaterial({
     color: 0xb99a59,
-    metalness: 0.8,
-    roughness: 0.28
+    metalness: 0.72,
+    roughness: 0.3
   });
 
   const steelMaterial = new THREE.MeshStandardMaterial({
     color: 0x737f8b,
-    metalness: 0.85,
-    roughness: 0.3
+    metalness: 0.8,
+    roughness: 0.27
   });
 
   const leatherMaterial = new THREE.MeshStandardMaterial({
     color: 0x35251c,
-    roughness: 0.9
-  });
-
-  const darkLeather = new THREE.MeshStandardMaterial({
-    color: 0x211711,
-    roughness: 0.95
+    roughness: 0.92
   });
 
   const w = d.width / 2;
   const h = d.height / 2;
 
-  // Broad upper body, tapered medieval heater point.
+  // Approved heater shield silhouette.
   const outline = [
     [-w * 0.88, h * 0.92],
     [ w * 0.88, h * 0.92],
     [ w, h * 0.62],
-    [ w * 0.90, h * 0.12],
+    [ w * 0.9, h * 0.12],
     [ w * 0.65, -h * 0.48],
-    [ 0, -h],
+    [0, -h],
     [-w * 0.65, -h * 0.48],
-    [-w * 0.90, h * 0.12],
+    [-w * 0.9, h * 0.12],
     [-w, h * 0.62]
   ];
 
   const shape = new THREE.Shape();
-  shape.moveTo(outline[0][0], outline[0][1]);
+
+  shape.moveTo(
+    outline[0][0],
+    outline[0][1]
+  );
 
   for (let i = 1; i < outline.length; i++) {
-    shape.lineTo(outline[i][0], outline[i][1]);
+    shape.lineTo(
+      outline[i][0],
+      outline[i][1]
+    );
   }
 
   shape.closePath();
 
-  // Main shield body.
   const bodyGeometry = new THREE.ExtrudeGeometry(
     shape,
     {
@@ -109,15 +108,14 @@ export function createGuardianShield(
     faceMaterial
   );
 
-  body.name = 'Shield Body';
   body.position.z = -d.thickness / 2;
   shield.add(body);
 
-  // Gold outer rim.
+  // Gold rim on the shield's front.
   const rimPoints = outline.map(
-    p => new THREE.Vector3(
-      p[0],
-      p[1],
+    ([x, y]) => new THREE.Vector3(
+      x,
+      y,
       d.thickness / 2 + 0.025
     )
   );
@@ -133,7 +131,7 @@ export function createGuardianShield(
   const rim = new THREE.Mesh(
     new THREE.TubeGeometry(
       rimCurve,
-      72,
+      96,
       d.rimWidth / 2,
       8,
       true
@@ -141,188 +139,127 @@ export function createGuardianShield(
     rimMaterial
   );
 
-  rim.name = 'Gold Shield Rim';
   shield.add(rim);
 
-  // Reinforced central boss.
+  // Existing central steel boss.
   const boss = new THREE.Mesh(
     new THREE.SphereGeometry(
       d.bossRadius,
       24,
-      16,
-      0,
-      Math.PI * 2,
-      0,
-      Math.PI / 2
+      16
     ),
     steelMaterial
   );
 
-  boss.name = 'Central Steel Boss';
-  boss.position.z = d.thickness / 2 + 0.02;
-  shield.add(boss);
-
-  // Rear mounting plate.
-  const backZ = -d.thickness / 2 - 0.035;
-
-  const mountingPlate = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      d.width * 0.48,
-      d.height * 0.38,
-      0.035
-    ),
-    darkLeather
+  boss.scale.set(1, 1, 0.42);
+  boss.position.set(
+    0,
+    0.025,
+    d.thickness / 2 + 0.025
   );
 
-  mountingPlate.name = 'Rear Mounting Plate';
-  mountingPlate.position.z = backZ;
-  shield.add(mountingPlate);
+  shield.add(boss);
 
-  // Rear grip handle, designed for the left hand.
-  const handle = new THREE.Mesh(
+  // ---------------------------------
+  // NEW SIMPLE VERTICAL REAR HANDLE
+  // ---------------------------------
+
+  // Rear of the shield faces negative Z.
+  const rearSurface = -d.thickness / 2;
+
+  // Adjustable handle geometry metadata.
+  // These are local shield coordinates.
+  const handle = {
+    x: 0,
+    y: 0.10,
+    z: rearSurface - 0.15,
+    length: 0.34,
+    radius: 0.043
+  };
+
+  const grip = new THREE.Mesh(
     new THREE.CylinderGeometry(
-      0.045,
-      0.045,
-      d.width * 0.42,
+      handle.radius,
+      handle.radius,
+      handle.length,
       12
     ),
     leatherMaterial
   );
 
-  handle.name = 'Rear Hand Grip';
-  handle.rotation.z = Math.PI / 2;
-  handle.position.set(
-    0,
-    -d.height * 0.08,
-    backZ - 0.095
+  // Cylinder axis is naturally vertical.
+  grip.position.set(
+    handle.x,
+    handle.y,
+    handle.z
   );
 
-  shield.add(handle);
+  grip.name = 'GuardianShieldVerticalGrip';
+  shield.add(grip);
 
-  // Metal grip mounting brackets.
-  for (const x of [
-    -d.width * 0.20,
-     d.width * 0.20
-  ]) {
+  // Two small metal mounting points.
+  // No straps or large backing plates.
+  const bracketRadius = 0.038;
+
+  for (const direction of [-1, 1]) {
+    const bracketY =
+      handle.y +
+      direction * handle.length * 0.43;
+
     const bracket = new THREE.Mesh(
       new THREE.BoxGeometry(
-        0.055,
-        0.12,
-        0.13
+        0.085,
+        0.065,
+        Math.abs(handle.z - rearSurface) + 0.035
       ),
       steelMaterial
     );
 
-    bracket.name = 'Grip Mounting Bracket';
     bracket.position.set(
-      x,
-      -d.height * 0.08,
-      backZ - 0.045
+      handle.x,
+      bracketY,
+      (rearSurface + handle.z) / 2
     );
 
     shield.add(bracket);
-  }
 
-  // Two curved leather forearm straps.
-  // These sit behind the shield face.
-  for (const y of [
-    d.height * 0.13,
-    d.height * 0.32
-  ]) {
-    const strapCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(
-        -d.width * 0.27,
-        y,
-        backZ
+    const cap = new THREE.Mesh(
+      new THREE.SphereGeometry(
+        bracketRadius,
+        10,
+        8
       ),
-      new THREE.Vector3(
-        -d.width * 0.17,
-        y,
-        backZ - 0.15
-      ),
-      new THREE.Vector3(
-        0,
-        y,
-        backZ - 0.21
-      ),
-      new THREE.Vector3(
-        d.width * 0.17,
-        y,
-        backZ - 0.15
-      ),
-      new THREE.Vector3(
-        d.width * 0.27,
-        y,
-        backZ
-      )
-    ]);
-
-    const strap = new THREE.Mesh(
-      new THREE.TubeGeometry(
-        strapCurve,
-        24,
-        0.035,
-        8,
-        false
-      ),
-      leatherMaterial
+      steelMaterial
     );
 
-    strap.name = 'Rear Forearm Strap';
-    shield.add(strap);
+    cap.position.set(
+      handle.x,
+      bracketY,
+      handle.z
+    );
 
-    // Rivets at each strap end.
-    for (const x of [
-      -d.width * 0.27,
-       d.width * 0.27
-    ]) {
-      const rivet = new THREE.Mesh(
-        new THREE.SphereGeometry(
-          0.035,
-          10,
-          8
-        ),
-        steelMaterial
-      );
-
-      rivet.name = 'Strap Rivet';
-      rivet.position.set(x, y, backZ);
-      shield.add(rivet);
-    }
+    shield.add(cap);
   }
 
-  // Rear leather padding for forearm comfort.
-  const padding = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      d.width * 0.34,
-      d.height * 0.45,
-      0.055
-    ),
-    leatherMaterial
-  );
-
-  padding.name = 'Forearm Padding';
-  padding.position.set(
-    0,
-    d.height * 0.10,
-    backZ - 0.035
-  );
-
-  shield.add(padding);
-
+  // Independent weapon metadata.
   shield.userData = {
     weaponId: shieldDefinition.id,
     weaponType: 'shield',
     attachmentArm: 'left',
-    gripType: 'rear-handgrip-and-forearm-straps',
+    gripType: 'vertical-rear-handle',
+
     gripLocalPosition: [
-      0,
-      -d.height * 0.08,
-      backZ - 0.095
+      handle.x,
+      handle.y,
+      handle.z
     ],
-    dimensions: { ...d }
+
+    gripLength: handle.length,
+
+    dimensions: {
+      ...d
+    }
   };
 
   return shield;
-}
-  
+    }
