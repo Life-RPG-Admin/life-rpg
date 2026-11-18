@@ -1,15 +1,14 @@
 
 import * as THREE from 'three';
 
-// LIFE RPG — Build 3K.4E
-// Guardian Heater Shield
+// LIFE RPG — Build 3K.4F
+// Guardian Heater Shield — Single Rear Handle
 // Independent reusable equipment asset.
-// No changes to Guardian body, pose, floor or longsword.
 
 export const shieldDefinition = {
   id: 'guardian-shield-001',
   name: 'Guardian Heater Shield',
-  version: '3K.4E',
+  version: '3K.4F',
   arm: 'left',
 
   dimensions: {
@@ -58,18 +57,13 @@ export function createGuardianShield(
 
   const leatherMaterial = new THREE.MeshStandardMaterial({
     color: 0x35251c,
-    roughness: 0.9
-  });
-
-  const darkLeather = new THREE.MeshStandardMaterial({
-    color: 0x211711,
-    roughness: 0.95
+    roughness: 0.85
   });
 
   const w = d.width / 2;
   const h = d.height / 2;
 
-  // Broad upper body, tapered medieval heater point.
+  // Original enlarged heater-shield silhouette.
   const outline = [
     [-w * 0.88, h * 0.92],
     [ w * 0.88, h * 0.92],
@@ -113,7 +107,7 @@ export function createGuardianShield(
   body.position.z = -d.thickness / 2;
   shield.add(body);
 
-  // Gold outer rim.
+  // Gold rim.
   const rimPoints = outline.map(
     p => new THREE.Vector3(
       p[0],
@@ -144,7 +138,7 @@ export function createGuardianShield(
   rim.name = 'Gold Shield Rim';
   shield.add(rim);
 
-  // Reinforced central boss.
+  // Front central boss.
   const boss = new THREE.Mesh(
     new THREE.SphereGeometry(
       d.bossRadius,
@@ -162,167 +156,115 @@ export function createGuardianShield(
   boss.position.z = d.thickness / 2 + 0.02;
   shield.add(boss);
 
-  // Rear mounting plate.
-  const backZ = -d.thickness / 2 - 0.035;
+  // SINGLE REAR HANDLE SYSTEM
+  // No straps, padding or large mounting plate.
 
-  const mountingPlate = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      d.width * 0.48,
-      d.height * 0.38,
-      0.035
-    ),
-    darkLeather
-  );
+  const rearSurfaceZ = -d.thickness / 2 - 0.018;
+  const handleZ = rearSurfaceZ - 0.19;
+  const handleLength = d.height * 0.38;
+  const handleRadius = 0.052;
 
-  mountingPlate.name = 'Rear Mounting Plate';
-  mountingPlate.position.z = backZ;
-  shield.add(mountingPlate);
-
-  // Rear grip handle, designed for the left hand.
+  // Vertical leather-wrapped handle.
   const handle = new THREE.Mesh(
     new THREE.CylinderGeometry(
-      0.045,
-      0.045,
-      d.width * 0.42,
-      12
+      handleRadius,
+      handleRadius,
+      handleLength,
+      16
     ),
     leatherMaterial
   );
 
-  handle.name = 'Rear Hand Grip';
-  handle.rotation.z = Math.PI / 2;
-  handle.position.set(
-    0,
-    -d.height * 0.08,
-    backZ - 0.095
-  );
-
+  handle.name = 'Vertical Rear Hand Grip';
+  handle.position.set(0, 0, handleZ);
   shield.add(handle);
 
-  // Metal grip mounting brackets.
-  for (const x of [
-    -d.width * 0.20,
-     d.width * 0.20
+  // Two solid mounting brackets.
+  const bracketOffset = handleLength * 0.44;
+  const bracketDepth = rearSurfaceZ - handleZ;
+
+  for (const y of [
+    -bracketOffset,
+     bracketOffset
   ]) {
     const bracket = new THREE.Mesh(
       new THREE.BoxGeometry(
-        0.055,
-        0.12,
-        0.13
+        0.115,
+        0.105,
+        Math.abs(bracketDepth) + 0.055
       ),
       steelMaterial
     );
 
-    bracket.name = 'Grip Mounting Bracket';
+    bracket.name = 'Handle Mounting Bracket';
     bracket.position.set(
-      x,
-      -d.height * 0.08,
-      backZ - 0.045
+      0,
+      y,
+      (rearSurfaceZ + handleZ) / 2
     );
 
     shield.add(bracket);
-  }
 
-  // Two curved leather forearm straps.
-  // These sit behind the shield face.
-  for (const y of [
-    d.height * 0.13,
-    d.height * 0.32
-  ]) {
-    const strapCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(
-        -d.width * 0.27,
-        y,
-        backZ
+    // Visible rear mounting rivet.
+    const rivet = new THREE.Mesh(
+      new THREE.SphereGeometry(
+        0.045,
+        12,
+        10
       ),
-      new THREE.Vector3(
-        -d.width * 0.17,
-        y,
-        backZ - 0.15
-      ),
-      new THREE.Vector3(
-        0,
-        y,
-        backZ - 0.21
-      ),
-      new THREE.Vector3(
-        d.width * 0.17,
-        y,
-        backZ - 0.15
-      ),
-      new THREE.Vector3(
-        d.width * 0.27,
-        y,
-        backZ
-      )
-    ]);
-
-    const strap = new THREE.Mesh(
-      new THREE.TubeGeometry(
-        strapCurve,
-        24,
-        0.035,
-        8,
-        false
-      ),
-      leatherMaterial
+      steelMaterial
     );
 
-    strap.name = 'Rear Forearm Strap';
-    shield.add(strap);
+    rivet.name = 'Handle Bracket Rivet';
+    rivet.position.set(
+      0,
+      y,
+      rearSurfaceZ - 0.012
+    );
 
-    // Rivets at each strap end.
-    for (const x of [
-      -d.width * 0.27,
-       d.width * 0.27
-    ]) {
-      const rivet = new THREE.Mesh(
-        new THREE.SphereGeometry(
-          0.035,
-          10,
-          8
-        ),
-        steelMaterial
-      );
-
-      rivet.name = 'Strap Rivet';
-      rivet.position.set(x, y, backZ);
-      shield.add(rivet);
-    }
+    shield.add(rivet);
   }
 
-  // Rear leather padding for forearm comfort.
-  const padding = new THREE.Mesh(
-    new THREE.BoxGeometry(
-      d.width * 0.34,
-      d.height * 0.45,
-      0.055
-    ),
-    leatherMaterial
-  );
+  // Leather grip rings for visual texture.
+  const ringMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4c3527,
+    roughness: 0.9
+  });
 
-  padding.name = 'Forearm Padding';
-  padding.position.set(
-    0,
-    d.height * 0.10,
-    backZ - 0.035
-  );
+  for (let i = 0; i < 9; i++) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(
+        handleRadius + 0.003,
+        0.006,
+        6,
+        16
+      ),
+      ringMaterial
+    );
 
-  shield.add(padding);
+    ring.name = 'Leather Grip Wrap';
+    ring.rotation.x = Math.PI / 2;
 
+    ring.position.set(
+      0,
+      -handleLength * 0.34 +
+      i * handleLength * 0.085,
+      handleZ
+    );
+
+    shield.add(ring);
+  }
+
+  // Grip metadata for later attachment calibration.
   shield.userData = {
     weaponId: shieldDefinition.id,
     weaponType: 'shield',
     attachmentArm: 'left',
-    gripType: 'rear-handgrip-and-forearm-straps',
-    gripLocalPosition: [
-      0,
-      -d.height * 0.08,
-      backZ - 0.095
-    ],
+    gripType: 'single-vertical-handle',
+    gripLocalPosition: [0, 0, handleZ],
+    gripLocalAxis: [0, 1, 0],
     dimensions: { ...d }
   };
 
   return shield;
 }
-  
