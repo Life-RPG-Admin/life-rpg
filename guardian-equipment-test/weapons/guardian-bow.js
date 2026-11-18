@@ -1,22 +1,23 @@
 
 import * as THREE from 'three';
 
-// LIFE RPG — Build 3K.5A
-// Guardian Recurve Bow
+// LIFE RPG — Build 3K.5C
+// Guardian Recurve Bow — Proportion Refinement
 // Independent reusable 3D weapon asset.
+// Guardian stance and attachment origin unchanged.
 
 export const bowDefinition = {
   id: 'guardian-recurve-bow-001',
   name: 'Guardian Recurve Bow',
-  version: '3K.5A',
+  version: '3K.5C',
   weaponType: 'bow',
   arm: 'left',
 
   dimensions: {
-    height: 1.85,
-    width: 0.42,
-    limbRadius: 0.038,
-    gripLength: 0.28,
+    height: 2.15,
+    width: 0.48,
+    limbRadius: 0.044,
+    gripLength: 0.30,
     gripRadius: 0.052,
     stringRadius: 0.006
   },
@@ -68,24 +69,23 @@ export function createGuardianBow(
 
   const halfHeight = d.height / 2;
 
-  // Local coordinate system:
+  // LOCAL COORDINATES
   // Y = bow height
   // X = recurve profile
   // Z = depth
-  // Grip centered at origin.
+  // Grip remains centered at origin.
 
-  // Symmetrical recurve limb profile.
-  // The outer tips curve back toward the string.
+  // Refined, longer recurve limbs.
   const upperPoints = [
     [0, 0],
-    [-0.075, halfHeight * 0.22],
-    [-0.17, halfHeight * 0.48],
-    [-0.21, halfHeight * 0.72],
-    [-0.13, halfHeight * 0.89],
-    [0.02, halfHeight]
+    [-0.08, halfHeight * 0.20],
+    [-0.18, halfHeight * 0.46],
+    [-0.23, halfHeight * 0.71],
+    [-0.15, halfHeight * 0.89],
+    [0.025, halfHeight]
   ];
 
-  const makeLimb = (side) => {
+  const makeLimb = side => {
     const points = upperPoints.map(
       ([x, y]) => new THREE.Vector3(
         x,
@@ -102,9 +102,9 @@ export function createGuardianBow(
 
     const geometry = new THREE.TubeGeometry(
       curve,
-      48,
+      64,
       d.limbRadius,
-      10,
+      12,
       false
     );
 
@@ -123,7 +123,7 @@ export function createGuardianBow(
   makeLimb(1);
   makeLimb(-1);
 
-  // Central wooden riser.
+  // CENTRAL WOODEN RISER.
   const riser = new THREE.Mesh(
     new THREE.CylinderGeometry(
       d.gripRadius * 0.85,
@@ -137,7 +137,7 @@ export function createGuardianBow(
   riser.name = 'BowRiser';
   bow.add(riser);
 
-  // Leather-wrapped central grip.
+  // LEATHER-WRAPPED GRIP.
   const grip = new THREE.Mesh(
     new THREE.CylinderGeometry(
       d.gripRadius,
@@ -151,7 +151,7 @@ export function createGuardianBow(
   grip.name = 'BowGrip';
   bow.add(grip);
 
-  // Thin decorative grip wraps.
+  // DECORATIVE GRIP WRAPS.
   for (let i = 0; i < 7; i++) {
     const wrap = new THREE.Mesh(
       new THREE.TorusGeometry(
@@ -171,20 +171,19 @@ export function createGuardianBow(
     bow.add(wrap);
   }
 
-  // Bowstring — neutral, undrawn state.
+  // BOWSTRING — STATIC FOR THIS SIZE TEST.
   const upperTip = new THREE.Vector3(
-    0.02,
+    0.025,
     halfHeight,
     0
   );
 
   const lowerTip = new THREE.Vector3(
-    0.02,
+    0.025,
     -halfHeight,
     0
   );
 
-  // String sits to the right of the curved limbs.
   const stringCenter = new THREE.Vector3(
     d.width * 0.55,
     0,
@@ -200,9 +199,9 @@ export function createGuardianBow(
   const bowstring = new THREE.Mesh(
     new THREE.TubeGeometry(
       stringCurve,
-      32,
+      40,
       d.stringRadius,
-      6,
+      8,
       false
     ),
     stringMaterial
@@ -211,7 +210,7 @@ export function createGuardianBow(
   bowstring.name = 'Bowstring';
   bow.add(bowstring);
 
-  // Small reinforced limb tips.
+  // REINFORCED LIMB TIPS.
   for (const side of [-1, 1]) {
     const tip = new THREE.Mesh(
       new THREE.SphereGeometry(
@@ -223,7 +222,7 @@ export function createGuardianBow(
     );
 
     tip.position.set(
-      0.02,
+      0.025,
       side * halfHeight,
       0
     );
@@ -231,7 +230,7 @@ export function createGuardianBow(
     bow.add(tip);
   }
 
-  // Independent equipment metadata.
+  // INDEPENDENT EQUIPMENT METADATA.
   bow.userData = {
     weaponId: bowDefinition.id,
     weaponType: 'bow',
@@ -257,3 +256,4 @@ export function createGuardianBow(
 
   return bow;
 }
+  
