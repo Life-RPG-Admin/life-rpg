@@ -1,23 +1,23 @@
 
 import * as THREE from 'three';
 
-// LIFE RPG — Build 3K.5C
-// Guardian Recurve Bow — Proportion Refinement
+// LIFE RPG — Build 3K.5D
+// Guardian Recurve Bow
 // Independent reusable 3D weapon asset.
-// Guardian stance and attachment origin unchanged.
+// Dynamic three-point bowstring.
 
 export const bowDefinition = {
   id: 'guardian-recurve-bow-001',
   name: 'Guardian Recurve Bow',
-  version: '3K.5C',
+  version: '3K.5D',
   weaponType: 'bow',
   arm: 'left',
 
   dimensions: {
-    height: 2.15,
-    width: 0.48,
-    limbRadius: 0.044,
-    gripLength: 0.30,
+    height: 1.85,
+    width: 0.42,
+    limbRadius: 0.038,
+    gripLength: 0.28,
     gripRadius: 0.052,
     stringRadius: 0.006
   },
@@ -69,20 +69,15 @@ export function createGuardianBow(
 
   const halfHeight = d.height / 2;
 
-  // LOCAL COORDINATES
-  // Y = bow height
-  // X = recurve profile
-  // Z = depth
-  // Grip remains centered at origin.
+  // Original recurve limb profile — preserved.
 
-  // Refined, longer recurve limbs.
   const upperPoints = [
     [0, 0],
-    [-0.08, halfHeight * 0.20],
-    [-0.18, halfHeight * 0.46],
-    [-0.23, halfHeight * 0.71],
-    [-0.15, halfHeight * 0.89],
-    [0.025, halfHeight]
+    [-0.075, halfHeight * 0.22],
+    [-0.17, halfHeight * 0.48],
+    [-0.21, halfHeight * 0.72],
+    [-0.13, halfHeight * 0.89],
+    [0.02, halfHeight]
   ];
 
   const makeLimb = side => {
@@ -100,16 +95,14 @@ export function createGuardianBow(
       'centripetal'
     );
 
-    const geometry = new THREE.TubeGeometry(
-      curve,
-      64,
-      d.limbRadius,
-      12,
-      false
-    );
-
     const mesh = new THREE.Mesh(
-      geometry,
+      new THREE.TubeGeometry(
+        curve,
+        48,
+        d.limbRadius,
+        10,
+        false
+      ),
       limbMaterial
     );
 
@@ -123,7 +116,8 @@ export function createGuardianBow(
   makeLimb(1);
   makeLimb(-1);
 
-  // CENTRAL WOODEN RISER.
+  // Original wooden riser.
+
   const riser = new THREE.Mesh(
     new THREE.CylinderGeometry(
       d.gripRadius * 0.85,
@@ -137,7 +131,8 @@ export function createGuardianBow(
   riser.name = 'BowRiser';
   bow.add(riser);
 
-  // LEATHER-WRAPPED GRIP.
+  // Original leather grip.
+
   const grip = new THREE.Mesh(
     new THREE.CylinderGeometry(
       d.gripRadius,
@@ -151,7 +146,8 @@ export function createGuardianBow(
   grip.name = 'BowGrip';
   bow.add(grip);
 
-  // DECORATIVE GRIP WRAPS.
+  // Original decorative wraps.
+
   for (let i = 0; i < 7; i++) {
     const wrap = new THREE.Mesh(
       new THREE.TorusGeometry(
@@ -164,6 +160,7 @@ export function createGuardianBow(
     );
 
     wrap.rotation.x = Math.PI / 2;
+
     wrap.position.y =
       -d.gripLength / 2 +
       (i + 0.5) * d.gripLength / 7;
@@ -171,46 +168,105 @@ export function createGuardianBow(
     bow.add(wrap);
   }
 
-  // BOWSTRING — STATIC FOR THIS SIZE TEST.
+  // String anchor points in bow-local space.
+
   const upperTip = new THREE.Vector3(
-    0.025,
+    0.02,
     halfHeight,
     0
   );
 
   const lowerTip = new THREE.Vector3(
-    0.025,
+    0.02,
     -halfHeight,
     0
   );
 
-  const stringCenter = new THREE.Vector3(
+  const stringRest = new THREE.Vector3(
     d.width * 0.55,
     0,
     0
   );
 
-  const stringCurve = new THREE.CatmullRomCurve3([
-    lowerTip,
-    stringCenter,
-    upperTip
-  ]);
+  // Dynamic string is made of two straight segments.
+  // The centre will be controlled by the drawing hand.
 
-  const bowstring = new THREE.Mesh(
-    new THREE.TubeGeometry(
-      stringCurve,
-      40,
-      d.stringRadius,
-      8,
-      false
-    ),
-    stringMaterial
+  const stringGeometry = new THREE.BufferGeometry();
+
+  const stringPositions = new Float32Array(9);
+
+  stringGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(
+      stringPositions,
+      3
+    )
+  );
+
+  const bowstring = new THREE.Line(
+    stringGeometry,
+    new THREE.LineBasicMaterial({
+      color: 0xd3c4a4
+    })
   );
 
   bowstring.name = 'Bowstring';
   bow.add(bowstring);
 
-  // REINFORCED LIMB TIPS.
+  // Update the three string vertices.
+
+  function setStringLocalPoint(point) {
+    const p = point || stringRest;
+
+    const a = stringGeometry.attributes.position;
+
+    a.setXYZ(
+      0,
+      lowerTip.x,
+      lowerTip.y,
+      lowerTip.z
+    );
+
+    a.setXYZ(
+      1,
+      p.x,
+      p.y,
+      p.z
+    );
+
+    a.setXYZ(
+      2,
+      upperTip.x,
+      upperTip.y,
+      upperTip.z
+    );
+
+    a.needsUpdate = true;
+    stringGeometry.computeBoundingSphere();
+  }
+
+  setStringLocalPoint(stringRest);
+
+  // Convert a world-space drawing-hand position
+  // into bow-local coordinates.
+
+  function connectStringToWorldPoint(worldPoint) {
+    if (!worldPoint) {
+      setStringLocalPoint(stringRest);
+      return;
+    }
+
+    bow.updateWorldMatrix(true, false);
+
+    const localPoint = bow.worldToLocal(
+      worldPoint.clone()
+    );
+
+    setStringLocalPoint(localPoint);
+  }
+
+  // Reinforced limb tips.
+
   for (const side of [-1, 1]) {
     const tip = new THREE.Mesh(
       new THREE.SphereGeometry(
@@ -222,7 +278,7 @@ export function createGuardianBow(
     );
 
     tip.position.set(
-      0.025,
+      0.02,
       side * halfHeight,
       0
     );
@@ -230,7 +286,15 @@ export function createGuardianBow(
     bow.add(tip);
   }
 
-  // INDEPENDENT EQUIPMENT METADATA.
+  // Public methods for Guardian integration.
+
+  bow.connectStringToWorldPoint =
+    connectStringToWorldPoint;
+
+  bow.resetString = () => {
+    setStringLocalPoint(stringRest);
+  };
+
   bow.userData = {
     weaponId: bowDefinition.id,
     weaponType: 'bow',
@@ -239,21 +303,21 @@ export function createGuardianBow(
 
     gripLocalPosition: [0, 0, 0],
 
-    stringRestLocalPosition: [
-      stringCenter.x,
-      stringCenter.y,
-      stringCenter.z
-    ],
+    stringRestLocalPosition:
+      stringRest.toArray(),
 
-    stringUpperTip: upperTip.toArray(),
-    stringLowerTip: lowerTip.toArray(),
+    stringUpperTip:
+      upperTip.toArray(),
+
+    stringLowerTip:
+      lowerTip.toArray(),
 
     dimensions: { ...d },
 
     supportsDrawAnimation: true,
-    supportsArrowAttachment: true
+    supportsArrowAttachment: true,
+    dynamicString: true
   };
 
   return bow;
-}
-  
+        }
