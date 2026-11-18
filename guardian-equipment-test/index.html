@@ -4,8 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>LIFE RPG — Guardian 3K.4H</title>
-
+<title>LIFE RPG — Guardian 3K.4J</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101722;color:#f3e4c5;font:13px system-ui,sans-serif;overflow:hidden}
@@ -55,7 +54,6 @@ window.addEventListener('unhandledrejection',e=>{
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
 </head>
-
 <body>
 
 <div id="scene"></div>
@@ -63,7 +61,7 @@ window.addEventListener('unhandledrejection',e=>{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
-<h3>LIFE RPG — Guardian 3K.4H</h3>
+<h3>LIFE RPG — Guardian 3K.4J</h3>
 <div id="status">Loading Guardian...</div>
 <div id="debug">Longsword LOCKED · Sword & Shield LOCKED</div>
 </div>
@@ -79,13 +77,13 @@ window.addEventListener('unhandledrejection',e=>{
 </div>
 
 <hr>
-<h3>Build 3K.4H — Sword & Shield</h3>
+<h3>Build 3K.4J — Shield Placement</h3>
 <div class="lockedNotice">
 APPROVED STANCE LOCKED
 <br>
 Arms, legs and sword attachment are frozen.
 <br>
-Only shield attachment can be adjusted.
+Shield position range extended to ±4.0.
 </div>
 
 <div id="armSection">
@@ -211,30 +209,10 @@ const lockedGrip={
  r:{raise:16,spread:-22,bend:71,across:72,twist:0,wristX:11,wristY:45,fingerCurl:100,thumbGrip:0}
 };
 
-// APPROVED SWORD & SHIELD GRIP — HARD-CODED.
+// APPROVED SWORD & SHIELD GRIP — LOCKED.
 const shieldGrip={
- l:{
-  raise:35,
-  spread:-35,
-  bend:60,
-  across:43,
-  twist:3,
-  wristX:-3,
-  wristY:-42,
-  fingerCurl:100,
-  thumbGrip:0
- },
- r:{
-  raise:30,
-  spread:-12,
-  bend:51,
-  across:18,
-  twist:0,
-  wristX:22,
-  wristY:35,
-  fingerCurl:100,
-  thumbGrip:9
- }
+ l:{raise:35,spread:-35,bend:60,across:43,twist:3,wristX:-3,wristY:-42,fingerCurl:100,thumbGrip:0},
+ r:{raise:30,spread:-12,bend:51,across:18,twist:0,wristX:22,wristY:35,fingerCurl:100,thumbGrip:9}
 };
 
 const armConfig=[
@@ -249,16 +227,15 @@ const armConfig=[
  ['thumbGrip','Thumb Grip',0,100,1]
 ];
 
-// APPROVED SWORD ATTACHMENT — HARD-CODED.
 const armingAttachment={
  position:[-0.17,0.47,0.07],
  rotation:[-1,82,82]
 };
 
-// SHIELD ATTACHMENT REMAINS ADJUSTABLE.
+// SAVED APPROVED SHIELD ALIGNMENT.
 const shieldAttachment={
- position:[0,0,0],
- rotation:[0,0,0]
+ position:[0.42,1.5,-0.09],
+ rotation:[64,-170,-50]
 };
 
 const longswordLegs={
@@ -266,16 +243,9 @@ const longswordLegs={
  rightThigh:10,rightSpread:10,rightKnee:10,rightAnkle:0
 };
 
-// APPROVED SWORD & SHIELD LEGS — HARD-CODED.
 const shieldLegs={
- leftThigh:-5,
- leftSpread:-3,
- leftKnee:4,
- leftAnkle:0,
- rightThigh:-5,
- rightSpread:3,
- rightKnee:5,
- rightAnkle:0
+ leftThigh:-5,leftSpread:-3,leftKnee:4,leftAnkle:0,
+ rightThigh:-5,rightSpread:3,rightKnee:5,rightAnkle:0
 };
 
 let leftThighAngle=shieldLegs.leftThigh;
@@ -330,10 +300,8 @@ function rebuildSword(){
 function rebuildShieldEquipment(){
  disposeAsset(armingSword);
  disposeAsset(shield);
-
  armingSword=createGuardianArmingSword();
  shield=createGuardianShield();
-
  scene.add(armingSword);
  scene.add(shield);
  updateEquipment();
@@ -365,7 +333,6 @@ function updateEquipment(){
   const left=pos(chains.l.hand);
   const right=pos(chains.r.hand);
   const midpoint=left.add(right).multiplyScalar(.5);
-
   sword.position.copy(midpoint).add(V(...attachment.gripOffset));
   sword.rotation.set(0,0,attachment.bladeAngle*RAD);
  }
@@ -402,17 +369,14 @@ function updateEquipment(){
 function createSlider(container,label,min,max,step,value,onChange){
  const row=document.createElement('div');
  row.className='setting';
-
  const title=document.createElement('span');
  title.textContent=label;
-
  const input=document.createElement('input');
  input.type='range';
  input.min=min;
  input.max=max;
  input.step=step;
  input.value=value;
-
  const display=document.createElement('span');
  const format=n=>Number(n).toFixed(step>=1?0:3);
  display.textContent=format(value);
@@ -428,25 +392,24 @@ function createSlider(container,label,min,max,step,value,onChange){
  return {input,display,format};
 }
 
-// ARM CONTROLS — DISPLAY ONLY.
+// ARM CONTROLS — LOCKED.
 for(const side of ['l','r']){
  const target=side==='l'?'leftArmSliders':'rightArmSliders';
-
  for(const [key,label,min,max,step] of armConfig){
   const control=createSlider(
-   target,label,min,max,step,shieldGrip[side][key],
-   ()=>{}
+   target,label,min,max,step,shieldGrip[side][key],()=>{}
   );
-
   control.input.disabled=true;
   armSliders[side][key]=control;
  }
 }
 
+// EXTENDED POSITION RANGES.
+// Shield X/Y/Z can now move from -4 to +4.
 const attachmentConfig=[
- ['position',0,'Position X',-1.5,1.5,.01],
- ['position',1,'Position Y',-1.5,1.5,.01],
- ['position',2,'Position Z',-1.5,1.5,.01],
+ ['position',0,'Position X',-4,4,.01],
+ ['position',1,'Position Y',-4,4,.01],
+ ['position',2,'Position Z',-4,4,.01],
  ['rotation',0,'Rotation X',-180,180,1],
  ['rotation',1,'Rotation Y',-180,180,1],
  ['rotation',2,'Rotation Z',-180,180,1]
@@ -458,7 +421,6 @@ for(const [kind,target,values] of [
 ]){
  for(const [property,index,label,min,max,step] of attachmentConfig){
   const key=property+index;
-
   const control=createSlider(
    target,label,min,max,step,values[property][index],
    n=>{
@@ -467,9 +429,7 @@ for(const [kind,target,values] of [
     updateEquipment();
    }
   );
-
   if(kind==='sword')control.input.disabled=true;
-
   equipmentSliders[kind][key]=control;
  }
 }
@@ -527,7 +487,6 @@ function refreshAllSliders(){
    key==='gripY'?attachment.gripOffset[1]:
    key==='gripZ'?attachment.gripOffset[2]:
    dimensions[key];
-
   refreshSlider(sliders[key],value);
  }
 }
@@ -535,14 +494,12 @@ function refreshAllSliders(){
 function capture(){
  guardian.traverse(o=>{
   if(!o.isBone)return;
-
   const name=o.name.toLowerCase();
   bones[name]=o;
   originals.set(o,o.quaternion.clone());
 
   const match=name.match(/(?:_|\.)(l|r)$/);
   if(!match)return;
-
   const side=match[1];
 
   if(/thumb/.test(name)){
@@ -567,14 +524,12 @@ function restore(){
 function natural(){
  const l=bone('upperarm_l');
  const r=bone('upperarm_r');
-
  if(l)l.rotateZ(-1.35);
  if(r)r.rotateZ(1.35);
 
  for(const side of ['l','r']){
   const fore=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
-
   if(fore)fore.rotateX(.46*.18);
   if(hand)hand.rotateX(.19*.14);
  }
@@ -589,7 +544,6 @@ function natural(){
 
 function rotateWorld(joint,axis,angle){
  if(!joint||!angle||axis.lengthSq()<1e-10)return;
-
  world();
 
  const parentQ=joint.parent.getWorldQuaternion(
@@ -603,7 +557,6 @@ function rotateWorld(joint,axis,angle){
  joint.quaternion.premultiply(
   new THREE.Quaternion().setFromAxisAngle(localAxis,angle)
  );
-
  world();
 }
 
@@ -611,13 +564,11 @@ function perpendicular(direction,target){
  const v=target.clone().addScaledVector(
   direction,-target.dot(direction)
  );
-
  return v.lengthSq()>1e-9?v.normalize():null;
 }
 
 function axisToward(direction,target){
  const toward=perpendicular(direction,target);
-
  return toward
   ?new THREE.Vector3().crossVectors(direction,toward).normalize()
   :null;
@@ -631,17 +582,14 @@ function calibrate(){
   const upper=bone('upperarm_'+side);
   const lower=bone('lowerarm_'+side);
   const hand=bone('hand_'+side);
-
   if(!upper||!lower||!hand)continue;
 
   const dir=pos(lower).sub(pos(upper)).normalize();
-
   chains[side]={
    upper,lower,hand,
    raiseAxis:axisToward(dir,V(0,0,1))
   };
  }
-
  rigReady=!!chains.l&&!!chains.r;
 }
 
@@ -649,7 +597,6 @@ function applyFingers(side,settings){
  for(const f of fingers[side]){
   f.rotateX(settings.fingerCurl/100*.95);
  }
-
  for(const t of thumbs[side]){
   t.rotateX(settings.thumbGrip/100*.60);
   t.rotateZ(
@@ -668,27 +615,23 @@ function applyArm(side,settings){
  if(c.raiseAxis){
   rotateWorld(c.upper,c.raiseAxis,s.raise*RAD);
  }
-
  rotateWorld(c.upper,V(0,0,1),sign*s.spread*RAD);
  world();
 
  let elbow=pos(c.lower);
  let wrist=pos(c.hand);
  let fore=wrist.sub(elbow).normalize();
-
  const bendAxis=axisToward(fore,V(0,0,1));
 
  if(bendAxis){
   rotateWorld(c.lower,bendAxis,s.bend*RAD);
  }
-
  rotateWorld(c.upper,V(0,1,0),sign*s.across*RAD*.55);
  world();
 
  elbow=pos(c.lower);
  wrist=pos(c.hand);
  fore=wrist.sub(elbow).normalize();
-
  rotateWorld(c.lower,fore,s.twist*RAD);
  world();
 
@@ -701,7 +644,6 @@ function applyArm(side,settings){
   V(1,0,0).applyQuaternion(parentQ),
   s.wristX*RAD
  );
-
  rotateWorld(
   c.hand,
   V(0,1,0).applyQuaternion(parentQ),
@@ -712,7 +654,7 @@ function applyArm(side,settings){
 }
 
 // PART 2 CONTINUES DIRECTLY BELOW THIS LINE
-                    
+ 
 function applyLeftLeg(){
  if(mode==='natural')return;
 
@@ -772,8 +714,6 @@ function updatePose(){
  updateEquipment();
 }
 
-// LOCKED LEG VALUES.
-// These values are displayed but cannot be edited.
 const legControls=[
  ['leftThigh',()=>leftThighAngle],
  ['leftSpread',()=>leftSpreadAngle],
@@ -784,19 +724,6 @@ const legControls=[
  ['rightKnee',()=>rightKneeAngle],
  ['rightAnkle',()=>rightAnkleAngle]
 ];
-
-function captureLegValues(){
- return {
-  leftThigh:leftThighAngle,
-  leftSpread:leftSpreadAngle,
-  leftKnee:leftKneeAngle,
-  leftAnkle:leftAnkleAngle,
-  rightThigh:rightThighAngle,
-  rightSpread:rightSpreadAngle,
-  rightKnee:rightKneeAngle,
-  rightAnkle:rightAnkleAngle
- };
-}
 
 function setLegValues(values){
  leftThighAngle=values.leftThigh;
@@ -834,8 +761,6 @@ for(const [id] of legControls){
  $(id+'Slider').disabled=true;
 }
 
-// Only switch between approved stance presets.
-// Neither preset is modified.
 function setMode(next){
  mode=next;
 
@@ -863,7 +788,7 @@ function setMode(next){
    ?'Natural Guardian Stance':
   mode==='stance'
    ?'Approved Longsword Stance — LOCKED':
-   'Approved Sword & Shield Stance — LOCKED';
+   'Sword & Shield LOCKED · Shield Placement Adjustable';
 
  updatePose();
 }
@@ -872,8 +797,6 @@ $('natural').onclick=()=>setMode('natural');
 $('stance').onclick=()=>setMode('stance');
 $('shieldStance').onclick=()=>setMode('shield');
 
-// LOWER-BODY SKELETON DIAGNOSTICS.
-// Original detection logic preserved.
 function scanLegBones(){
  if(!guardian){
   $('legStatus').textContent='Guardian not loaded yet.';
@@ -896,7 +819,7 @@ function scanLegBones(){
 
  let report=
   'GUARDIAN LOWER-BODY SKELETON\n'+
-  'Build 3K.4H\n'+
+  'Build 3K.4J\n'+
   'Total bones: '+Object.keys(bones).length+'\n\n';
 
  for(const b of candidates){
@@ -938,12 +861,11 @@ $('copyLegReport').onclick=async()=>{
  }
 };
 
-// SWORD & SHIELD BACKUP.
-// Arms, legs and sword attachment are fixed.
-// Only shield attachment can be calibrated.
+// LOCKED STANCE BACKUP.
+// Only shield attachment values can change.
 function shieldPoseBackup(){
  return JSON.stringify({
-  build:'3K.4H',
+  build:'3K.4J',
   swordId:armingSwordDefinition.id,
   shieldId:shieldDefinition.id,
   grip:shieldGrip,
@@ -953,7 +875,13 @@ function shieldPoseBackup(){
  },null,2);
 }
 
-// SAVE SHIELD ALIGNMENT ONLY.
+function showSaveMessage(message){
+ $('values').textContent=message;
+ $('calibrationStatus').textContent=message;
+}
+
+// SAVE SHIELD ALIGNMENT.
+// Existing localStorage key remains compatible.
 $('saveShieldPose').onclick=()=>{
  try{
   localStorage.setItem(
@@ -961,41 +889,42 @@ $('saveShieldPose').onclick=()=>{
    shieldPoseBackup()
   );
 
-  $('values').textContent=
-   'Shield alignment saved. Approved stance remains locked.';
+  showSaveMessage(
+   'Shield alignment saved. Guardian stance remains locked.'
+  );
  }catch(e){
   reportError(e);
  }
 };
 
-// COPY COMPLETE BACKUP.
+// COPY FULL BACKUP.
 $('copyShieldPose').onclick=async()=>{
  const data=shieldPoseBackup();
 
  try{
   await navigator.clipboard.writeText(data);
-  $('values').textContent=
-   'Locked stance and shield backup copied.';
+  showSaveMessage('Shield alignment backup copied.');
  }catch(e){
   $('values').textContent=data;
  }
 };
 
-// RESET SHIELD ATTACHMENT ONLY.
-// Does not modify the Guardian pose.
+// RESET ONLY SHIELD ALIGNMENT.
+// Restores the last approved baseline, not the Guardian pose.
 $('resetShieldPose').onclick=()=>{
- shieldAttachment.position=[0,0,0];
- shieldAttachment.rotation=[0,0,0];
+ shieldAttachment.position=[0.42,1.5,-0.09];
+ shieldAttachment.rotation=[64,-170,-50];
 
  refreshAllSliders();
  updateEquipment();
 
- $('values').textContent=
-  'Shield alignment reset. Guardian stance unchanged.';
+ showSaveMessage(
+  'Shield restored to approved 3K.4I alignment.'
+ );
 };
 
-// LOAD PREVIOUSLY SAVED SHIELD ALIGNMENT.
-// Saved arm, leg and sword values are deliberately ignored.
+// LOAD SAVED SHIELD ATTACHMENT ONLY.
+// Arm, leg and sword settings cannot be overwritten.
 try{
  const saved=JSON.parse(
   localStorage.getItem('lifeRPG_guardianShieldPose_v1')||'null'
@@ -1024,7 +953,7 @@ try{
 // ORIGINAL LONGSWORD BACKUP SYSTEM.
 function backup(){
  return JSON.stringify({
-  build:'3K.4H',
+  build:'3K.4J',
   weaponId:weaponDefinition.id,
   dimensions,
   attachment
@@ -1113,7 +1042,6 @@ try{
  reportError(e);
 }
 
-// ORIGINAL EQUIPMENT VISIBILITY.
 $('swordToggle').onclick=()=>{
  swordVisible=!swordVisible;
 
@@ -1127,7 +1055,6 @@ $('swordToggle').onclick=()=>{
  updateEquipment();
 };
 
-// ORIGINAL BREATHING TOGGLE.
 $('breath').onclick=()=>{
  breathing=!breathing;
 
@@ -1135,14 +1062,12 @@ $('breath').onclick=()=>{
   breathing?'Breathing ON':'Breathing OFF';
 };
 
-// ORIGINAL CAMERA SETTINGS.
 $('resetCamera').onclick=()=>{
  camera.position.set(0,1.45,9);
  controls.target.set(0,1.25,0);
  controls.update();
 };
 
-// ORIGINAL UI VISIBILITY.
 $('toggleUI').onclick=()=>{
  const hidden=document.body.classList.toggle(
   'ui-hidden'
@@ -1152,13 +1077,12 @@ $('toggleUI').onclick=()=>{
   hidden?'Show UI':'Hide UI';
 };
 
-// ACTIVATE LOCKED SWORD & SHIELD STANCE.
 setMode('shield');
 
 $('status').textContent='Loading Guardian model...';
 
 // ORIGINAL GUARDIAN MODEL.
-// No changes to proportions or positioning.
+// Proportions and positioning unchanged.
 new GLTFLoader().load(
  '../guardian-3d-test/Superhero_Male_FullBody.gltf',
 
@@ -1188,7 +1112,7 @@ new GLTFLoader().load(
     ' bones · READY';
 
    $('debug').textContent=
-    'Sword & Shield Stance LOCKED · '+
+    'Build 3K.4J · Locked Guardian · '+
     armingSwordDefinition.name+
     ' + '+shieldDefinition.name;
 
@@ -1214,14 +1138,12 @@ new GLTFLoader().load(
  }
 );
 
-// ORIGINAL RESIZE HANDLING.
 window.addEventListener('resize',()=>{
  camera.aspect=innerWidth/innerHeight;
  camera.updateProjectionMatrix();
  renderer.setSize(innerWidth,innerHeight);
 });
 
-// ORIGINAL ANIMATION LOOP.
 const clock=new THREE.Clock();
 
 function animate(){
