@@ -2507,6 +2507,79 @@ animate();
 // END — LIFE RPG BUILD 3K.5E TEST 2
 // ==================================================
 
+/* ============================================
+   LIFE RPG — 3K.5E DIAGNOSTIC REPAIR
+   Restores missing leg-skeleton functions.
+   Does not modify poses, weapons or camera.
+============================================ */
+
+function scanLegBones(){
+ const names=Object.keys(bones);
+
+ const legNames=names.filter(name=>
+  /thigh|calf|shin|foot|toe|leg|hip|ankle/i
+   .test(name)
+ );
+
+ const required=[
+  'thigh_l',
+  'calf_l',
+  'foot_l',
+  'thigh_r',
+  'calf_r',
+  'foot_r'
+ ];
+
+ const found=required.filter(name=>!!bone(name));
+ const missing=required.filter(name=>!bone(name));
+
+ latestLegReport=[
+  'LIFE RPG — Guardian Leg Skeleton',
+  'Build: 3K.5E',
+  '',
+  'Total bones: '+names.length,
+  'Expected leg bones: '+found.length+
+   '/'+required.length,
+  '',
+  'DETECTED:',
+  ...(found.length?found:['None']),
+  '',
+  'MISSING:',
+  ...(missing.length?missing:['None']),
+  '',
+  'ALL LEG-RELATED BONES:',
+  ...(legNames.length?legNames:['None'])
+ ].join('\n');
+
+ $('legReport').textContent=latestLegReport;
+
+ $('legStatus').textContent=
+  missing.length===0
+   ?'Leg skeleton detected successfully.'
+   :'Leg skeleton detected with '+
+     missing.length+' missing expected bones.';
+
+ return latestLegReport;
+}
+
+$('scanLegs').onclick=()=>{
+ scanLegBones();
+};
+
+$('copyLegReport').onclick=async()=>{
+ const report=latestLegReport||scanLegBones();
+
+ try{
+  await navigator.clipboard.writeText(report);
+  $('legStatus').textContent=
+   'Leg bone report copied.';
+ }catch(error){
+  $('legReport').textContent=report;
+  $('legStatus').textContent=
+   'Copy unavailable. Report shown below.';
+ }
+};
+ 
 </script>
 </body>
 </html>
