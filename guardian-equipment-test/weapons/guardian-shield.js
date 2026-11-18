@@ -3,7 +3,8 @@ import * as THREE from 'three';
 
 // LIFE RPG — Build 3K.4E
 // Guardian Heater Shield
-// Original enlarged shield with rear straps.
+// Independent reusable equipment asset.
+// No changes to Guardian body, pose, floor or longsword.
 
 export const shieldDefinition = {
   id: 'guardian-shield-001',
@@ -68,13 +69,14 @@ export function createGuardianShield(
   const w = d.width / 2;
   const h = d.height / 2;
 
+  // Broad upper body, tapered medieval heater point.
   const outline = [
     [-w * 0.88, h * 0.92],
     [ w * 0.88, h * 0.92],
     [ w, h * 0.62],
     [ w * 0.90, h * 0.12],
     [ w * 0.65, -h * 0.48],
-    [0, -h],
+    [ 0, -h],
     [-w * 0.65, -h * 0.48],
     [-w * 0.90, h * 0.12],
     [-w, h * 0.62]
@@ -89,7 +91,7 @@ export function createGuardianShield(
 
   shape.closePath();
 
-  // Main shield body
+  // Main shield body.
   const bodyGeometry = new THREE.ExtrudeGeometry(
     shape,
     {
@@ -111,7 +113,7 @@ export function createGuardianShield(
   body.position.z = -d.thickness / 2;
   shield.add(body);
 
-  // Gold outer rim
+  // Gold outer rim.
   const rimPoints = outline.map(
     p => new THREE.Vector3(
       p[0],
@@ -142,7 +144,7 @@ export function createGuardianShield(
   rim.name = 'Gold Shield Rim';
   shield.add(rim);
 
-  // Central steel boss
+  // Reinforced central boss.
   const boss = new THREE.Mesh(
     new THREE.SphereGeometry(
       d.bossRadius,
@@ -160,7 +162,7 @@ export function createGuardianShield(
   boss.position.z = d.thickness / 2 + 0.02;
   shield.add(boss);
 
-  // Rear mounting plate
+  // Rear mounting plate.
   const backZ = -d.thickness / 2 - 0.035;
 
   const mountingPlate = new THREE.Mesh(
@@ -176,7 +178,7 @@ export function createGuardianShield(
   mountingPlate.position.z = backZ;
   shield.add(mountingPlate);
 
-  // Original horizontal rear grip
+  // Rear grip handle, designed for the left hand.
   const handle = new THREE.Mesh(
     new THREE.CylinderGeometry(
       0.045,
@@ -197,7 +199,7 @@ export function createGuardianShield(
 
   shield.add(handle);
 
-  // Metal grip brackets
+  // Metal grip mounting brackets.
   for (const x of [
     -d.width * 0.20,
      d.width * 0.20
@@ -221,7 +223,8 @@ export function createGuardianShield(
     shield.add(bracket);
   }
 
-  // Original curved forearm straps
+  // Two curved leather forearm straps.
+  // These sit behind the shield face.
   for (const y of [
     d.height * 0.13,
     d.height * 0.32
@@ -268,6 +271,7 @@ export function createGuardianShield(
     strap.name = 'Rear Forearm Strap';
     shield.add(strap);
 
+    // Rivets at each strap end.
     for (const x of [
       -d.width * 0.27,
        d.width * 0.27
@@ -287,7 +291,7 @@ export function createGuardianShield(
     }
   }
 
-  // Rear forearm padding
+  // Rear leather padding for forearm comfort.
   const padding = new THREE.Mesh(
     new THREE.BoxGeometry(
       d.width * 0.34,
@@ -320,5 +324,5 @@ export function createGuardianShield(
   };
 
   return shield;
-    }
-        
+}
+  
