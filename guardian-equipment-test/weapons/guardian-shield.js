@@ -1,14 +1,14 @@
 
 import * as THREE from 'three';
 
-// LIFE RPG — Build 3K.4G
+// LIFE RPG — Build 3K.4E
 // Guardian Heater Shield
-// Simple rear handle — no straps or cosmetics.
+// Original enlarged shield with rear straps.
 
 export const shieldDefinition = {
   id: 'guardian-shield-001',
   name: 'Guardian Heater Shield',
-  version: '3K.4G',
+  version: '3K.4E',
   arm: 'left',
 
   dimensions: {
@@ -25,7 +25,6 @@ export const shieldDefinition = {
   }
 };
 
-// Export name must match the Guardian HTML import.
 export function createGuardianShield(
   dimensions = shieldDefinition.dimensions
 ) {
@@ -37,29 +36,38 @@ export function createGuardianShield(
   const shield = new THREE.Group();
   shield.name = shieldDefinition.id;
 
-  // Materials
-  const blue = new THREE.MeshStandardMaterial({
+  const faceMaterial = new THREE.MeshStandardMaterial({
     color: 0x263b57,
-    metalness: 0.25,
-    roughness: 0.6
+    metalness: 0.35,
+    roughness: 0.55,
+    side: THREE.DoubleSide
   });
 
-  const gold = new THREE.MeshStandardMaterial({
+  const rimMaterial = new THREE.MeshStandardMaterial({
     color: 0xb99a59,
-    metalness: 0.75,
+    metalness: 0.8,
+    roughness: 0.28
+  });
+
+  const steelMaterial = new THREE.MeshStandardMaterial({
+    color: 0x737f8b,
+    metalness: 0.85,
     roughness: 0.3
   });
 
-  const handleMaterial = new THREE.MeshStandardMaterial({
-    color: 0x777777,
-    metalness: 0.3,
-    roughness: 0.65
+  const leatherMaterial = new THREE.MeshStandardMaterial({
+    color: 0x35251c,
+    roughness: 0.9
+  });
+
+  const darkLeather = new THREE.MeshStandardMaterial({
+    color: 0x211711,
+    roughness: 0.95
   });
 
   const w = d.width / 2;
   const h = d.height / 2;
 
-  // Heater shield outline
   const outline = [
     [-w * 0.88, h * 0.92],
     [ w * 0.88, h * 0.92],
@@ -73,42 +81,41 @@ export function createGuardianShield(
   ];
 
   const shape = new THREE.Shape();
-  shape.moveTo(
-    outline[0][0],
-    outline[0][1]
-  );
+  shape.moveTo(outline[0][0], outline[0][1]);
 
   for (let i = 1; i < outline.length; i++) {
-    shape.lineTo(
-      outline[i][0],
-      outline[i][1]
-    );
+    shape.lineTo(outline[i][0], outline[i][1]);
   }
 
   shape.closePath();
 
   // Main shield body
-  const body = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(shape, {
+  const bodyGeometry = new THREE.ExtrudeGeometry(
+    shape,
+    {
       depth: d.thickness,
       bevelEnabled: true,
       bevelThickness: 0.018,
       bevelSize: 0.018,
       bevelSegments: 2,
       steps: 1
-    }),
-    blue
+    }
+  );
+
+  const body = new THREE.Mesh(
+    bodyGeometry,
+    faceMaterial
   );
 
   body.name = 'Shield Body';
   body.position.z = -d.thickness / 2;
   shield.add(body);
 
-  // Gold border
+  // Gold outer rim
   const rimPoints = outline.map(
-    ([x, y]) => new THREE.Vector3(
-      x,
-      y,
+    p => new THREE.Vector3(
+      p[0],
+      p[1],
       d.thickness / 2 + 0.025
     )
   );
@@ -129,59 +136,189 @@ export function createGuardianShield(
       8,
       true
     ),
-    gold
+    rimMaterial
   );
 
-  rim.name = 'Gold Shield Border';
+  rim.name = 'Gold Shield Rim';
   shield.add(rim);
 
-  // Simple rear handle
-  // The shield's front faces local +Z.
-  // The handle is behind it on local -Z.
-
-  const rearSurfaceZ =
-    -d.thickness / 2 - 0.018;
-
-  const handleZ = rearSurfaceZ - 0.19;
-  const handleLength = d.height * 0.38;
-  const handleRadius = 0.055;
-
-  const handle = new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      handleRadius,
-      handleRadius,
-      handleLength,
-      16
+  // Central steel boss
+  const boss = new THREE.Mesh(
+    new THREE.SphereGeometry(
+      d.bossRadius,
+      24,
+      16,
+      0,
+      Math.PI * 2,
+      0,
+      Math.PI / 2
     ),
-    handleMaterial
+    steelMaterial
   );
 
-  handle.name = 'Basic Vertical Handle';
+  boss.name = 'Central Steel Boss';
+  boss.position.z = d.thickness / 2 + 0.02;
+  shield.add(boss);
+
+  // Rear mounting plate
+  const backZ = -d.thickness / 2 - 0.035;
+
+  const mountingPlate = new THREE.Mesh(
+    new THREE.BoxGeometry(
+      d.width * 0.48,
+      d.height * 0.38,
+      0.035
+    ),
+    darkLeather
+  );
+
+  mountingPlate.name = 'Rear Mounting Plate';
+  mountingPlate.position.z = backZ;
+  shield.add(mountingPlate);
+
+  // Original horizontal rear grip
+  const handle = new THREE.Mesh(
+    new THREE.CylinderGeometry(
+      0.045,
+      0.045,
+      d.width * 0.42,
+      12
+    ),
+    leatherMaterial
+  );
+
+  handle.name = 'Rear Hand Grip';
+  handle.rotation.z = Math.PI / 2;
   handle.position.set(
     0,
-    0,
-    handleZ
+    -d.height * 0.08,
+    backZ - 0.095
   );
 
   shield.add(handle);
 
-  // Attachment metadata
+  // Metal grip brackets
+  for (const x of [
+    -d.width * 0.20,
+     d.width * 0.20
+  ]) {
+    const bracket = new THREE.Mesh(
+      new THREE.BoxGeometry(
+        0.055,
+        0.12,
+        0.13
+      ),
+      steelMaterial
+    );
+
+    bracket.name = 'Grip Mounting Bracket';
+    bracket.position.set(
+      x,
+      -d.height * 0.08,
+      backZ - 0.045
+    );
+
+    shield.add(bracket);
+  }
+
+  // Original curved forearm straps
+  for (const y of [
+    d.height * 0.13,
+    d.height * 0.32
+  ]) {
+    const strapCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(
+        -d.width * 0.27,
+        y,
+        backZ
+      ),
+      new THREE.Vector3(
+        -d.width * 0.17,
+        y,
+        backZ - 0.15
+      ),
+      new THREE.Vector3(
+        0,
+        y,
+        backZ - 0.21
+      ),
+      new THREE.Vector3(
+        d.width * 0.17,
+        y,
+        backZ - 0.15
+      ),
+      new THREE.Vector3(
+        d.width * 0.27,
+        y,
+        backZ
+      )
+    ]);
+
+    const strap = new THREE.Mesh(
+      new THREE.TubeGeometry(
+        strapCurve,
+        24,
+        0.035,
+        8,
+        false
+      ),
+      leatherMaterial
+    );
+
+    strap.name = 'Rear Forearm Strap';
+    shield.add(strap);
+
+    for (const x of [
+      -d.width * 0.27,
+       d.width * 0.27
+    ]) {
+      const rivet = new THREE.Mesh(
+        new THREE.SphereGeometry(
+          0.035,
+          10,
+          8
+        ),
+        steelMaterial
+      );
+
+      rivet.name = 'Strap Rivet';
+      rivet.position.set(x, y, backZ);
+      shield.add(rivet);
+    }
+  }
+
+  // Rear forearm padding
+  const padding = new THREE.Mesh(
+    new THREE.BoxGeometry(
+      d.width * 0.34,
+      d.height * 0.45,
+      0.055
+    ),
+    leatherMaterial
+  );
+
+  padding.name = 'Forearm Padding';
+  padding.position.set(
+    0,
+    d.height * 0.10,
+    backZ - 0.035
+  );
+
+  shield.add(padding);
+
   shield.userData = {
     weaponId: shieldDefinition.id,
     weaponType: 'shield',
     attachmentArm: 'left',
-    gripType: 'single-vertical-handle',
-
+    gripType: 'rear-handgrip-and-forearm-straps',
     gripLocalPosition: [
       0,
-      0,
-      handleZ
+      -d.height * 0.08,
+      backZ - 0.095
     ],
-
-    gripLocalAxis: [0, 1, 0],
     dimensions: { ...d }
   };
 
   return shield;
-     }
-    
+    }
+        
