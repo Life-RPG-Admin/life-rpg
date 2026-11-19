@@ -1,0 +1,1 @@
+Shared Guardian stance modules.
