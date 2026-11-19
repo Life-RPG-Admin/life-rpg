@@ -214,6 +214,19 @@ window.addEventListener('unhandledrejection',e=>{
 });
 </script>
 
+ 
+<script>
+import('./models/guardian-masculine.js')
+  .then(() => {
+    document.getElementById('status').textContent =
+      'Masculine module loaded successfully';
+  })
+  .catch(error => {
+    document.getElementById('status').textContent =
+      'MODULE ERROR: ' + error.message;
+  });
+</script>
+ 
 <script type="importmap">
 {
  "imports":{
