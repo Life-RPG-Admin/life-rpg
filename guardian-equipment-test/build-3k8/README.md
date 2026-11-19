@@ -1,1 +1,2253 @@
-build-3k8/README.md
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>LIFE RPG — Guardian 3K.7</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+ margin:0;
+ background:#101722;
+ color:#f3e4c5;
+ font:13px system-ui,sans-serif;
+ overflow:hidden;
+}
+
+#scene{position:fixed;inset:0}
+
+#top{
+ position:fixed;
+ top:8px;
+ left:8px;
+ right:8px;
+ background:#111b2bea;
+ border:1px solid #aa8d57;
+ border-radius:10px;
+ padding:10px 85px 10px 10px;
+ pointer-events:none;
+}
+
+h3{
+ margin:0 0 5px;
+ color:#e9c67d;
+ font-size:15px;
+}
+
+#status,#debug{
+ font-size:11px;
+ line-height:1.5;
+}
+
+#debug{color:#b6cbd7}
+
+#panel{
+ position:fixed;
+ bottom:8px;
+ left:8px;
+ right:8px;
+ max-height:43vh;
+ overflow:auto;
+ background:#101a2bf2;
+ border:1px solid #aa8d57;
+ border-radius:12px;
+ padding:10px;
+}
+
+button{
+ background:#29394d;
+ color:#fff;
+ border:1px solid #b99a59;
+ border-radius:7px;
+ padding:9px;
+ margin:3px;
+ font:inherit;
+}
+
+button.active{background:#765d30}
+
+button:disabled{
+ opacity:.45;
+ cursor:default;
+}
+
+.setting{
+ display:grid;
+ grid-template-columns:115px minmax(0,1fr) 45px;
+ gap:7px;
+ align-items:center;
+ margin:10px 0;
+}
+
+input[type=range]{
+ width:100%;
+ accent-color:#d6ad64;
+}
+
+input[type=range]:disabled{
+ opacity:.55;
+}
+
+small{color:#b6c4d0}
+
+#toggleUI{
+ position:fixed;
+ top:12px;
+ right:12px;
+ z-index:1000;
+ background:#233041e8;
+}
+
+body.ui-hidden #top,
+body.ui-hidden #panel{
+ display:none;
+}
+
+body.ui-hidden #toggleUI{
+ opacity:.38;
+ font-size:11px;
+ padding:6px 9px;
+}
+
+hr{
+ border:0;
+ border-top:1px solid #8a764d55;
+ margin:10px 0;
+}
+
+#legDiagnostic{
+ margin-top:10px;
+ padding:10px;
+ border:1px solid #aa8d57;
+ border-radius:8px;
+ background:#182638;
+}
+
+#legReport{
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+ font-size:11px;
+ line-height:1.6;
+ color:#c9d8e0;
+ margin-top:8px;
+}
+
+#legStatus{
+ color:#e9c67d;
+ font-size:12px;
+}
+
+#errorBox{
+ display:none;
+ position:fixed;
+ top:100px;
+ left:8px;
+ right:8px;
+ z-index:999;
+ background:#501d24;
+ color:#fff;
+ border:1px solid #ff8d8d;
+ border-radius:8px;
+ padding:10px;
+ font-size:12px;
+ white-space:pre-wrap;
+ overflow-wrap:anywhere;
+ max-height:28vh;
+ overflow:auto;
+}
+
+#calibrationStatus,
+#values,
+#bowStatus,
+#stringStatus,
+#arrowStatus,
+#staffStatus{
+ color:#c9d8e0;
+ font-size:11px;
+ margin-top:6px;
+ white-space:pre-wrap;
+}
+
+.lockedNotice{
+ padding:9px;
+ border:1px solid #b99a59;
+ border-radius:7px;
+ background:#263225;
+ color:#e9c67d;
+ margin:8px 0;
+}
+
+.testNotice{
+ padding:9px;
+ border:1px solid #7397b3;
+ border-radius:7px;
+ background:#1c3040;
+ color:#d6e7f4;
+ margin:8px 0;
+}
+</style>
+
+<script>
+window.addEventListener('error',e=>{
+ const b=document.getElementById('errorBox');
+ if(b){
+  b.style.display='block';
+  b.textContent=
+   'JavaScript error: '+e.message+
+   '\n'+(e.filename||'')+
+   ':'+(e.lineno||'');
+ }
+});
+
+window.addEventListener('unhandledrejection',e=>{
+ const b=document.getElementById('errorBox');
+ if(b){
+  b.style.display='block';
+  b.textContent=
+   'Promise error: '+String(e.reason);
+ }
+});
+</script>
+
+<script type="importmap">
+{
+ "imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+ }
+}
+</script>
+</head>
+
+<body>
+
+<div id="scene"></div>
+<div id="errorBox"></div>
+
+<button id="toggleUI">Hide UI</button>
+
+<div id="top">
+ <h3>LIFE RPG — Guardian 3K.7</h3>
+ <div id="status">Loading Guardian...</div>
+ <div id="debug">
+  Unified Five-Stance Guardian
+ </div>
+</div>
+
+<div id="panel">
+
+<div>
+ <button id="natural">Natural Stance</button>
+ <button id="stance">Longsword Stance</button>
+ <button id="shieldStance">Sword &amp; Shield</button>
+ <button id="bowStance" class="active">Bow Stance</button>
+ <button id="staffStance">Staff Stance</button>
+
+ <button id="swordToggle" class="active">
+  Equipment ON
+ </button>
+
+ <button id="breath">Breathing OFF</button>
+ <button id="resetCamera">Reset Camera</button>
+</div>
+
+<hr>
+
+<h3>Build 3K.7 — Unified Guardian</h3>
+
+<div class="lockedNotice">
+ FIVE APPROVED GUARDIAN STANCES
+
+ Natural Guardian
+ Two-Handed Longsword
+ Sword &amp; Shield
+ Traditional Guardian Longbow
+ Battlemage Staff
+
+ All approved poses must be preserved.
+
+ This build is not locked until all five
+ stances have passed testing.
+</div>
+
+<!-- BOW SECTION: PRESERVED FROM 3K.5F -->
+
+<div id="bowSection">
+
+<h3>Guardian Hunter Arrow — Locked</h3>
+
+<div class="lockedNotice">
+ Arrow cosmetic: guardian-arrow-001
+
+ Cosmetic set: guardian-hunter-set-001
+
+ Approved length: 3.15
+
+ Position: 0.02, 0.02, -0.01
+
+ Rotation: 1°, 31°, 4°
+
+ Calibration controls are read-only.
+</div>
+
+<button id="arrowToggle" class="active">
+ Arrow ON
+</button>
+
+<h3>Arrow Alignment — Locked</h3>
+
+<small>
+ These controls display the approved
+ arrow calibration. They cannot alter
+ the locked stance.
+</small>
+
+<div id="arrowPositionSliders"></div>
+
+<hr>
+
+<h3>Arrow Rotation — Locked</h3>
+<div id="arrowRotationSliders"></div>
+
+<hr>
+
+<h3>Arrow Length — Locked</h3>
+
+<div class="setting">
+ <span>Arrow Length</span>
+ <input
+  id="arrowLengthSlider"
+  type="range"
+  min="0.8"
+  max="3.5"
+  step="0.05"
+  value="3.15"
+  disabled
+ >
+ <span id="arrowLengthValue">3.15</span>
+</div>
+
+<button id="resetArrow" disabled>
+ Arrow Calibration Locked
+</button>
+
+<button id="saveArrow" disabled>
+ Arrow Baseline Locked
+</button>
+
+<button id="copyArrow">
+ Copy Locked Arrow Backup
+</button>
+
+<div id="arrowStatus">
+ Approved Guardian Hunter Arrow baseline.
+</div>
+
+<hr>
+
+<h3>Bow Size — Locked</h3>
+
+<div class="setting">
+ <span>Bow Size</span>
+ <input
+  id="bowSizeSlider"
+  type="range"
+  min="0.5"
+  max="3"
+  step="0.05"
+  value="2.05"
+  disabled
+ >
+ <span id="bowSizeValue">2.05×</span>
+</div>
+
+<div id="bowMeasurements"></div>
+
+<button id="resetBowSize" disabled>
+ Bow Size Locked
+</button>
+
+<hr>
+
+<h3>Dynamic Bowstring — Locked</h3>
+
+<div class="lockedNotice">
+ Approved right-hand string connection:
+
+ X: -0.26
+
+ Y: 0.50
+
+ Z: 0.11
+
+ Dynamic string movement remains active.
+ Calibration adjustments are disabled.
+</div>
+
+<div class="setting">
+ <span>String Offset X</span>
+ <input
+  id="stringOffsetX"
+  type="range"
+  min="-0.5"
+  max="0.5"
+  step="0.01"
+  value="-0.26"
+  disabled
+ >
+ <span id="stringOffsetXValue">-0.26</span>
+</div>
+
+<div class="setting">
+ <span>String Offset Y</span>
+ <input
+  id="stringOffsetY"
+  type="range"
+  min="-0.5"
+  max="0.5"
+  step="0.01"
+  value="0.5"
+  disabled
+ >
+ <span id="stringOffsetYValue">0.50</span>
+</div>
+
+<div class="setting">
+ <span>String Offset Z</span>
+ <input
+  id="stringOffsetZ"
+  type="range"
+  min="-0.5"
+  max="0.5"
+  step="0.01"
+  value="0.11"
+  disabled
+ >
+ <span id="stringOffsetZValue">0.11</span>
+</div>
+
+<div id="stringStatus">
+ Approved string connection.
+</div>
+
+<button id="resetStringOffset" disabled>
+ String Connection Locked
+</button>
+
+<hr>
+
+<h3>Left Arm — Locked Bow Holding Hand</h3>
+<div id="bowLeftArmSliders"></div>
+
+<hr>
+
+<h3>Right Arm — Locked Drawing Hand</h3>
+<div id="bowRightArmSliders"></div>
+
+<hr>
+
+<h3>Bow Attachment — Locked</h3>
+<div id="bowAttachmentSliders"></div>
+
+<hr>
+
+<h3>Bow Leg Stance — Locked</h3>
+<div id="bowLegSliders"></div>
+
+<button id="saveBowPose" disabled>
+ Bow Pose Locked
+</button>
+
+<button id="copyBowPose">
+ Copy Locked Bow Backup
+</button>
+
+<button id="resetBowPose" disabled>
+ Bow Calibration Locked
+</button>
+
+<div id="bowStatus"></div>
+
+</div>
+
+<!-- SWORD & SHIELD: PRESERVED FROM 3K.5F -->
+
+<div id="armSection" style="display:none">
+
+<hr>
+<h3>Sword &amp; Shield — Locked</h3>
+
+<div class="lockedNotice">
+ Existing approved Sword &amp; Shield stance.
+ No recalibration in this build.
+</div>
+
+<h3>Left Arm — Shield</h3>
+<div id="leftArmSliders"></div>
+
+<hr>
+
+<h3>Right Arm — Sword</h3>
+<div id="rightArmSliders"></div>
+
+<hr>
+
+<h3>Sword Attachment</h3>
+<div id="armingAttachmentSliders"></div>
+
+<hr>
+
+<h3>Shield Attachment</h3>
+<div id="shieldAttachmentSliders"></div>
+
+<button id="copyShieldPose">
+ Copy Shield Backup
+</button>
+
+</div>
+
+<!-- STAFF: FIFTH STANCE -->
+
+<div id="staffSection" style="display:none">
+
+<hr>
+<h3>Battlemage Staff — Approved Calibration</h3>
+
+<div class="lockedNotice">
+ Approved Build 3K.6B.1 Staff Stance
+
+ Diagonal two-handed Battlemage stance.
+
+ Independent staff cosmetic model.
+
+ Approved length: 7.10
+
+ Staff stance remains separate from
+ all other Guardian poses.
+</div>
+
+<h3>Left Arm — Staff Grip</h3>
+<div id="staffLeftArmSliders"></div>
+
+<hr>
+
+<h3>Right Arm — Staff Grip</h3>
+<div id="staffRightArmSliders"></div>
+
+<hr>
+
+<h3>Staff Attachment Position</h3>
+<div id="staffPositionSliders"></div>
+
+<hr>
+
+<h3>Staff Attachment Rotation</h3>
+<div id="staffRotationSliders"></div>
+
+<hr>
+
+<h3>Staff Leg Stance</h3>
+<div id="staffLegSliders"></div>
+
+<hr>
+
+<h3>Staff Dimensions</h3>
+<div id="staffDimensionSliders"></div>
+
+<button id="saveStaffPose">
+ Save Staff Calibration
+</button>
+
+<button id="copyStaffPose">
+ Copy Staff Backup
+</button>
+
+<button id="resetStaffPose">
+ Reset Approved Staff
+</button>
+
+<div id="staffStatus">
+ Approved Build 3K.6B.1 baseline.
+</div>
+
+</div>
+
+<hr>
+
+<div id="calibrationStatus"></div>
+
+<h3>Lower-Body Skeleton Detection</h3>
+
+<div id="legDiagnostic">
+ <div id="legStatus">
+  Waiting for skeleton...
+ </div>
+
+ <button id="scanLegs">
+  Scan Leg Bones
+ </button>
+
+ <button id="copyLegReport">
+  Copy Bone Report
+ </button>
+
+ <div id="legReport"></div>
+</div>
+
+<hr>
+
+<h3>Longsword Dimensions</h3>
+
+<small>
+ Independent longsword model.
+ Existing controls retained.
+</small>
+
+<div id="sliders"></div>
+
+<button id="save">Save Sword Dimensions</button>
+<button id="copy">Copy Sword Backup</button>
+<button id="reset">Reset Sword</button>
+
+<div id="values"></div>
+
+</div>
+
+<script type="module">
+
+// ============================================
+// LIFE RPG — BUILD 3K.7
+// UNIFIED FIVE-STANCE GUARDIAN
+// PART 1 OF 3
+// ============================================
+
+import * as THREE from 'three';
+
+import {
+ GLTFLoader
+} from 'three/addons/loaders/GLTFLoader.js';
+
+import {
+ OrbitControls
+} from 'three/addons/controls/OrbitControls.js';
+
+// LONGSWORD — ORIGINAL ASSET.
+
+import {
+ weaponDefinition,
+ createGuardianLongsword
+} from './weapons/guardian-longsword.js';
+
+// ARMING SWORD — ORIGINAL ASSET.
+
+import {
+ armingSwordDefinition,
+ createGuardianArmingSword
+} from './weapons/guardian-arming-sword.js';
+
+// SHIELD — ORIGINAL ASSET.
+
+import {
+ shieldDefinition,
+ createGuardianShield
+} from './weapons/guardian-shield.js';
+
+// BOW — ORIGINAL ASSET.
+
+import {
+ bowDefinition,
+ createGuardianBow
+} from './weapons/guardian-bow.js';
+
+// ARROW — ORIGINAL ASSET.
+
+import {
+ arrowDefinition,
+ createGuardianArrow
+} from './weapons/guardian-arrow.js';
+
+// STAFF — INDEPENDENT ASSET.
+
+import {
+ staffDefinition,
+ createGuardianStaff
+} from './weapons/guardian-staff.js';
+
+// ============================================
+// END OF PART 1
+// PART 2 CONTINUES BELOW
+// ============================================
+  
+// ============================================
+// LIFE RPG — BUILD 3K.7
+// UNIFIED FIVE-STANCE GUARDIAN
+// PART 2 OF 3
+// ============================================
+
+const V=(x=0,y=0,z=0)=>
+ new THREE.Vector3(x,y,z);
+
+const RAD=Math.PI/180;
+const $=id=>document.getElementById(id);
+
+function reportError(error){
+ console.error(error);
+ const box=$('errorBox');
+ box.style.display='block';
+ box.textContent=String(error?.stack||error);
+}
+
+// SCENE — ORIGINAL 3K.5F.
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x101722);
+
+const camera=new THREE.PerspectiveCamera(
+ 40,innerWidth/innerHeight,.05,100
+);
+camera.position.set(0,1.45,9);
+
+const renderer=new THREE.WebGLRenderer({
+ antialias:true
+});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(
+ Math.min(devicePixelRatio,2)
+);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+$('scene').appendChild(renderer.domElement);
+
+const controls=new OrbitControls(
+ camera,renderer.domElement
+);
+controls.target.set(0,1.25,0);
+controls.enableDamping=true;
+controls.minDistance=2;
+controls.maxDistance=30;
+controls.update();
+
+scene.add(
+ new THREE.HemisphereLight(
+  0xeaf2ff,0x394457,2.3
+ )
+);
+
+const sun=new THREE.DirectionalLight(
+ 0xffe4bc,2.5
+);
+sun.position.set(3,7,6);
+scene.add(sun);
+
+// FLOOR — UNCHANGED.
+
+const floor=new THREE.Mesh(
+ new THREE.CircleGeometry(3.4,64),
+ new THREE.MeshStandardMaterial({
+  color:0x273445
+ })
+);
+floor.rotation.x=-Math.PI/2;
+floor.position.y=-.025;
+scene.add(floor);
+
+// ALL FIVE EQUIPMENT TYPES.
+
+let guardian=null;
+let sword=null;
+let armingSword=null;
+let shield=null;
+let bow=null;
+let arrow=null;
+let staff=null;
+
+let arrowVisible=true;
+let mode='bow';
+let swordVisible=true;
+let breathing=false;
+let rigReady=false;
+let latestLegReport='';
+
+const bones={};
+const originals=new Map();
+const chains={};
+const fingers={l:[],r:[]};
+const thumbs={l:[],r:[]};
+
+// LONGSWORD — ORIGINAL LOCKED GRIP.
+
+const lockedGrip={
+ l:{
+  raise:16,spread:-21,bend:59,across:90,
+  twist:0,wristX:0,wristY:-28,
+  fingerCurl:84,thumbGrip:0
+ },
+ r:{
+  raise:16,spread:-22,bend:71,across:72,
+  twist:0,wristX:11,wristY:45,
+  fingerCurl:100,thumbGrip:0
+ }
+};
+
+// SWORD & SHIELD — ORIGINAL LOCKED GRIP.
+
+const shieldGrip={
+ l:{
+  raise:35,spread:-35,bend:60,across:43,
+  twist:3,wristX:-3,wristY:-42,
+  fingerCurl:100,thumbGrip:0
+ },
+ r:{
+  raise:30,spread:-12,bend:51,across:18,
+  twist:0,wristX:22,wristY:35,
+  fingerCurl:100,thumbGrip:9
+ }
+};
+
+// BOW — ORIGINAL LOCKED GRIP.
+
+const initialBowGrip={
+ l:{
+  raise:21,
+  spread:-23,
+  bend:8,
+  across:25,
+  twist:-10,
+  wristX:27,
+  wristY:-47,
+  fingerCurl:95,
+  thumbGrip:0
+ },
+ r:{
+  raise:0,
+  spread:-36,
+  bend:69,
+  across:120,
+  twist:0,
+  wristX:0,
+  wristY:20,
+  fingerCurl:65,
+  thumbGrip:16
+ }
+};
+
+const bowGrip={
+ l:{...initialBowGrip.l},
+ r:{...initialBowGrip.r}
+};
+
+// STAFF — EXACT APPROVED 3K.6B.1 VALUES.
+
+const initialStaffSettings={
+ grip:{
+  l:{
+   raise:-18,
+   spread:-1,
+   bend:29,
+   across:64,
+   twist:22,
+   wristX:14,
+   wristY:-3,
+   fingerCurl:100,
+   thumbGrip:0
+  },
+  r:{
+   raise:14,
+   spread:-31,
+   bend:46,
+   across:66,
+   twist:9,
+   wristX:24,
+   wristY:90,
+   fingerCurl:100,
+   thumbGrip:0
+  }
+ },
+ legs:{
+  leftThigh:8,
+  leftSpread:-6,
+  leftKnee:25,
+  leftAnkle:-12,
+  rightThigh:-15,
+  rightSpread:5,
+  rightKnee:15,
+  rightAnkle:-10
+ },
+ position:[2,-1.6,-1.3],
+ rotation:[74,-24,50],
+ length:7.1,
+ shaftRadius:0.075,
+ headRadius:0.205
+};
+
+let staffSettings=JSON.parse(
+ JSON.stringify(initialStaffSettings)
+);
+
+const armConfig=[
+ ['raise','Arm Raise',-60,90,1],
+ ['spread','Arm Spread',-90,90,1],
+ ['bend','Elbow Bend',-10,140,1],
+ ['across','Arm Across',-120,120,1],
+ ['twist','Forearm Twist',-90,90,1],
+ ['wristX','Wrist X',-90,90,1],
+ ['wristY','Wrist Y',-90,90,1],
+ ['fingerCurl','Finger Curl',0,100,1],
+ ['thumbGrip','Thumb Grip',0,100,1]
+];
+
+// SWORD & SHIELD ATTACHMENTS — UNCHANGED.
+
+const armingAttachment={
+ position:[-0.17,0.47,0.07],
+ rotation:[-1,82,82]
+};
+
+const shieldAttachment={
+ position:[0.09,2.12,0.03],
+ rotation:[64,-170,-50]
+};
+
+// BOW ATTACHMENT — UNCHANGED.
+
+const initialBowAttachment={
+ position:[0.15,0.48,0.03],
+ rotation:[-117,-135,164]
+};
+
+const bowAttachment={
+ position:[...initialBowAttachment.position],
+ rotation:[...initialBowAttachment.rotation]
+};
+
+// LONGSWORD LEGS — UNCHANGED.
+
+const longswordLegs={
+ leftThigh:10,
+ leftSpread:-10,
+ leftKnee:-10,
+ leftAnkle:-10,
+ rightThigh:10,
+ rightSpread:10,
+ rightKnee:10,
+ rightAnkle:0
+};
+
+// SWORD & SHIELD LEGS — UNCHANGED.
+
+const shieldLegs={
+ leftThigh:-5,
+ leftSpread:-3,
+ leftKnee:4,
+ leftAnkle:0,
+ rightThigh:-5,
+ rightSpread:3,
+ rightKnee:5,
+ rightAnkle:0
+};
+
+// BOW LEGS — UNCHANGED.
+
+const initialBowLegs={
+ leftThigh:2,
+ leftSpread:-8,
+ leftKnee:15,
+ leftAnkle:-12,
+ rightThigh:-14,
+ rightSpread:8,
+ rightKnee:14,
+ rightAnkle:0
+};
+
+const bowLegs={...initialBowLegs};
+
+let leftThighAngle=bowLegs.leftThigh;
+let leftSpreadAngle=bowLegs.leftSpread;
+let leftKneeAngle=bowLegs.leftKnee;
+let leftAnkleAngle=bowLegs.leftAnkle;
+
+let rightThighAngle=bowLegs.rightThigh;
+let rightSpreadAngle=bowLegs.rightSpread;
+let rightKneeAngle=bowLegs.rightKnee;
+let rightAnkleAngle=bowLegs.rightAnkle;
+
+// BOW SIZE — LOCKED.
+
+const BOW_SIZE_DEFAULT=2.05;
+let bowSize=BOW_SIZE_DEFAULT;
+
+function setBowSize(){
+ bowSize=BOW_SIZE_DEFAULT;
+
+ if(bow){
+  bow.scale.setScalar(bowSize);
+ }
+
+ $('bowSizeSlider').value=bowSize;
+ $('bowSizeValue').textContent='2.05×';
+
+ updateBowMeasurements();
+ updateEquipment();
+}
+
+function updateBowMeasurements(){
+ const baseHeight=Number(
+  bow?.userData?.dimensions?.height ??
+  bowDefinition.dimensions.height
+ );
+
+ $('bowMeasurements').textContent=
+  'Bow model height: '+
+  (baseHeight*bowSize).toFixed(2)+
+  ' units · Scale: 2.05×';
+}
+
+$('bowSizeSlider').disabled=true;
+$('resetBowSize').disabled=true;
+
+// DYNAMIC STRING — ORIGINAL 3K.5F.
+
+const stringConnection={
+ x:-0.26,
+ y:0.50,
+ z:0.11
+};
+
+function getStringDrawPoint(){
+ if(!rigReady||!chains.r?.hand)return null;
+
+ const hand=chains.r.hand;
+ const p=hand.getWorldPosition(V());
+
+ const q=hand.getWorldQuaternion(
+  new THREE.Quaternion()
+ );
+
+ p.add(
+  V(
+   stringConnection.x,
+   stringConnection.y,
+   stringConnection.z
+  ).applyQuaternion(q)
+ );
+
+ return p;
+}
+
+function updateDynamicBowstring(){
+ if(!bow?.connectStringToWorldPoint)return;
+
+ if(
+  mode!=='bow'||
+  !bow.visible||
+  !rigReady
+ ){
+  bow.resetString?.();
+  return;
+ }
+
+ const point=getStringDrawPoint();
+
+ if(point){
+  bow.connectStringToWorldPoint(point);
+ }
+}
+
+// ARROW — ORIGINAL LOCKED VALUES.
+
+const ARROW_LENGTH_DEFAULT=3.15;
+
+const initialArrowAlignment={
+ position:[0.02,0.02,-0.01],
+ rotation:[1,31,4],
+ length:3.15
+};
+
+const arrowAlignment={
+ position:[...initialArrowAlignment.position],
+ rotation:[...initialArrowAlignment.rotation],
+ length:initialArrowAlignment.length
+};
+
+const arrowPositionConfig=[
+ ['X',0,-1,1,0.01],
+ ['Y',1,-1,1,0.01],
+ ['Z',2,-1,1,0.01]
+];
+
+const arrowRotationConfig=[
+ ['X',0,-180,180,1],
+ ['Y',1,-180,180,1],
+ ['Z',2,-180,180,1]
+];
+
+const arrowPositionSliders={};
+const arrowRotationSliders={};
+
+// ARROW ATTACHMENT — UNCHANGED.
+
+function updateArrowAttachment(){
+ if(!arrow)return;
+
+ arrow.visible=
+  arrowVisible&&
+  swordVisible&&
+  mode==='bow'&&
+  rigReady;
+
+ if(!arrow.visible)return;
+
+ const drawPoint=getStringDrawPoint();
+ if(!drawPoint)return;
+
+ world();
+
+ arrow.position.copy(drawPoint).add(
+  V(...arrowAlignment.position)
+ );
+
+ const target=bow.getWorldPosition(V());
+
+ const direction=target.clone()
+  .sub(arrow.position);
+
+ if(direction.lengthSq()<1e-8)return;
+
+ direction.normalize();
+
+ arrow.quaternion.setFromUnitVectors(
+  V(0,1,0),
+  direction
+ );
+
+ arrow.rotateX(
+  arrowAlignment.rotation[0]*RAD
+ );
+ arrow.rotateY(
+  arrowAlignment.rotation[1]*RAD
+ );
+ arrow.rotateZ(
+  arrowAlignment.rotation[2]*RAD
+ );
+}
+
+// LONGSWORD DIMENSIONS — UNCHANGED.
+
+const defaults={...weaponDefinition.dimensions};
+const dimensions={...defaults};
+
+const attachment={
+ bladeAngle:weaponDefinition.attachment.bladeAngle,
+ gripOffset:[...weaponDefinition.attachment.gripOffset]
+};
+
+const config=[
+ ['bladeLength','Blade Length',.7,4,.01],
+ ['bladeWidth','Blade Width',.04,.3,.005],
+ ['bladeThickness','Blade Thickness',.01,.1,.005],
+ ['handleLength','Handle Length',.25,1.2,.01],
+ ['handleRadius','Handle Thickness',.02,.1,.005],
+ ['crossguardWidth','Crossguard Width',.2,1,.01],
+ ['pommelRadius','Pommel Size',.03,.15,.005],
+ ['bladeAngle','Blade Angle',-90,90,1],
+ ['gripX','Grip X',-.5,.5,.01],
+ ['gripY','Grip Y',-.5,1.5,.01],
+ ['gripZ','Grip Z',-.5,.5,.01]
+];
+
+const attachmentConfig=[
+ ['position',0,'Position X',-4,4,.01],
+ ['position',1,'Position Y',-4,4,.01],
+ ['position',2,'Position Z',-4,4,.01],
+ ['rotation',0,'Rotation X',-180,180,1],
+ ['rotation',1,'Rotation Y',-180,180,1],
+ ['rotation',2,'Rotation Z',-180,180,1]
+];
+
+const legConfig=[
+ ['leftThigh','Left Thigh',-20,20,1],
+ ['leftSpread','Left Hip Spread',-20,20,1],
+ ['leftKnee','Left Knee',-25,25,1],
+ ['leftAnkle','Left Ankle',-30,30,1],
+ ['rightThigh','Right Thigh',-20,20,1],
+ ['rightSpread','Right Hip Spread',-20,20,1],
+ ['rightKnee','Right Knee',-25,25,1],
+ ['rightAnkle','Right Ankle',-30,30,1]
+];
+
+// SLIDER REGISTRIES.
+
+const sliders={};
+const armSliders={l:{},r:{}};
+const bowArmSliders={l:{},r:{}};
+
+const equipmentSliders={
+ sword:{},
+ shield:{},
+ bow:{}
+};
+
+const bowLegSliders={};
+const staffSliderRefresh=[];
+
+// ASSET MANAGEMENT.
+
+function disposeAsset(object){
+ if(!object)return;
+
+ scene.remove(object);
+
+ object.traverse(o=>{
+  if(o.isMesh){
+   o.geometry?.dispose();
+  }
+ });
+}
+
+function rebuildSword(){
+ disposeAsset(sword);
+
+ sword=createGuardianLongsword(dimensions);
+ scene.add(sword);
+
+ updateEquipment();
+}
+
+function rebuildShieldEquipment(){
+ disposeAsset(armingSword);
+ disposeAsset(shield);
+
+ armingSword=createGuardianArmingSword();
+ shield=createGuardianShield();
+
+ scene.add(armingSword);
+ scene.add(shield);
+
+ updateEquipment();
+}
+
+function rebuildBow(){
+ disposeAsset(bow);
+
+ bow=createGuardianBow();
+ scene.add(bow);
+
+ bow.scale.setScalar(bowSize);
+
+ updateBowMeasurements();
+ updateEquipment();
+}
+
+function rebuildArrow(){
+ disposeAsset(arrow);
+
+ arrow=createGuardianArrow({
+  ...arrowDefinition.dimensions,
+  length:arrowAlignment.length
+ });
+
+ scene.add(arrow);
+ updateEquipment();
+  }
+  
+
+// STAFF FACTORY — ORIGINAL 3K.6B.1.
+
+function rebuildStaff(){
+ disposeAsset(staff);
+
+ staff=createGuardianStaff({
+  length:staffSettings.length,
+  shaftRadius:staffSettings.shaftRadius,
+  headRadius:staffSettings.headRadius
+ });
+
+ scene.add(staff);
+ updateEquipment();
+}
+
+function world(){
+ if(guardian){
+  guardian.updateMatrixWorld(true);
+ }
+}
+
+function pos(b){
+ return b.getWorldPosition(V());
+}
+
+// UNIFIED EQUIPMENT PLACEMENT.
+
+function updateEquipment(){
+ if(sword){
+  sword.visible=
+   swordVisible&&mode==='stance'&&rigReady;
+ }
+
+ if(armingSword){
+  armingSword.visible=
+   swordVisible&&mode==='shield'&&rigReady;
+ }
+
+ if(shield){
+  shield.visible=
+   swordVisible&&mode==='shield'&&rigReady;
+ }
+
+ if(bow){
+  bow.visible=
+   swordVisible&&mode==='bow'&&rigReady;
+ }
+
+ if(arrow){
+  arrow.visible=
+   arrowVisible&&
+   swordVisible&&
+   mode==='bow'&&
+   rigReady;
+ }
+
+ if(staff){
+  staff.visible=
+   swordVisible&&mode==='staff'&&rigReady;
+ }
+
+ if(!guardian||!rigReady)return;
+
+ world();
+ 
+ // LONGSWORD — ORIGINAL.
+
+ if(sword?.visible){
+  const left=pos(chains.l.hand);
+  const right=pos(chains.r.hand);
+
+  const midpoint=left.add(right)
+   .multiplyScalar(.5);
+
+  sword.position.copy(midpoint).add(
+   V(...attachment.gripOffset)
+  );
+
+  sword.rotation.set(
+   0,0,attachment.bladeAngle*RAD
+  );
+ }
+
+ // ARMING SWORD — ORIGINAL.
+
+ if(armingSword?.visible){
+  const hand=chains.r.hand;
+  const p=pos(hand);
+
+  const q=hand.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
+
+  armingSword.position.copy(p).add(
+   V(...armingAttachment.position)
+    .applyQuaternion(q)
+  );
+
+  armingSword.quaternion.copy(q);
+
+  armingSword.rotateX(
+   armingAttachment.rotation[0]*RAD
+  );
+  armingSword.rotateY(
+   armingAttachment.rotation[1]*RAD
+  );
+  armingSword.rotateZ(
+   armingAttachment.rotation[2]*RAD
+  );
+ }
+
+ // SHIELD — ORIGINAL.
+
+ if(shield?.visible){
+  const forearm=chains.l.lower;
+  const p=pos(forearm);
+
+  const q=forearm.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
+
+  shield.position.copy(p).add(
+   V(...shieldAttachment.position)
+    .applyQuaternion(q)
+  );
+
+  shield.quaternion.copy(q);
+
+  shield.rotateX(
+   shieldAttachment.rotation[0]*RAD
+  );
+  shield.rotateY(
+   shieldAttachment.rotation[1]*RAD
+  );
+  shield.rotateZ(
+   shieldAttachment.rotation[2]*RAD
+  );
+  }
+  
+ // BOW — ORIGINAL.
+
+ if(bow?.visible){
+  const hand=chains.l.hand;
+  const p=pos(hand);
+
+  const q=hand.getWorldQuaternion(
+   new THREE.Quaternion()
+  );
+
+  bow.position.copy(p).add(
+   V(...bowAttachment.position)
+    .applyQuaternion(q)
+  );
+
+  bow.quaternion.copy(q);
+
+  bow.rotateX(
+   bowAttachment.rotation[0]*RAD
+  );
+  bow.rotateY(
+   bowAttachment.rotation[1]*RAD
+  );
+  bow.rotateZ(
+   bowAttachment.rotation[2]*RAD
+  );
+
+  bow.scale.setScalar(bowSize);
+  bow.updateMatrixWorld(true);
+
+  updateDynamicBowstring();
+ }
+
+ // ARROW — ORIGINAL.
+
+ if(arrow?.visible){
+  updateArrowAttachment();
+ }
+
+ // STAFF — EXACT 3K.6B.1 ATTACHMENT.
+
+ if(staff?.visible){
+  const leftHand=pos(chains.l.hand);
+  const rightHand=pos(chains.r.hand);
+
+  const midpoint=leftHand
+   .add(rightHand)
+   .multiplyScalar(.5);
+
+  staff.position.copy(midpoint).add(
+   V(...staffSettings.position)
+  );
+
+  staff.rotation.set(
+   staffSettings.rotation[0]*RAD,
+   staffSettings.rotation[1]*RAD,
+   staffSettings.rotation[2]*RAD,
+   'XYZ'
+  );
+
+  $('staffStatus').textContent=
+   'Staff length: '+
+   staffSettings.length.toFixed(2)+
+   ' units\n'+
+   'Head direction: Upper left\n'+
+   'Status: APPROVED BASELINE';
+ }
+}
+
+// ORIGINAL SLIDER FACTORY.
+
+function createSlider(
+ container,label,min,max,step,value,onChange
+){
+ const row=document.createElement('div');
+ row.className='setting';
+
+ const title=document.createElement('span');
+ title.textContent=label;
+
+ const input=document.createElement('input');
+ input.type='range';
+ input.min=min;
+ input.max=max;
+ input.step=step;
+ input.value=value;
+
+ const display=document.createElement('span');
+
+ const format=n=>
+  Number(n).toFixed(step>=1?0:3);
+
+ display.textContent=format(value);
+
+ input.oninput=()=>{
+  const n=Number(input.value);
+  display.textContent=format(n);
+
+  if(onChange)onChange(n);
+ };
+
+ row.append(title,input,display);
+ $(container).appendChild(row);
+
+ return {input,display,format};
+}
+
+// LOCKED SWORD & SHIELD CONTROLS.
+
+for(const side of ['l','r']){
+ const target=side==='l'
+  ?'leftArmSliders'
+  :'rightArmSliders';
+
+ for(const [key,label,min,max,step] of armConfig){
+  const control=createSlider(
+   target,label,min,max,step,
+   shieldGrip[side][key],()=>{}
+  );
+
+  control.input.disabled=true;
+  armSliders[side][key]=control;
+ }
+}
+
+// LOCKED BOW CONTROLS.
+
+for(const side of ['l','r']){
+ const target=side==='l'
+  ?'bowLeftArmSliders'
+  :'bowRightArmSliders';
+
+ for(const [key,label,min,max,step] of armConfig){
+  const control=createSlider(
+   target,label,min,max,step,
+   bowGrip[side][key],()=>{}
+  );
+
+  control.input.disabled=true;
+  bowArmSliders[side][key]=control;
+ }
+}
+
+// LOCKED EQUIPMENT ATTACHMENTS.
+
+for(const [kind,target,values] of [
+ ['sword','armingAttachmentSliders',armingAttachment],
+ ['shield','shieldAttachmentSliders',shieldAttachment],
+ ['bow','bowAttachmentSliders',bowAttachment]
+]){
+ for(const [
+  property,index,label,min,max,step
+ ] of attachmentConfig){
+
+  const key=property+index;
+
+  const control=createSlider(
+   target,label,min,max,step,
+   values[property][index],
+   ()=>{}
+  );
+
+  control.input.disabled=true;
+  equipmentSliders[kind][key]=control;
+ }
+  }
+  
+// LOCKED BOW LEGS.
+
+for(const [key,label,min,max,step] of legConfig){
+ const control=createSlider(
+  'bowLegSliders',
+  label,min,max,step,
+  bowLegs[key],()=>{}
+ );
+
+ control.input.disabled=true;
+ bowLegSliders[key]=control;
+}
+
+// LONGSWORD DIMENSIONS — ORIGINAL.
+
+for(const [key,label,min,max,step] of config){
+ sliders[key]=createSlider(
+  'sliders',label,min,max,step,
+
+  key==='bladeAngle'?attachment.bladeAngle:
+  key==='gripX'?attachment.gripOffset[0]:
+  key==='gripY'?attachment.gripOffset[1]:
+  key==='gripZ'?attachment.gripOffset[2]:
+  dimensions[key],
+
+  n=>{
+   if(key==='bladeAngle'){
+    attachment.bladeAngle=n;
+   }else if(key==='gripX'){
+    attachment.gripOffset[0]=n;
+   }else if(key==='gripY'){
+    attachment.gripOffset[1]=n;
+   }else if(key==='gripZ'){
+    attachment.gripOffset[2]=n;
+   }else{
+    dimensions[key]=n;
+    rebuildSword();
+   }
+
+   updateEquipment();
+  }
+ );
+}
+
+// LOCKED ARROW POSITION.
+
+for(const [axis,index,min,max,step] of
+ arrowPositionConfig){
+
+ const control=createSlider(
+  'arrowPositionSliders',
+  'Nock Offset '+axis,
+  min,max,step,
+  arrowAlignment.position[index],
+  ()=>{}
+ );
+
+ control.input.disabled=true;
+ arrowPositionSliders[axis]=control;
+}
+
+// LOCKED ARROW ROTATION.
+
+for(const [axis,index,min,max,step] of
+ arrowRotationConfig){
+
+ const control=createSlider(
+  'arrowRotationSliders',
+  'Arrow Rotation '+axis,
+  min,max,step,
+  arrowAlignment.rotation[index],
+  ()=>{}
+ );
+
+ control.input.disabled=true;
+ arrowRotationSliders[axis]=control;
+}
+
+$('arrowLengthSlider').value=
+ arrowAlignment.length;
+
+$('arrowLengthValue').textContent=
+ arrowAlignment.length.toFixed(2);
+
+$('arrowLengthSlider').disabled=true;
+
+// STAFF SLIDERS — 3K.6B.1 CALIBRATION.
+
+function addStaffSlider(
+ container,label,min,max,step,getValue,setValue
+){
+ const control=createSlider(
+  container,label,min,max,step,
+  getValue(),
+  value=>{
+   setValue(value);
+   updatePose();
+  }
+ );
+
+ staffSliderRefresh.push(()=>{
+  const value=getValue();
+  control.input.value=value;
+  control.display.textContent=
+   control.format(value);
+ });
+
+ return control;
+}
+
+// STAFF LEFT AND RIGHT ARM CONTROLS.
+
+for(const side of ['l','r']){
+ const target=side==='l'
+  ?'staffLeftArmSliders'
+  :'staffRightArmSliders';
+
+ for(const [key,label,min,max,step] of armConfig){
+  addStaffSlider(
+   target,label,min,max,step,
+   ()=>staffSettings.grip[side][key],
+   value=>{
+    staffSettings.grip[side][key]=value;
+   }
+  );
+ }
+}
+
+// STAFF POSITION AND ROTATION.
+
+for(const [index,axis] of ['X','Y','Z'].entries()){
+ addStaffSlider(
+  'staffPositionSliders',
+  'Position '+axis,
+  -2,2,.01,
+  ()=>staffSettings.position[index],
+  value=>{
+   staffSettings.position[index]=value;
+  }
+ );
+
+ addStaffSlider(
+  'staffRotationSliders',
+  'Rotation '+axis,
+  -180,180,1,
+  ()=>staffSettings.rotation[index],
+  value=>{
+   staffSettings.rotation[index]=value;
+  }
+ );
+}
+
+// STAFF LEGS.
+
+for(const [key,label,min,max,step] of legConfig){
+ addStaffSlider(
+  'staffLegSliders',
+  label,min,max,step,
+  ()=>staffSettings.legs[key],
+  value=>{
+   staffSettings.legs[key]=value;
+  }
+ );
+}
+
+// STAFF DIMENSIONS.
+
+for(const [key,label,min,max,step] of [
+ ['length','Staff Length',2,9,.05],
+ ['shaftRadius','Shaft Thickness',.025,.12,.005],
+ ['headRadius','Head Size',.05,.25,.005]
+]){
+ addStaffSlider(
+  'staffDimensionSliders',
+  label,min,max,step,
+  ()=>staffSettings[key],
+  value=>{
+   staffSettings[key]=value;
+   rebuildStaff();
+  }
+ );
+}
+
+// ============================================
+// END OF PART 2
+// PART 3 CONTINUES DIRECTLY BELOW
+// ============================================
+ 
+// ============================================
+// LIFE RPG — BUILD 3K.7
+// UNIFIED FIVE-STANCE GUARDIAN
+// PART 3 OF 3
+// ============================================
+
+// SLIDER SYNCHRONIZATION.
+
+function refreshSlider(control,value){
+ if(!control)return;
+
+ control.input.value=value;
+ control.display.textContent=
+  control.format(value);
+}
+
+function refreshAllSliders(){
+ for(const side of ['l','r']){
+  for(const key of Object.keys(armSliders[side])){
+   refreshSlider(
+    armSliders[side][key],
+    shieldGrip[side][key]
+   );
+  }
+
+  for(const key of Object.keys(bowArmSliders[side])){
+   refreshSlider(
+    bowArmSliders[side][key],
+    bowGrip[side][key]
+   );
+  }
+ }
+
+ for(const [kind,values] of [
+  ['sword',armingAttachment],
+  ['shield',shieldAttachment],
+  ['bow',bowAttachment]
+ ]){
+  for(const [property,index] of attachmentConfig){
+   refreshSlider(
+    equipmentSliders[kind][property+index],
+    values[property][index]
+   );
+  }
+ }
+
+ for(const key of Object.keys(bowLegSliders)){
+  refreshSlider(
+   bowLegSliders[key],
+   bowLegs[key]
+  );
+ }
+
+ for(const key of Object.keys(sliders)){
+  const value=
+   key==='bladeAngle'?attachment.bladeAngle:
+   key==='gripX'?attachment.gripOffset[0]:
+   key==='gripY'?attachment.gripOffset[1]:
+   key==='gripZ'?attachment.gripOffset[2]:
+   dimensions[key];
+
+  refreshSlider(sliders[key],value);
+ }
+
+ $('bowSizeSlider').value=2.05;
+ $('bowSizeValue').textContent='2.05×';
+
+ updateBowMeasurements();
+}
+
+function refreshArrowSliders(){
+ for(const [axis,index] of arrowPositionConfig){
+  refreshSlider(
+   arrowPositionSliders[axis],
+   arrowAlignment.position[index]
+  );
+ }
+
+ for(const [axis,index] of arrowRotationConfig){
+  refreshSlider(
+   arrowRotationSliders[axis],
+   arrowAlignment.rotation[index]
+  );
+ }
+
+ $('arrowLengthSlider').value=
+  arrowAlignment.length;
+
+ $('arrowLengthValue').textContent=
+  arrowAlignment.length.toFixed(2);
+}
+
+function refreshStaffUI(){
+ for(const refresh of staffSliderRefresh){
+  refresh();
+ }
+}
+
+function updateArrowStatus(){
+ $('arrowStatus').textContent=
+  'LOCKED — Guardian Hunter Arrow'+
+  '\nArrow ID: '+arrowDefinition.id+
+  '\nLength: '+arrowAlignment.length.toFixed(2)+
+  '\nNock position: '+
+  arrowAlignment.position.map(
+   n=>n.toFixed(2)
+  ).join(', ')+
+  '\nRotation: '+
+  arrowAlignment.rotation.map(
+   n=>n.toFixed(0)+'°'
+  ).join(', ');
+}
+
+// ============================================
+// GUARDIAN SKELETON — ORIGINAL 3K.5F
+// ============================================
+
+function capture(){
+ guardian.traverse(o=>{
+  if(!o.isBone)return;
+
+  const name=o.name.toLowerCase();
+  bones[name]=o;
+  originals.set(o,o.quaternion.clone());
+
+  const match=name.match(/(?:_|\.)(l|r)$/);
+  if(!match)return;
+
+  const side=match[1];
+
+  if(/thumb/.test(name)){
+   thumbs[side].push(o);
+  }else if(
+   /finger|index|middle|ring|pinky|little/.test(name)
+  ){
+   fingers[side].push(o);
+  }
+ });
+}
+
+function bone(name){
+ return bones[name]||null;
+}
+
+function restore(){
+ for(const [b,q] of originals){
+  b.quaternion.copy(q);
+ }
+ world();
+}
+
+// NATURAL GUARDIAN STANCE — UNCHANGED.
+
+function natural(){
+ const l=bone('upperarm_l');
+ const r=bone('upperarm_r');
+
+ if(l)l.rotateZ(-1.35);
+ if(r)r.rotateZ(1.35);
+
+ for(const side of ['l','r']){
+  const fore=bone('lowerarm_'+side);
+  const hand=bone('hand_'+side);
+
+  if(fore)fore.rotateX(.46*.18);
+  if(hand)hand.rotateX(.19*.14);
+ }
+
+ for(const [name,b] of Object.entries(bones)){
+  if(/finger|thumb|index|middle|ring|pinky/.test(name)){
+   b.rotateX(.66*.35);
+  }
+ }
+
+ world();
+}
+
+// WORLD-SPACE BONE ROTATION — UNCHANGED.
+
+function rotateWorld(joint,axis,angle){
+ if(!joint||!angle||axis.lengthSq()<1e-10)return;
+
+ world();
+
+ const parentQ=joint.parent.getWorldQuaternion(
+  new THREE.Quaternion()
+ );
+
+ const localAxis=axis.clone()
+  .applyQuaternion(parentQ.invert())
+  .normalize();
+
+ joint.quaternion.premultiply(
+  new THREE.Quaternion().setFromAxisAngle(
+   localAxis,angle
+  )
+ );
+
+ world();
+}
+
+function perpendicular(direction,target){
+ const v=target.clone().addScaledVector(
+  direction,-target.dot(direction)
+ );
+
+ return v.lengthSq()>1e-9
+  ?v.normalize()
+  :null;
+}
+
+function axisToward(direction,target){
+ const toward=perpendicular(direction,target);
+
+ return toward
+  ?new THREE.Vector3()
+    .crossVectors(direction,toward)
+    .normalize()
+  :null;
+  }
+  // ============================================
+// STRING CONNECTION — LOCKED
+// ============================================
+
+function syncStringUI(){
+ for(const axis of ['x','y','z']){
+  const input=$(
+   'stringOffset'+axis.toUpperCase()
+  );
+
+  const output=$(
+   'stringOffset'+axis.toUpperCase()+'Value'
+  );
+
+  input.value=stringConnection[axis];
+  input.disabled=true;
+
+  output.textContent=
+   stringConnection[axis].toFixed(2);
+ }
+
+ updateStringStatus();
+}
+
+function updateStringStatus(){
+ const ready=!!(
+  rigReady&&
+  chains.r?.hand&&
+  bow?.connectStringToWorldPoint
+ );
+
+ $('stringStatus').textContent=
+  'String connection: '+
+  (ready?'READY — LOCKED':'WAITING')+
+  '\nRight-hand offset: '+
+  stringConnection.x.toFixed(2)+', '+
+  stringConnection.y.toFixed(2)+', '+
+  stringConnection.z.toFixed(2);
+}
+
+// ============================================
+// ARROW VISIBILITY — ORIGINAL
+// ============================================
+
+$('arrowToggle').onclick=()=>{
+ arrowVisible=!arrowVisible;
+
+ $('arrowToggle').textContent=
+  arrowVisible?'Arrow ON':'Arrow OFF';
+
+ $('arrowToggle').classList.toggle(
+  'active',arrowVisible
+ );
+
+ updateEquipment();
+};
+
+function arrowBackup(){
+ return JSON.stringify({
+  build:'3K.5F',
+  status:'LOCKED',
+  arrowId:arrowDefinition.id,
+  cosmeticSetId:arrowDefinition.setId,
+  length:3.15,
+  position:[0.02,0.02,-0.01],
+  rotation:[1,31,4]
+ },null,2);
+}
+
+$('copyArrow').onclick=async()=>{
+ const data=arrowBackup();
+
+ try{
+  await navigator.clipboard.writeText(data);
+  $('arrowStatus').textContent=
+   'Locked arrow backup copied.';
+ }catch(e){
+  $('arrowStatus').textContent=data;
+ }
+};
+refreshAllSliders();
+refreshArrowSliders();
+refreshStaffUI();
+syncStringUI();
+updateArrowStatus();
+
+try{
+ rebuildSword();
+ rebuildShieldEquipment();
+ rebuildBow();
+ rebuildArrow();
+ rebuildStaff();
+}catch(e){
+ reportError(e);
+}
+
+// EQUIPMENT VISIBILITY.
+
+$('swordToggle').onclick=()=>{
+ swordVisible=!swordVisible;
+
+ $('swordToggle').textContent=
+  swordVisible
+   ?'Equipment ON'
+   :'Equipment OFF';
+
+ $('swordToggle').classList.toggle(
+  'active',swordVisible
+ );
+
+ updateEquipment();
+};
+
+// BREATHING.
+
+$('breath').onclick=()=>{
+ breathing=!breathing;
+
+ $('breath').textContent=
+  breathing
+   ?'Breathing ON'
+   :'Breathing OFF';
+};
+
+// CAMERA RESET.
+
+$('resetCamera').onclick=()=>{
+ camera.position.set(0,1.45,9);
+ controls.target.set(0,1.25,0);
+ controls.update();
+};
+
+// UI VISIBILITY.
+
+$('toggleUI').onclick=()=>{
+ const hidden=
+  document.body.classList.toggle(
+   'ui-hidden'
+  );
+
+ $('toggleUI').textContent=
+  hidden?'Show UI':'Hide UI';
+};
+
+// INITIAL STANCE.
+
+setMode('bow');
+
+$('status').textContent=
+ 'Loading Guardian model...';
+
+// ============================================
+// GUARDIAN MODEL LOADING
+// ============================================
+
+new GLTFLoader().load(
+ '../guardian-3d-test/Superhero_Male_FullBody.gltf',
+
+ gltf=>{
+  try{
+   guardian=gltf.scene;
+
+   const box=
+    new THREE.Box3().setFromObject(guardian);
+
+   const size=box.getSize(V());
+   const center=box.getCenter(V());
+
+   guardian.position.sub(center);
+
+   guardian.scale.setScalar(
+    2.5/Math.max(size.y,.001)
+   );
+
+   guardian.position.y+=1.25;
+
+   scene.add(guardian);
+
+   world();
+   capture();
+   calibrate();
+
+   $('status').textContent=
+    'Guardian loaded · '+
+    Object.keys(bones).length+
+    ' bones · READY';
+
+   refreshAllSliders();
+   refreshArrowSliders();
+   refreshStaffUI();
+   syncStringUI();
+
+   setMode('bow');
+   scanLegBones();
+   updateArrowStatus();
+
+  }catch(e){
+   $('status').textContent=
+    'Guardian setup error.';
+
+   reportError(e);
+  }
+ },
+
+ undefined,
+
+ error=>{
+   $('status').textContent=
+   'Guardian loading failed.';
+
+reportError(error);
+ }
+);
+
+// RESPONSIVE CAMERA.
+
+window.addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+
+ renderer.setSize(
+  innerWidth,innerHeight
+ );
+});
+
+// ============================================
+// ANIMATION LOOP
+// ============================================
+
+const clock=new THREE.Clock();
+function animate(){
+ requestAnimationFrame(animate);
+
+ const elapsed=clock.getElapsedTime();
+
+ if(guardian){
+  // Staff leg sliders must update the
+  // shared leg angles before pose application.
+  if(mode==='staff'){
+   const legs=staffSettings.legs;
+   
+leftThighAngle=legs.leftThigh;
+   leftSpreadAngle=legs.leftSpread;
+   leftKneeAngle=legs.leftKnee;
+   leftAnkleAngle=legs.leftAnkle;
+
+   rightThighAngle=legs.rightThigh;
+   rightSpreadAngle=legs.rightSpread;
+   rightKneeAngle=legs.rightKnee;
+   rightAnkleAngle=legs.rightAnkle;
+  }
+
+  updatePose();
+
+  if(breathing){
+   const chest=
+    bone('spine_03')||
+    bone('spine_02');
+
+   if(chest){
+    chest.rotateX(
+     Math.sin(elapsed*1.6)*.004
+    );
+   }
+  }
+
+  updateEquipment();
+ }
+
+ controls.update();
+ renderer.render(scene,camera);
+}
+
+animate();
+
+// ============================================
+// END — LIFE RPG BUILD 3K.7
+// UNIFIED FIVE-STANCE GUARDIAN
+// ============================================
+</script>
+</body>
+</html>
