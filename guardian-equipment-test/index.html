@@ -6,7 +6,7 @@
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>LIFE RPG — Guardian 3K.6B</title>
+<title>LIFE RPG — Guardian 3K.6B.1</title>
 
 <style>
 *{
@@ -175,10 +175,10 @@ body.ui-hidden #toggleUI{
 <button id="toggleUI">Hide UI</button>
 
 <div id="top">
- <h3>LIFE RPG — Guardian 3K.6B</h3>
+ <h3>LIFE RPG — Guardian 3K.6B.1</h3>
  <div id="status">Loading Guardian...</div>
  <div id="debug">
-  Battlemage Staff — Experimental Calibration
+  Battlemage Staff — Approved Baseline
  </div>
 </div>
 
@@ -208,10 +208,10 @@ body.ui-hidden #toggleUI{
 
 <hr>
 
-<h3>Build 3K.6B — Staff Calibration</h3>
+<h3>Build 3K.6B.1 — Staff Calibration</h3>
 
 <div class="notice">
- EXPERIMENTAL BATTLEMAGE STANCE
+ APPROVED BATTLEMAGE STANCE
 
  Staff head: Upper left shoulder.
 
@@ -219,10 +219,11 @@ body.ui-hidden #toggleUI{
 
  Right hand: Lower grip.
 
- The stance and weapon dimensions are
- adjustable until approved.
+ Approved arm, leg, and weapon settings
+ are now the starting defaults.
 
- This build does not lock any new values.
+ Sliders remain available for testing.
+ Floor alignment will be handled later.
 </div>
 
 <h3>Left Arm — Higher Staff Grip</h3>
@@ -285,8 +286,8 @@ body.ui-hidden #toggleUI{
 <script type="module">
 
 // ================================================
-// LIFE RPG — BUILD 3K.6B
-// BATTLEMAGE STAFF STANCE
+// LIFE RPG — BUILD 3K.6B.1
+// APPROVED BATTLEMAGE STAFF BASELINE
 // PART 1 OF 3
 // ================================================
 
@@ -333,7 +334,7 @@ const scene=new THREE.Scene();
 scene.background=
  new THREE.Color(0x101722);
 
-// CAMERA — EXISTING BASELINE
+// CAMERA — PRESERVED
 
 const camera=new THREE.PerspectiveCamera(
  40,
@@ -399,7 +400,7 @@ const sun=new THREE.DirectionalLight(
 sun.position.set(3,7,6);
 scene.add(sun);
 
-// FLOOR
+// FLOOR — UNCHANGED
 
 const floor=new THREE.Mesh(
  new THREE.CircleGeometry(3.4,64),
@@ -439,7 +440,7 @@ const thumbs={
 };
 
 // ================================================
-// EXPERIMENTAL STAFF CALIBRATION
+// APPROVED STAFF CALIBRATION
 // ================================================
 
 const initialStaffSettings={
@@ -447,58 +448,58 @@ const initialStaffSettings={
  grip:{
 
   l:{
-   raise:26,
-   spread:-22,
-   bend:65,
+   raise:-18,
+   spread:-1,
+   bend:29,
    across:64,
-   twist:0,
-   wristX:0,
-   wristY:-20,
-   fingerCurl:95,
-   thumbGrip:12
+   twist:22,
+   wristX:14,
+   wristY:-3,
+   fingerCurl:100,
+   thumbGrip:0
   },
 
   r:{
-   raise:16,
-   spread:-19,
-   bend:72,
-   across:65,
-   twist:0,
-   wristX:7,
-   wristY:20,
-   fingerCurl:95,
-   thumbGrip:12
+   raise:14,
+   spread:-31,
+   bend:46,
+   across:66,
+   twist:9,
+   wristX:24,
+   wristY:90,
+   fingerCurl:100,
+   thumbGrip:0
   }
 
  },
 
  legs:{
-  leftThigh:0,
-  leftSpread:-5,
-  leftKnee:7,
-  leftAnkle:-3,
+  leftThigh:8,
+  leftSpread:-6,
+  leftKnee:25,
+  leftAnkle:-12,
 
-  rightThigh:-5,
+  rightThigh:-15,
   rightSpread:5,
-  rightKnee:7,
-  rightAnkle:0
+  rightKnee:15,
+  rightAnkle:-10
  },
 
  position:[
-  0,
-  0.28,
-  0.12
+  2,
+  -1.6,
+  -1.3
  ],
 
  rotation:[
-  0,
-  0,
-  36
+  74,
+  -24,
+  50
  ],
 
- length:3.35,
- shaftRadius:0.052,
- headRadius:0.105
+ length:7.1,
+ shaftRadius:0.075,
+ headRadius:0.205
 
 };
 
@@ -545,8 +546,8 @@ const sliderRefresh=[];
 // ================================================
  
 // ================================================
-// LIFE RPG — BUILD 3K.6B
-// BATTLEMAGE STAFF STANCE
+// LIFE RPG — BUILD 3K.6B.1
+// APPROVED BATTLEMAGE STAFF BASELINE
 // PART 2 OF 3
 // ================================================
 
@@ -982,7 +983,7 @@ function updateEquipment(){
   staffSettings.length.toFixed(2)+
   ' units\n'+
   'Head direction: Upper left\n'+
-  'Status: EXPERIMENTAL';
+  'Status: APPROVED BASELINE';
 }
 
 // ================================================
@@ -1204,8 +1205,8 @@ for(const [
 // ================================================
  
 // ================================================
-// LIFE RPG — BUILD 3K.6B
-// BATTLEMAGE STAFF STANCE
+// LIFE RPG — BUILD 3K.6B.1
+// APPROVED BATTLEMAGE STAFF BASELINE
 // PART 3 OF 3
 // ================================================
 
@@ -1227,7 +1228,7 @@ function setMode(next){
  $('debug').textContent=
   mode==='natural'
    ?'Natural Guardian Stance — Reference'
-   :'Battlemage Staff — Experimental';
+   :'Battlemage Staff — Approved Baseline';
 
  updatePose();
 }
@@ -1305,11 +1306,14 @@ $('toggleUI').onclick=()=>{
 // STAFF CALIBRATION BACKUP
 // ================================================
 
+const STAFF_STORAGE_KEY=
+ 'lifeRPG_guardianStaff_3K6B1';
+
 function staffBackup(){
  return JSON.stringify({
-  build:'3K.6B',
+  build:'3K.6B.1',
 
-  status:'EXPERIMENTAL',
+  status:'APPROVED BASELINE',
 
   weaponId:staffDefinition.id,
 
@@ -1343,7 +1347,7 @@ $('copy').onclick=async()=>{
 $('save').onclick=()=>{
  try{
   localStorage.setItem(
-   'lifeRPG_guardianStaff_3K6B',
+   STAFF_STORAGE_KEY,
    staffBackup()
   );
 
@@ -1372,7 +1376,7 @@ $('reset').onclick=()=>{
  updatePose();
 
  $('backupStatus').textContent=
-  'Staff calibration reset to defaults.';
+  'Restored approved Staff baseline.';
 };
 
 // ================================================
@@ -1382,7 +1386,7 @@ $('reset').onclick=()=>{
 try{
  const saved=JSON.parse(
   localStorage.getItem(
-   'lifeRPG_guardianStaff_3K6B'
+   STAFF_STORAGE_KEY
   )||'null'
  );
 
@@ -1410,7 +1414,7 @@ try{
    }
 
    $('backupStatus').textContent=
-    'Previous staff calibration restored.';
+    'Saved 3K.6B.1 calibration restored.';
   }
  }
 
@@ -1514,7 +1518,7 @@ function refreshStaffUI(){
   staffSettings.length.toFixed(2)+
   ' units\n'+
   'Staff head: Upper left\n'+
-  'Status: EXPERIMENTAL';
+  'Status: APPROVED BASELINE';
 }
 
 // ================================================
@@ -1587,8 +1591,8 @@ animate();
 setMode('staff');
 
 // ================================================
-// END — LIFE RPG BUILD 3K.6B
-// BATTLEMAGE STAFF STANCE
+// END — LIFE RPG BUILD 3K.6B.1
+// APPROVED BATTLEMAGE STAFF BASELINE
 // ================================================
 
 </script>
