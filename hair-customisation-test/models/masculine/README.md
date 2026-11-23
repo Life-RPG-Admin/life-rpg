@@ -1,0 +1,1 @@
+Masculine Guardian model assets.
