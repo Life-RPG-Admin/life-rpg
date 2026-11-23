@@ -62,3 +62,28 @@ export function applyBowStance({applyArm,applyLeftLeg,applyRightLeg}) {
  applyLeftLeg();
  applyRightLeg();
 }
+
+// Build 3K.10 — approved feminine-specific offsets; masculine baselines unchanged.
+export const feminineCalibration = {
+  "arms": {
+    "l": {
+      "raise": 0
+    },
+    "r": {
+      "spread": -14
+    }
+  },
+  "legs": {},
+  "equipment": {
+    "bow": [
+      -0.05,
+      0.01,
+      -0.17
+    ],
+    "arrow": [
+      -0.5,
+      0.16,
+      -0.11
+    ]
+  }
+};

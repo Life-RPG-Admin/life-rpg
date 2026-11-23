@@ -42,3 +42,38 @@ export function applySwordShieldStance({applyArm,applyLeftLeg,applyRightLeg}) {
  applyLeftLeg();
  applyRightLeg();
 }
+
+// Build 3K.10 — approved feminine-specific offsets; masculine baselines unchanged.
+export const feminineCalibration = {
+  "arms": {
+    "l": {
+      "raise": -23,
+      "spread": 5,
+      "bend": 28,
+      "across": -8
+    },
+    "r": {
+      "raise": -36,
+      "spread": -2,
+      "bend": 45,
+      "across": 11,
+      "wristX": -7,
+      "wristY": -1,
+      "fingerCurl": 100,
+      "thumbGrip": -48
+    }
+  },
+  "legs": {},
+  "equipment": {
+    "armingSword": [
+      -0.03,
+      -0.08,
+      -0.1
+    ],
+    "shield": [
+      0.08,
+      -0.01,
+      -0.11
+    ]
+  }
+};

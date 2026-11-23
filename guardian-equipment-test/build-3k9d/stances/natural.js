@@ -22,3 +22,12 @@ export function applyNaturalStance({bone,bones,world}) {
 
  world();
 }
+// Build 3K.10 — approved feminine-specific offsets; masculine baselines unchanged.
+export const feminineCalibration = {
+  "arms": {
+    "l": {},
+    "r": {}
+  },
+  "legs": {},
+  "equipment": {}
+};

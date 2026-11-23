@@ -34,3 +34,32 @@ export function applyLongswordStance({applyArm,applyLeftLeg,applyRightLeg}) {
  applyLeftLeg();
  applyRightLeg();
 }
+
+// Build 3K.10 — approved feminine-specific offsets; masculine baselines unchanged.
+export const feminineCalibration = {
+  "arms": {
+    "l": {
+      "spread": -5,
+      "bend": 6,
+      "across": -7,
+      "twist": 7,
+      "wristX": 1,
+      "wristY": 4,
+      "fingerCurl": 100,
+      "raise": -12
+    },
+    "r": {
+      "raise": -3,
+      "wristX": 0,
+      "fingerCurl": 100
+    }
+  },
+  "legs": {},
+  "equipment": {
+    "longsword": [
+      0,
+      -0.17,
+      0
+    ]
+  }
+};
