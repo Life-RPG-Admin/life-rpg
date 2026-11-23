@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LIFE RPG — 3K.11 Skin Tone Test 3</title><style>*{box-sizing:border-box}body{margin:0;background:#101823;color:#f3e4c6;font-family:system-ui}#view{height:68vh;min-height:360px}#panel{padding:12px 16px;background:#1b2635}h2{font-size:17px;margin:4px 0 10px}button{background:#29384b;color:#f4e4c2;border:1px solid #6b614e;border-radius:8px;padding:10px;margin:3px;cursor:pointer}button.active{border:2px solid #edc978;background:#4c4536}#toneSlider{width:100%;accent-color:#edc978;touch-action:pan-y}#gradient{height:22px;border-radius:12px;background:linear-gradient(to right,#F6D9C5,#EBC6AD,#DEB49A,#D3A080,#C68E6D,#B77D55,#A57455,#96613F,#805039,#693E2E,#512F25,#39241E);margin:12px 0 8px}#toneInfo{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}#preview{display:inline-block;width:24px;height:24px;border-radius:50%;border:1px solid #b3a38b;vertical-align:middle}#status{font-size:13px;color:#b5c8d5;margin:8px 0}small{display:block;color:#c4b9a6;line-height:1.5}</style></head><body><div id="view"></div><div id="panel"><h2>Build 3K.11 — Skin Tone Test 3</h2><div><button id="male" class="active">Masculine</button><button id="female">Feminine</button><button id="reset">Original material</button></div><div id="gradient"></div><input id="toneSlider" type="range" min="0" max="100" step="1" value="50" aria-label="Skin tone"><div id="toneInfo"><span>Lightest</span><span><span id="preview"></span> <b id="toneValue">50%</b></span><span>Darkest</span></div><div id="status">Loading model...</div><small>Test 3: continuous skin-tone slider. Drag to preview. Original material resets the model. Orbit: drag. Zoom: pinch.</small></div><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}</script><script type="module">import * as THREE from 'three';import{GLTFLoader}from'three/addons/loaders/GLTFLoader.js';import{OrbitControls}from'three/addons/controls/OrbitControls.js';const tones=[['Porcelain','#F6D9C5'],['Fair Ivory','#EBC6AD'],['Light Beige','#DEB49A'],['Soft Sand','#D3A080'],['Warm Beige','#C68E6D'],['Golden Tan','#B77D55'],['Olive Brown','#A57455'],['Caramel','#96613F'],['Chestnut','#805039'],['Mahogany','#693E2E'],['Espresso','#512F25'],['Deep Ebony','#39241E']];const status=document.querySelector('#status'),view=document.querySelector('#view'),renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(view.clientWidth,view.clientHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;view.append(renderer.domElement);const scene=new THREE.Scene();scene.background=new THREE.Color('#151e2b');scene.add(new THREE.HemisphereLight(0xffffff,0x56647a,2.3));const light=new THREE.DirectionalLight(0xffebd2,2.4);light.position.set(3,7,5);scene.add(light);const camera=new THREE.PerspectiveCamera(35,view.clientWidth/view.clientHeight,.01,1000);const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;let current=null,materials=[],gender='masculine',selection=50,original=false,loadId=0;const loader=new GLTFLoader();
+function rgb(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16))}
+function toneHex(value){
+ const position=value/100*(tones.length-1),i=Math.min(tones.length-2,Math.floor(position)),t=position-i;
+ const a=rgb(tones[i][1]),b=rgb(tones[i+1][1]);
+ return '#'+a.map((v,k)=>Math.round(v+(b[k]-v)*t).toString(16).padStart(2,'0')).join('');
+}
+function recolourTexture(source,hex){
+ const img=source.image;if(!img||!img.width)return null;
+ const canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
+ const data=ctx.getImageData(0,0,canvas.width,canvas.height),px=data.data;
+ const target=rgb(hex);
+ // Use source luminance only for subtle natural skin detail, not as a brightness multiplier.
+ // Preserve neutral/dark underwear pixels. This is a heuristic, not a UV clothing mask.
+ for(let i=0;i<px.length;i+=4){
+  const r=px[i],g=px[i+1],b=px[i+2];
+  const l=.2126*r+.7152*g+.0722*b;
+  const chroma=Math.max(r,g,b)-Math.min(r,g,b);
+  const skinBrightness=THREE.MathUtils.smoothstep(l,64,108);
+  const skinChroma=THREE.MathUtils.smoothstep(chroma,7,25);
+  const skinMask=skinBrightness*skinChroma;
+  if(skinMask<.001)continue;
+  const shading=THREE.MathUtils.clamp(.82+(l-140)*.002, .66,1.18);
+  for(let k=0;k<3;k++){
+   const original=px[i+k];
+   const tinted=THREE.MathUtils.clamp(target[k]*shading*.95+original*.05,0,255);
+   px[i+k]=Math.round(original+(tinted-original)*skinMask);
+  }
+ }
+ ctx.putImageData(data,0,0);
+ const texture=new THREE.CanvasTexture(canvas);
+ texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=source.flipY;
+ texture.wrapS=source.wrapS;texture.wrapT=source.wrapT;
+ texture.magFilter=source.magFilter;texture.minFilter=source.minFilter;
+ texture.anisotropy=source.anisotropy;texture.needsUpdate=true;
+ return texture;
+}
+function updateUI(){
+ const hex=toneHex(selection);
+ document.querySelector('#preview').style.background=hex;
+ document.querySelector('#toneValue').textContent=selection+'%';
+ document.querySelector('#toneSlider').value=selection;
+}
+function apply(){
+ updateUI();
+ const hex=toneHex(selection);
+ for(const item of materials){
+  item.material.map=item.originalMap;
+  item.material.color.copy(item.originalColor);
+  if(!original&&item.originalMap){
+   const key=selection;
+   if(!item.cache.has(key))item.cache.set(key,recolourTexture(item.originalMap,hex));
+   const map=item.cache.get(key);
+   if(map){item.material.map=map;item.material.color.set(0xffffff)}
+  }
+  item.material.needsUpdate=true;
+ }
+ status.textContent=gender+' | '+(original?'Original texture':'Skin tone '+selection+'%')+' | '+materials.length+' body material(s)';
+}
+function load(g){
+ const request=++loadId;gender=g;original=false;
+ document.querySelector('#male').classList.toggle('active',g==='masculine');
+ document.querySelector('#female').classList.toggle('active',g==='feminine');
+ status.textContent='Loading '+g+' GLTF...';
+ if(current){scene.remove(current);current=null}materials=[];
+ const file=g==='masculine'?'Superhero_Male_FullBody.gltf':'Superhero_Female_FullBody.gltf';
+ loader.load('./models/'+g+'/'+file,asset=>{
+  if(request!==loadId)return;
+  current=asset.scene;scene.add(current);
+  current.traverse(o=>{if(!o.isMesh)return;
+   const arr=Array.isArray(o.material)?o.material:[o.material];
+   arr.forEach((m,i)=>{if(!m||!(/MI_Superhero/i).test(m.name))return;
+    const cloned=m.clone();if(Array.isArray(o.material))o.material[i]=cloned;else o.material=cloned;
+    materials.push({material:cloned,originalColor:cloned.color.clone(),originalMap:cloned.map,cache:new Map()});
+   });
+  });
+  const b=new THREE.Box3().setFromObject(current),sz=b.getSize(new THREE.Vector3()),center=b.getCenter(new THREE.Vector3());
+  const max=Math.max(sz.x,sz.y,sz.z);controls.target.copy(center);
+  camera.position.set(center.x+max*.25,center.y+max*.08,center.z+max*2.5);
+  camera.near=Math.max(.001,max/1000);camera.far=max*30;camera.updateProjectionMatrix();controls.update();apply();
+ },undefined,e=>{if(request===loadId)status.textContent='Load failed: '+e.message;console.error(e)});
+}
+document.querySelector('#toneSlider').addEventListener('input',e=>{selection=Number(e.target.value);original=false;apply()});
+document.querySelector('#male').onclick=()=>load('masculine');
+document.querySelector('#female').onclick=()=>load('feminine');
+document.querySelector('#reset').onclick=()=>{original=true;apply()};
+window.addEventListener('resize',()=>{camera.aspect=view.clientWidth/view.clientHeight;camera.updateProjectionMatrix();renderer.setSize(view.clientWidth,view.clientHeight)});
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+updateUI();load('masculine');</script></body></html>
