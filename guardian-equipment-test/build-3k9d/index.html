@@ -646,11 +646,11 @@ import * as THREE from 'three';
 
 import { loadMasculineGuardian } from './models/guardian-masculine.js';
 import { loadFeminineGuardian } from './models/guardian-feminine.js?v=3K9F-clean-003';
-import { applyNaturalStance } from './stances/natural.js';
-import { applyLongswordStance, longswordLegs } from './stances/longsword.js';
-import { applySwordShieldStance, shieldGrip, shieldLegs, armingAttachment, shieldAttachment } from './stances/sword-shield.js';
-import { applyBowStance, bowGrip, bowLegs, bowAttachment } from './stances/bow.js';
-import { initialStaffSettings, applyStaffStance } from './stances/staff.js';
+import { applyNaturalStance , feminineCalibration as naturalFeminineCalibration} from './stances/natural.js';
+import { applyLongswordStance, longswordLegs , feminineCalibration as stanceFeminineCalibration} from './stances/longsword.js';
+import { applySwordShieldStance, shieldGrip, shieldLegs, armingAttachment, shieldAttachment , feminineCalibration as shieldFeminineCalibration} from './stances/sword-shield.js';
+import { applyBowStance, bowGrip, bowLegs, bowAttachment , feminineCalibration as bowFeminineCalibration} from './stances/bow.js';
+import { initialStaffSettings, applyStaffStance , feminineCalibration as staffFeminineCalibration, feminineStaffSettings} from './stances/staff.js';
 
 import {
  OrbitControls
@@ -819,6 +819,10 @@ const thumbs={l:[],r:[]};
 let staffSettings=JSON.parse(
  JSON.stringify(initialStaffSettings)
 );
+const masculineStaffSettings=JSON.parse(JSON.stringify(initialStaffSettings));
+const approvedFeminineStaffSettings=JSON.parse(JSON.stringify(feminineStaffSettings));
+if(selectedModel==='feminine')staffSettings=JSON.parse(JSON.stringify(approvedFeminineStaffSettings));
+
 
 const armConfig=[
  ['raise','Arm Raise',-60,90,1],
@@ -1550,6 +1554,7 @@ function addStaffSlider(
  );
 
  staffSliderRefresh.push(()=>{
+   control.input.disabled=selectedModel!=='feminine';
   const value=getValue();
   control.input.value=value;
   control.display.textContent=
@@ -2045,13 +2050,30 @@ const guardianCalibration={
  masculine:makeCalibration(),
  feminine:makeCalibration()
 };
+// Approved profiles are shipped in the respective stance modules.
+const APPROVED_FEMININE_PROFILES={
+ natural:naturalFeminineCalibration,
+ stance:stanceFeminineCalibration,
+ shield:shieldFeminineCalibration,
+ bow:bowFeminineCalibration,
+ staff:staffFeminineCalibration
+};
+for(const key of STANCE_KEYS){
+ const approved=APPROVED_FEMININE_PROFILES[key];
+ guardianCalibration.feminine[key]={
+  arms:{l:{...approved.arms.l},r:{...approved.arms.r}},
+  legs:{...approved.legs},
+  equipment:{...zeroEquipment(),...approved.equipment}
+ };
+}
+
 // Saved calibration deltas are isolated from masculine baseline.
 const FEMALE_CALIBRATION_STORAGE='life-rpg-3k9f-feminine-calibration-v1';
 try {
  const saved=JSON.parse(localStorage.getItem(FEMALE_CALIBRATION_STORAGE)||'null');
  if(saved && typeof saved==='object'){
   for(const stance of STANCE_KEYS){
-   const src=saved[stance];
+   const src=LOCKED_FEMININE_STANCES.has(stance)?null:saved[stance];
    if(!src || typeof src!=='object')continue;
    for(const side of ['l','r']){
     for(const key of CALIBRATION_FIELDS){
@@ -2594,7 +2616,7 @@ try{
 // ============================================
 
 const STAFF_STORAGE_KEY=
- 'lifeRPG_guardianStaff_3K6B1';
+ 'lifeRPG_guardianStaff_3K10_feminine';
 
 function staffBackup(){
  return JSON.stringify({
@@ -2618,6 +2640,7 @@ $('copyStaffPose').onclick=async()=>{
 };
 
 $('saveStaffPose').onclick=()=>{
+ if(selectedModel!=='feminine')return;
  try{
   localStorage.setItem(
    STAFF_STORAGE_KEY,
@@ -2632,8 +2655,9 @@ $('saveStaffPose').onclick=()=>{
 };
 
 $('resetStaffPose').onclick=()=>{
+ if(selectedModel!=='feminine')return;
  staffSettings=JSON.parse(
-  JSON.stringify(initialStaffSettings)
+  JSON.stringify(approvedFeminineStaffSettings)
  );
 
  refreshStaffUI();
@@ -2659,6 +2683,7 @@ try{
  );
 
  if(
+  selectedModel==='feminine'&&
   saved?.weaponId===staffDefinition.id&&
   saved?.staffSettings
  ){
@@ -2845,6 +2870,12 @@ function updateGuardianSelection(){
 function switchGuardian(next){
  if(next===selectedModel && guardian && rigReady)return;
  selectedModel=next;
+ staffSettings=JSON.parse(JSON.stringify(next==='feminine'?approvedFeminineStaffSettings:masculineStaffSettings));
+ if(next==='feminine'){
+  try{const saved=JSON.parse(localStorage.getItem(STAFF_STORAGE_KEY)||'null');
+   if(saved?.staffSettings?.grip?.l&&saved?.staffSettings?.grip?.r)staffSettings=JSON.parse(JSON.stringify(saved.staffSettings));
+  }catch(e){console.warn('Feminine staff settings unavailable',e);}
+ }
  updateGuardianSelection();
  const token=++guardianLoadToken;
  const stanceToRestore=mode;
