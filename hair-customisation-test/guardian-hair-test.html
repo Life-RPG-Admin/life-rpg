@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>LIFE RPG — Hair Test 1E.2</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111822;color:#f1ddae;font:15px system-ui}body{display:flex;flex-direction:column}header{flex:none;padding:12px 15px;background:#111822}h1{font-size:18px;margin:0 0 5px}p{font-size:12px;color:#c5c5c5;margin:0 0 9px}button{background:#b99454;border:0;border-radius:7px;padding:10px 14px;color:#101820;font-weight:600}#status{font-size:12px;margin-left:8px}#view{flex:1;min-height:0;position:relative;touch-action:none}#view canvas{display:block;width:100%;height:100%}#info{position:absolute;bottom:10px;left:12px;font-size:11px;color:#9ca5ae;pointer-events:none}</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}</script></head><body><header><h1>LIFE RPG — Hair Test 1E.2</h1><p>Short Adventurer • Drag to rotate • Pinch to zoom • Guardian fitting</p><button id="reset">Reset view</button><span id="status">Loading…</span></header><div id="view"><span id="info">Silhouette prototype • Masculine Guardian</span></div><script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const view=document.getElementById('view'),status=document.getElementById('status');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x111822);
+const camera=new THREE.OrthographicCamera(-1,1,1,-1,.01,100);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;view.prepend(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.enablePan=false;controls.minZoom=.5;controls.maxZoom=8;
+scene.add(new THREE.HemisphereLight(0xffffff,0x55402e,2.3));const light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(3,5,4);scene.add(light);
+let radius=1,ready=false;
+function size(){const w=Math.max(1,view.clientWidth),h=Math.max(1,view.clientHeight);renderer.setSize(w,h,false);const aspect=w/h;const half=radius*1.35;camera.left=-half*aspect;camera.right=half*aspect;camera.top=half;camera.bottom=-half;camera.updateProjectionMatrix();}
+function reset(){camera.position.set(0,0,radius*5);camera.lookAt(0,0,0);controls.target.set(0,0,0);camera.zoom=1;camera.updateProjectionMatrix();controls.update();}
+const loader=new GLTFLoader();
+Promise.all([loader.loadAsync('./models/masculine/Superhero_Male_FullBody.gltf'),loader.loadAsync('./hair/short-adventurer-1e.glb')]).then(([g,h])=>{const wrapper=new THREE.Group();wrapper.add(g.scene,h.scene);wrapper.position.set(0,-1.73,0);scene.add(wrapper);radius=.19;size();reset();status.textContent='Guardian + hair loaded ✓';}).catch(e=>{status.textContent='Load failed: '+e.message;console.error(e)});
+document.getElementById('reset').onclick=()=>{size();reset()};new ResizeObserver(()=>{size()}).observe(view);size();reset();function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)}animate();
+</script></body></html>
